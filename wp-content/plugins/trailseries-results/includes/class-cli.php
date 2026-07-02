@@ -23,6 +23,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class TSR_CLI {
 
 	/**
+	 * Register all TSR subcommands with WP-CLI.
+	 *
+	 * Called once from the plugin bootstrap instead of passing the whole class
+	 * to WP_CLI::add_command(), which does not reliably honour @subcommand
+	 * renames in every WP-CLI release. Explicit per-subcommand registration
+	 * is the guaranteed path and makes the full command list visible here.
+	 */
+	public static function register(): void {
+		$instance = new self();
+		WP_CLI::add_command( 'tsr import',      array( $instance, 'import' ) );
+		WP_CLI::add_command( 'tsr verify-names', array( $instance, 'verify_names' ) );
+		WP_CLI::add_command( 'tsr bulk-import',  array( $instance, 'bulk_import' ) );
+	}
+
+	/**
 	 * Import a result set from a canonical JSON file into a ts_result post.
 	 *
 	 * The file must contain the TSR_Result_Set::to_array() shape:

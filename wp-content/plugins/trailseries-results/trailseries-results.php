@@ -48,5 +48,5 @@ register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	require TSR_PLUGIN_DIR . 'includes/class-cli.php';
-	WP_CLI::add_command( 'tsr', TSR_CLI::class );
+	TSR_CLI::register();
 }
