@@ -4,7 +4,7 @@ Theme URI:    https://trailseries.bg
 Description:  Child theme of Exhibz for trailseries.bg — Bulgarian trail running series.
               Results data and rendering belong to the trailseries-results plugin (ADR-002).
 Author:       TrailSeries.bg
-Version:      0.1.0
+Version:      0.2.0
 Template:     exhibz
 Requires at least: 6.4
 Requires PHP: 8.3
@@ -14,17 +14,27 @@ Text Domain:  exhibz-child
 */
 
 /* ── Design tokens ─────────────────────────────────────────────────────────── */
+/*
+ * Brand palette
+ * --tsr-blue   #00AADD  electric/sky blue — primary brand colour
+ * --tsr-navy   #0a1628  deep night navy — hero, dark sections, table headers
+ * --tsr-orange #e05c1e  trail orange — accent, CTAs only
+ * Greens are entirely removed.
+ */
 :root {
-	--tsr-green:       #2d6a2d;
-	--tsr-dark-green:  #1c4a1c;
-	--tsr-orange:      #e05c1e;
-	--tsr-text:        #1a1a1a;
-	--tsr-muted:       #5a5a5a;
-	--tsr-bg:          #f8f6f2;
-	--tsr-white:       #ffffff;
-	--tsr-radius:      6px;
-	--tsr-max-w:       1160px;
-	--tsr-gap:         2rem;
+	--tsr-blue:    #00aadd;
+	--tsr-blue-dk: #0088bb;   /* darker blue for hover states              */
+	--tsr-navy:    #0a1628;   /* near-black navy for hero + dark sections   */
+	--tsr-navy-2:  #0d2040;   /* slightly lighter navy for gradient depth   */
+	--tsr-orange:  #e05c1e;   /* accent / CTA — use sparingly               */
+	--tsr-text:    #111827;   /* near-black body text                        */
+	--tsr-muted:   #6b7280;   /* secondary / meta text                       */
+	--tsr-bg:      #f2f4f7;   /* light neutral page background               */
+	--tsr-white:   #ffffff;
+	--tsr-border:  #e2e6ea;
+	--tsr-radius:  6px;
+	--tsr-max-w:   1160px;
+	--tsr-gap:     2rem;
 }
 
 /* ── Layout utilities ──────────────────────────────────────────────────────── */
@@ -40,10 +50,11 @@ Text Domain:  exhibz-child
 
 .tsr-section__title {
 	font-size: clamp(1.5rem, 3vw, 2rem);
-	font-weight: 700;
+	font-weight: 800;
 	margin-bottom: 2rem;
-	color: var(--tsr-dark-green);
+	color: var(--tsr-navy);
 	position: relative;
+	letter-spacing: -0.01em;
 }
 
 .tsr-section__title::after {
@@ -51,8 +62,9 @@ Text Domain:  exhibz-child
 	display: block;
 	width: 3rem;
 	height: 3px;
-	background: var(--tsr-orange);
-	margin-top: 0.4rem;
+	background: var(--tsr-blue);
+	margin-top: 0.45rem;
+	border-radius: 2px;
 }
 
 .tsr-empty {
@@ -60,37 +72,44 @@ Text Domain:  exhibz-child
 	font-style: italic;
 }
 
-/* ── Hero ──────────────────────────────────────────────────────────────────── */
+/* ── Hero — dark navy, night mountain run feel ─────────────────────────────── */
 .tsr-hero {
 	min-height: 80vh;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	background: linear-gradient(160deg, var(--tsr-dark-green) 0%, #0d2b0d 100%);
+	/*
+	 * Layered background:
+	 *  1. Radial blue "lens flare" glow at top-left — the runner's headlamp
+	 *  2. Deep navy gradient — night sky above mountain ridge
+	 */
+	background:
+		radial-gradient(ellipse 70% 55% at 25% 30%, rgba(0, 170, 221, 0.18) 0%, transparent 65%),
+		linear-gradient(170deg, var(--tsr-navy) 0%, var(--tsr-navy-2) 55%, #060f1e 100%);
 	color: var(--tsr-white);
 	position: relative;
 	overflow: hidden;
 }
 
-/* Subtle noise texture */
+/* Subtle grain texture */
 .tsr-hero::before {
 	content: '';
 	position: absolute;
 	inset: 0;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.07'/%3E%3C/svg%3E");
 	pointer-events: none;
 }
 
-/* Mountain silhouette wave at the bottom */
+/* Mountain ridge silhouette at the bottom, blending into the page bg */
 .tsr-hero::after {
 	content: '';
 	position: absolute;
 	bottom: 0;
 	left: 0;
 	right: 0;
-	height: 100px;
-	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,100 280,35 520,75 720,8 920,60 1160,22 1440,65 1440,100' fill='%23f8f6f2'/%3E%3C/svg%3E") no-repeat bottom center / 100% auto;
+	height: 110px;
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 110' preserveAspectRatio='none'%3E%3Cpolygon points='0,110 200,60 400,85 600,18 800,55 1050,25 1250,70 1440,40 1440,110' fill='%23f2f4f7'/%3E%3C/svg%3E") no-repeat bottom center / 100% auto;
 	pointer-events: none;
 }
 
@@ -103,30 +122,33 @@ Text Domain:  exhibz-child
 }
 
 .tsr-hero__eyebrow {
-	font-size: 0.8rem;
-	letter-spacing: 0.18em;
+	font-size: 0.75rem;
+	letter-spacing: 0.2em;
 	text-transform: uppercase;
-	color: rgba(255, 255, 255, 0.55);
-	margin-bottom: 1rem;
+	color: var(--tsr-blue);
+	margin-bottom: 1.1rem;
+	font-weight: 600;
 }
 
 .tsr-hero__title {
 	font-size: clamp(2.6rem, 7vw, 5rem);
 	font-weight: 900;
-	line-height: 1.05;
+	line-height: 1.0;
 	margin-bottom: 0.6rem;
 	color: var(--tsr-white);
-	letter-spacing: -0.02em;
+	letter-spacing: -0.03em;
 }
 
+/* "Series" word in brand blue */
 .tsr-hero__title span {
-	color: var(--tsr-orange);
+	color: var(--tsr-blue);
 }
 
 .tsr-hero__subtitle {
 	font-size: clamp(1rem, 2.2vw, 1.2rem);
-	color: rgba(255, 255, 255, 0.72);
+	color: rgba(255, 255, 255, 0.65);
 	margin-bottom: 3rem;
+	font-weight: 400;
 }
 
 /* ── Countdown timer ───────────────────────────────────────────────────────── */
@@ -139,14 +161,14 @@ Text Domain:  exhibz-child
 }
 
 .tsr-countdown__block {
-	background: rgba(255, 255, 255, 0.1);
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
-	border: 1px solid rgba(255, 255, 255, 0.15);
+	background: rgba(0, 170, 221, 0.12);
+	border: 1px solid rgba(0, 170, 221, 0.3);
 	border-radius: var(--tsr-radius);
 	padding: 0.8rem 1.25rem;
 	min-width: 78px;
 	text-align: center;
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 }
 
 .tsr-countdown__num {
@@ -160,22 +182,23 @@ Text Domain:  exhibz-child
 
 .tsr-countdown__label {
 	display: block;
-	font-size: 0.65rem;
-	letter-spacing: 0.12em;
+	font-size: 0.62rem;
+	letter-spacing: 0.14em;
 	text-transform: uppercase;
-	color: rgba(255, 255, 255, 0.5);
+	color: var(--tsr-blue);
 	margin-top: 0.35rem;
+	font-weight: 600;
 }
 
 .tsr-countdown__done {
 	font-size: 1.5rem;
 	font-weight: 700;
-	color: var(--tsr-orange);
+	color: var(--tsr-blue);
 }
 
 .tsr-hero__anniversary {
-	font-size: 0.8rem;
-	color: rgba(255, 255, 255, 0.42);
+	font-size: 0.78rem;
+	color: rgba(255, 255, 255, 0.38);
 	margin-top: 0.25rem;
 }
 
@@ -189,7 +212,7 @@ Text Domain:  exhibz-child
 .tsr-card {
 	background: var(--tsr-white);
 	border-radius: var(--tsr-radius);
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
@@ -197,7 +220,7 @@ Text Domain:  exhibz-child
 }
 
 .tsr-card:hover {
-	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 170, 221, 0.1);
 	transform: translateY(-3px);
 }
 
@@ -230,9 +253,10 @@ Text Domain:  exhibz-child
 	align-items: center;
 	gap: 0.3rem;
 	font-size: 0.85rem;
-	font-weight: 600;
-	color: var(--tsr-green);
+	font-weight: 700;
+	color: var(--tsr-blue);
 	text-decoration: none;
+	letter-spacing: 0.01em;
 }
 
 .tsr-card__link::after {
@@ -254,10 +278,11 @@ Text Domain:  exhibz-child
 }
 
 .tsr-event-date {
-	font-size: 0.8rem;
+	font-size: 0.75rem;
 	font-weight: 700;
-	color: var(--tsr-orange);
-	letter-spacing: 0.05em;
+	color: var(--tsr-blue);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 	margin: 0;
 }
 
@@ -282,13 +307,13 @@ Text Domain:  exhibz-child
 	padding: 0.9rem 1.25rem;
 	background: var(--tsr-bg);
 	border-radius: var(--tsr-radius);
-	border-left: 3px solid var(--tsr-green);
+	border-left: 3px solid var(--tsr-blue);
 	transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .tsr-result-list__item:hover {
 	border-left-color: var(--tsr-orange);
-	background: #f0ede8;
+	background: #eaf6fb;
 }
 
 .tsr-result-list__title {
@@ -300,7 +325,7 @@ Text Domain:  exhibz-child
 }
 
 .tsr-result-list__title:hover {
-	color: var(--tsr-orange);
+	color: var(--tsr-blue);
 }
 
 .tsr-result-list__meta {
@@ -321,9 +346,9 @@ Text Domain:  exhibz-child
 	display: block;
 }
 
-/* ── Stats bar ─────────────────────────────────────────────────────────────── */
+/* ── Stats bar — dark navy, mirrors the hero ───────────────────────────────── */
 .tsr-stats {
-	background: var(--tsr-dark-green);
+	background: var(--tsr-navy);
 	color: var(--tsr-white);
 	padding-block: 3.5rem;
 }
@@ -339,24 +364,24 @@ Text Domain:  exhibz-child
 	font-size: clamp(2.5rem, 5vw, 4rem);
 	font-weight: 900;
 	line-height: 1;
-	color: var(--tsr-orange);
+	color: var(--tsr-blue);
 	font-variant-numeric: tabular-nums;
 }
 
 .tsr-stat__label {
-	font-size: 0.75rem;
-	letter-spacing: 0.12em;
+	font-size: 0.72rem;
+	letter-spacing: 0.14em;
 	text-transform: uppercase;
-	color: rgba(255, 255, 255, 0.55);
+	color: rgba(255, 255, 255, 0.48);
 	margin-top: 0.5rem;
 }
 
-/* ── Section "view all" link ───────────────────────────────────────────────── */
+/* ── Section "view all" link row ───────────────────────────────────────────── */
 .tsr-view-all {
 	margin-top: 2rem;
 }
 
-/* ── Results table (plugin output — must be present in active theme) ────────── */
+/* ── Results table (plugin output — active theme must own this CSS) ──────────── */
 .tsr-results-wrap {
 	overflow-x: auto;
 }
@@ -370,14 +395,14 @@ Text Domain:  exhibz-child
 
 .tsr-results th,
 .tsr-results td {
-	border: 1px solid #ddd;
+	border: 1px solid var(--tsr-border);
 	padding: 0.4rem 0.65rem;
 	text-align: left;
 	white-space: nowrap;
 }
 
 .tsr-results thead th {
-	background: var(--tsr-dark-green);
+	background: var(--tsr-navy);
 	color: var(--tsr-white);
 	font-weight: 600;
 	position: sticky;
@@ -385,18 +410,18 @@ Text Domain:  exhibz-child
 }
 
 .tsr-results tbody tr:nth-child(even) {
-	background: #f5f5f5;
+	background: #f5f7fa;
 }
 
 .tsr-results tbody tr:hover {
-	background: #e8f2e8;
+	background: #e0f4fb;
 }
 
 .tsr-results tr.tsr-status-dnf td,
 .tsr-results tr.tsr-status-dns td,
 .tsr-results tr.tsr-status-dsq td,
 .tsr-results tr.tsr-status-otl td {
-	color: #767676;
+	color: var(--tsr-muted);
 }
 
 /* ── Responsive ────────────────────────────────────────────────────────────── */
