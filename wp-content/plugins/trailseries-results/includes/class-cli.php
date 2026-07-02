@@ -264,7 +264,11 @@ final class TSR_CLI {
 				$post_title .= ' — ' . $row['category_raw'];
 			}
 
-			$json_file = $json_dir . $row['file'];
+			// Resolve the actual on-disk path. On Linux, ZIP extraction may store
+			// Cyrillic filenames as raw Windows code-page bytes instead of UTF-8,
+			// so direct path construction fails. resolve_json_path() tries iconv
+			// re-encoding and a directory-scan fallback before returning null.
+			$json_file = $this->resolve_json_path( $json_dir, $row['file'] );
 
 			// Check for existing ts_result post with this slug.
 			$existing = get_page_by_path( $post_slug, OBJECT, TSR_Post_Types::POST_TYPE );
@@ -281,6 +285,22 @@ final class TSR_CLI {
 					$post_slug,
 					mb_strimwidth( $post_title, 0, 55, '…' )
 				) );
+				++$processed;
+				if ( $limit && $processed >= $limit ) {
+					break;
+				}
+				continue;
+			}
+
+			// Early-exit when the file cannot be found — avoids creating a post
+			// that would be immediately rolled back when import_file() throws.
+			if ( null === $json_file ) {
+				WP_CLI::warning( sprintf(
+					'FAIL  no-file  slug=%s  cannot find on disk (tried CP1251/CP866 encoding variants): %s',
+					$post_slug,
+					$row['file']
+				) );
+				++$failed;
 				++$processed;
 				if ( $limit && $processed >= $limit ) {
 					break;
@@ -526,6 +546,68 @@ final class TSR_CLI {
 		} catch ( InvalidArgumentException $e ) {
 			WP_CLI::error( sprintf( 'File does not match the canonical schema: %s', $e->getMessage() ) );
 		}
+	}
+
+	/**
+	 * Resolve the on-disk path for a JSON file whose name comes from _manifest.csv.
+	 *
+	 * The manifest stores filenames in UTF-8 (as produced on the developer machine).
+	 * When the canonical JSON directory was transferred to a Linux server via ZIP,
+	 * Cyrillic characters in filenames may have been stored as raw Windows code-page
+	 * bytes (most commonly CP1251 for Bulgarian) rather than UTF-8, causing
+	 * is_readable( $dir . $manifest_name ) to fail for every file with Cyrillic.
+	 *
+	 * Resolution order:
+	 *   1. Exact path — works for ASCII-only filenames and correctly extracted UTF-8.
+	 *   2. iconv re-encoding — converts the UTF-8 manifest name to CP1251, CP866, or
+	 *      ISO-8859-5 and checks whether any of those byte sequences exist on disk.
+	 *   3. Directory-scan skeleton match — scans the directory once (result cached per
+	 *      dir), strips every non-ASCII byte from each entry name and from the manifest
+	 *      name, then compares. Works when the encoding is unknown and the ASCII
+	 *      skeleton (slug prefix, numeric distances, separators, extension) is unique
+	 *      within the directory.
+	 *
+	 * @param string $json_dir          Directory path with trailing separator.
+	 * @param string $manifest_filename Filename as recorded in _manifest.csv (UTF-8).
+	 * @return string|null Full readable path, or null if the file cannot be located.
+	 */
+	private function resolve_json_path( string $json_dir, string $manifest_filename ): ?string {
+		// 1. Exact match — covers pure-ASCII names and correctly extracted UTF-8.
+		$path = $json_dir . $manifest_filename;
+		if ( is_readable( $path ) ) {
+			return $path;
+		}
+
+		// 2. iconv re-encoding — try common Cyrillic Windows code pages.
+		foreach ( array( 'CP1251', 'CP866', 'ISO-8859-5' ) as $enc ) {
+			$alt = @iconv( 'UTF-8', $enc . '//IGNORE', $manifest_filename );
+			if ( is_string( $alt ) && $alt !== '' && $alt !== $manifest_filename ) {
+				$alt_path = $json_dir . $alt;
+				if ( is_readable( $alt_path ) ) {
+					return $alt_path;
+				}
+			}
+		}
+
+		// 3. Directory-scan skeleton match — encoding unknown; match on the pure-ASCII
+		//    skeleton of the filename (page-slug prefix, numbers, hyphens, extension).
+		/** @var array<string, list<string>> $dir_cache */
+		static $dir_cache = array();
+		if ( ! array_key_exists( $json_dir, $dir_cache ) ) {
+			$entries = is_dir( $json_dir ) ? ( scandir( $json_dir ) ?: array() ) : array();
+			$dir_cache[ $json_dir ] = array_values(
+				array_filter( $entries, static fn( $f ) => str_ends_with( $f, '.json' ) )
+			);
+		}
+
+		$manifest_skeleton = preg_replace( '/[^\x20-\x7E]+/', '', $manifest_filename );
+		foreach ( $dir_cache[ $json_dir ] as $entry ) {
+			if ( preg_replace( '/[^\x20-\x7E]+/', '', $entry ) === $manifest_skeleton ) {
+				return $json_dir . $entry;
+			}
+		}
+
+		return null;
 	}
 
 	/**
