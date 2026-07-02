@@ -1,0 +1,48 @@
+/*
+Theme Name:   TrailSeries
+Theme URI:    https://trailseries.bg
+Description:  Custom theme for trailseries.bg — Bulgarian trail running series. Presentation only: results data and rendering live in the trailseries-results plugin.
+Author:       TrailSeries.bg
+Version:      0.1.0
+Requires at least: 6.4
+Requires PHP: 8.3
+License:      GPL-2.0-or-later
+License URI:  https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain:  trailseries
+*/
+
+/* Canonical results table (markup produced by trailseries-results plugin). */
+.tsr-results-wrap {
+	overflow-x: auto;
+}
+
+.tsr-results {
+	border-collapse: collapse;
+	width: 100%;
+	font-variant-numeric: tabular-nums;
+}
+
+.tsr-results th,
+.tsr-results td {
+	border: 1px solid #ddd;
+	padding: 0.35rem 0.6rem;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.tsr-results thead th {
+	background: #f4f4f4;
+	position: sticky;
+	top: 0;
+}
+
+.tsr-results tbody tr:nth-child(even) {
+	background: #fafafa;
+}
+
+.tsr-results tr.tsr-status-dnf td,
+.tsr-results tr.tsr-status-dns td,
+.tsr-results tr.tsr-status-dsq td,
+.tsr-results tr.tsr-status-otl td {
+	color: #767676;
+}

@@ -1,16 +1,12 @@
-# Wordpress - ignore core, configuration, examples, uploads and logs.
-# https://github.com/github/gitignore/blob/main/WordPress.gitignore
+# WordPress — ignore core, configuration, uploads and logs.
+# Repo root == WordPress root. Only our own theme + plugins are versioned.
+# Based on https://github.com/github/gitignore/blob/main/WordPress.gitignore
 
 # Core
-#
-# Note: if you want to stage/commit WP core files
-# you can delete this whole section/until Configuration.
 /wp-admin/
+/wp-includes/
 /wp-content/index.php
 /wp-content/languages
-/wp-content/plugins/index.php
-/wp-content/themes/index.php
-/wp-includes/
 /index.php
 /license.txt
 /readme.html
@@ -20,29 +16,35 @@
 # Configuration
 wp-config.php
 
-# Example themes
-/wp-content/themes/twenty*/
-
-# Example plugin
-/wp-content/plugins/hello.php
-
 # Uploads
 /wp-content/uploads/
 
 # Log files
 *.log
 
-# htaccess
+# htaccess (managed on the server; legacy rewrites documented in docs/)
 /.htaccess
 
-# All plugins
-#
-# Note: If you wish to whitelist plugins,
-# uncomment the next line
-#/wp-content/plugins
+# All plugins EXCEPT ours
+/wp-content/plugins/*
+!/wp-content/plugins/trailseries-results/
 
-# All themes
-#
-# Note: If you wish to whitelist themes,
-# uncomment the next line
-#/wp-content/themes
+# All themes EXCEPT ours
+/wp-content/themes/*
+!/wp-content/themes/trailseries/
+
+# Dependencies / build artifacts
+node_modules/
+vendor/
+*.zip
+*.sql
+*.sql.gz
+
+# Migration working data (raw exports may contain personal data — never commit)
+/migration/data/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
