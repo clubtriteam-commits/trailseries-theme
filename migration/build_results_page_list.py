@@ -53,6 +53,12 @@ KNOWN_COLUMN_WORDS = {
 }
 SPLIT_COLUMN = re.compile(r"^\d+([.,]\d+)?\s*(км|km)$", re.IGNORECASE)
 
+# Pages whose tables are not running results — kept in the list for
+# completeness but excluded from the results migration. Keyed by WXR title.
+OUT_OF_SCOPE_TITLES = {
+    "VELORALY": "out of scope: bike event, not running results",
+}
+
 
 def is_column_word(text: str) -> bool:
     text = text.casefold().strip()
@@ -207,6 +213,9 @@ def main() -> int:
         headers = dedupe_keep_order([h for h in headlines if h] + page.headers)
 
         notes: list[str] = []
+        title = item.findtext("title") or ""
+        if title in OUT_OF_SCOPE_TITLES:
+            notes.append(OUT_OF_SCOPE_TITLES[title])
         crawled = None
         if status != "publish":
             # Draft/private exports carry a placeholder link (often the bare
