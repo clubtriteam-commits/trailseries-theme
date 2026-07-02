@@ -424,6 +424,364 @@ Text Domain:  exhibz-child
 	color: var(--tsr-muted);
 }
 
+/* ── Inner-page hero (all pages except homepage) ───────────────────────────── */
+.tsr-page-hero {
+	background:
+		radial-gradient(ellipse 60% 50% at 20% 50%, rgba(0, 170, 221, 0.14) 0%, transparent 60%),
+		linear-gradient(160deg, var(--tsr-navy) 0%, #0d2040 100%);
+	color: var(--tsr-white);
+	padding: 3.5rem 0 3rem;
+}
+
+.tsr-page-hero__kicker {
+	font-size: 0.72rem;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--tsr-blue);
+	font-weight: 600;
+	margin-bottom: 0.75rem;
+}
+
+.tsr-page-hero__title {
+	font-size: clamp(1.8rem, 4vw, 3rem);
+	font-weight: 900;
+	color: var(--tsr-white);
+	margin: 0 0 0.5rem;
+	letter-spacing: -0.02em;
+	line-height: 1.1;
+}
+
+.tsr-page-hero__subtitle {
+	font-size: clamp(0.9rem, 2vw, 1.05rem);
+	color: rgba(255, 255, 255, 0.6);
+	margin: 0;
+}
+
+/* ── Inner page content wrapper ─────────────────────────────────────────────── */
+.tsr-page-content {
+	padding-block: 3rem;
+}
+
+.tsr-prose-section {
+	margin-bottom: 3rem;
+}
+
+.tsr-prose-section h2 {
+	font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+	font-weight: 800;
+	color: var(--tsr-navy);
+	margin-bottom: 1rem;
+	letter-spacing: -0.01em;
+}
+
+.tsr-prose-section p {
+	max-width: 72ch;
+	line-height: 1.7;
+	color: var(--tsr-text);
+}
+
+/* ── Правила — scoring category cards ──────────────────────────────────────── */
+.tsr-scoring-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+	gap: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+.tsr-scoring-card {
+	background: var(--tsr-white);
+	border-radius: var(--tsr-radius);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+	overflow: hidden;
+	border-top: 4px solid var(--tsr-blue);
+}
+
+.tsr-scoring-card--medium { border-top-color: #0088bb; }
+.tsr-scoring-card--long   { border-top-color: var(--tsr-navy); }
+.tsr-scoring-card--bonus  { border-top-color: var(--tsr-orange); }
+
+.tsr-scoring-card__badge {
+	display: block;
+	padding: 0.6rem 1rem 0;
+	font-size: 0.68rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--tsr-blue);
+}
+
+.tsr-scoring-card--medium .tsr-scoring-card__badge { color: #0088bb; }
+.tsr-scoring-card--long   .tsr-scoring-card__badge { color: var(--tsr-navy); }
+.tsr-scoring-card--bonus  .tsr-scoring-card__badge { color: var(--tsr-orange); }
+
+.tsr-scoring-card__title {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--tsr-text);
+	margin: 0.25rem 1rem 0;
+}
+
+.tsr-scoring-card__max {
+	font-size: 1.8rem;
+	font-weight: 900;
+	color: var(--tsr-navy);
+	margin: 0.25rem 1rem;
+	line-height: 1;
+}
+
+.tsr-scoring-card__max strong {
+	color: var(--tsr-blue);
+}
+
+.tsr-scoring-card__formula {
+	font-size: 0.8rem;
+	color: var(--tsr-muted);
+	margin: 0 1rem 0.75rem;
+}
+
+.tsr-scoring-card__formula code {
+	background: var(--tsr-bg);
+	padding: 0.1rem 0.35rem;
+	border-radius: 3px;
+	font-size: 0.8rem;
+}
+
+.tsr-scoring-card__table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.82rem;
+}
+
+.tsr-scoring-card__table th,
+.tsr-scoring-card__table td {
+	padding: 0.3rem 1rem;
+	text-align: left;
+	border-top: 1px solid var(--tsr-border);
+}
+
+.tsr-scoring-card__table thead th {
+	background: var(--tsr-bg);
+	font-weight: 700;
+	color: var(--tsr-muted);
+	font-size: 0.7rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+/* ── Правила — rules list ───────────────────────────────────────────────────── */
+.tsr-rules-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.tsr-rules-list li {
+	padding: 0.85rem 1.25rem;
+	background: var(--tsr-bg);
+	border-left: 3px solid var(--tsr-blue);
+	border-radius: var(--tsr-radius);
+	font-size: 0.95rem;
+	line-height: 1.5;
+	color: var(--tsr-text);
+}
+
+/* ── Summary table category badges ─────────────────────────────────────────── */
+.tsr-cat-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 3px;
+	font-weight: 800;
+	font-size: 0.8rem;
+	color: var(--tsr-white);
+}
+
+.tsr-cat-badge--a { background: var(--tsr-blue); }
+.tsr-cat-badge--b { background: #0088bb; }
+.tsr-cat-badge--c { background: var(--tsr-navy); }
+.tsr-cat-badge--d { background: var(--tsr-orange); }
+
+/* ── Рекорди — event group titles ──────────────────────────────────────────── */
+.tsr-records-event {
+	margin-bottom: 2.5rem;
+}
+
+.tsr-records-event__title {
+	font-size: 1.15rem;
+	font-weight: 800;
+	color: var(--tsr-navy);
+	margin-bottom: 0.75rem;
+	padding-bottom: 0.4rem;
+	border-bottom: 2px solid var(--tsr-blue);
+	display: inline-block;
+}
+
+/* ── Класирания — season nav pills ─────────────────────────────────────────── */
+.tsr-season-nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-bottom: 2rem;
+}
+
+.tsr-season-nav__item {
+	padding: 0.4rem 0.875rem;
+	border-radius: 99px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--tsr-blue);
+	background: rgba(0, 170, 221, 0.08);
+	text-decoration: none;
+	border: 1px solid rgba(0, 170, 221, 0.25);
+	transition: background 0.15s, color 0.15s;
+}
+
+.tsr-season-nav__item:hover,
+.tsr-season-nav__item--active {
+	background: var(--tsr-blue);
+	color: var(--tsr-white);
+	border-color: var(--tsr-blue);
+}
+
+.tsr-rank-first td {
+	background: rgba(0, 170, 221, 0.07);
+	font-weight: 600;
+}
+
+/* ── Notice / alert boxes ───────────────────────────────────────────────────── */
+.tsr-notice {
+	padding: 1rem 1.25rem;
+	border-radius: var(--tsr-radius);
+	margin-bottom: 1.5rem;
+	font-size: 0.88rem;
+	line-height: 1.55;
+}
+
+.tsr-notice--info {
+	background: rgba(0, 170, 221, 0.08);
+	border-left: 3px solid var(--tsr-blue);
+	color: var(--tsr-text);
+}
+
+.tsr-notice code {
+	background: rgba(0, 0, 0, 0.06);
+	padding: 0.1rem 0.35rem;
+	border-radius: 3px;
+	font-size: 0.82rem;
+}
+
+/* ── История — timeline ─────────────────────────────────────────────────────── */
+.tsr-timeline {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	position: relative;
+}
+
+.tsr-timeline::before {
+	content: '';
+	position: absolute;
+	left: 4.5rem;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	background: var(--tsr-border);
+}
+
+.tsr-timeline__item {
+	display: flex;
+	gap: 1.5rem;
+	margin-bottom: 2rem;
+	position: relative;
+}
+
+.tsr-timeline__item::before {
+	content: '';
+	position: absolute;
+	left: calc(4.5rem - 5px);
+	top: 0.35rem;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: var(--tsr-blue);
+	border: 2px solid var(--tsr-white);
+	box-shadow: 0 0 0 2px var(--tsr-blue);
+}
+
+.tsr-timeline__item--future::before {
+	background: var(--tsr-orange);
+	box-shadow: 0 0 0 2px var(--tsr-orange);
+}
+
+.tsr-timeline__year {
+	min-width: 4.5rem;
+	padding-top: 0.1rem;
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: var(--tsr-muted);
+	text-align: right;
+	flex-shrink: 0;
+}
+
+.tsr-timeline__body {
+	padding-bottom: 0.5rem;
+}
+
+.tsr-timeline__label {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--tsr-navy);
+	margin: 0 0 0.25rem;
+}
+
+.tsr-timeline__item--future .tsr-timeline__label {
+	color: var(--tsr-orange);
+}
+
+.tsr-timeline__desc {
+	font-size: 0.88rem;
+	color: var(--tsr-muted);
+	margin: 0;
+	line-height: 1.55;
+}
+
+/* ── Новини archive — pagination ────────────────────────────────────────────── */
+.tsr-pagination {
+	margin-top: 2.5rem;
+	display: flex;
+	justify-content: center;
+}
+
+.tsr-pagination .nav-links {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.tsr-pagination .page-numbers {
+	padding: 0.4rem 0.75rem;
+	border-radius: var(--tsr-radius);
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--tsr-blue);
+	text-decoration: none;
+	border: 1px solid var(--tsr-border);
+	transition: background 0.15s, color 0.15s;
+}
+
+.tsr-pagination .page-numbers.current,
+.tsr-pagination .page-numbers:hover {
+	background: var(--tsr-blue);
+	color: var(--tsr-white);
+	border-color: var(--tsr-blue);
+}
+
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
 	.tsr-section {
@@ -441,5 +799,26 @@ Text Domain:  exhibz-child
 
 	.tsr-result-list__meta {
 		display: none;
+	}
+
+	.tsr-timeline::before {
+		left: 3rem;
+	}
+
+	.tsr-timeline__item::before {
+		left: calc(3rem - 5px);
+	}
+
+	.tsr-timeline__year {
+		min-width: 3rem;
+		font-size: 0.75rem;
+	}
+
+	.tsr-scoring-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.tsr-page-hero {
+		padding: 2.5rem 0 2rem;
 	}
 }
