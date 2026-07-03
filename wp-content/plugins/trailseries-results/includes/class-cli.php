@@ -6,6 +6,7 @@
  *   wp tsr import <post_id> <file>   — import a single JSON into an existing post.
  *   wp tsr verify-names <post_id>    — recompute + check the stored names hash.
  *   wp tsr bulk-import               — create ts_result posts from all canonical JSONs.
+ *   wp tsr backfill-meta             — derive scoring/grouping post meta for all ts_result posts.
  *
  * The import path is deliberately paranoid: after saving, names are
  * byte-compared against the source file and the command fails hard on any
@@ -35,6 +36,7 @@ final class TSR_CLI {
 		WP_CLI::add_command( 'tsr import',      array( $instance, 'import' ) );
 		WP_CLI::add_command( 'tsr verify-names', array( $instance, 'verify_names' ) );
 		WP_CLI::add_command( 'tsr bulk-import',  array( $instance, 'bulk_import' ) );
+		WP_CLI::add_command( 'tsr backfill-meta', array( $instance, 'backfill_meta' ) );
 	}
 
 	/**
@@ -422,6 +424,207 @@ final class TSR_CLI {
 		}
 	}
 
+	/**
+	 * Derive scoring and grouping post meta for all ts_result posts.
+	 *
+	 * Sets four meta keys from post_title / post_name, using
+	 * migration/category-map.csv to normalise raw category headers:
+	 *
+	 *   _tsr_distance_km   — canonical distance ("11", "5.5"). From the
+	 *                        " — {category_raw}" title suffix via the map;
+	 *                        falls back to a km/КМ regex on the title, then
+	 *                        on the post_name (secondary-section slugs carry
+	 *                        a "--16.7km-m"-style category part).
+	 *   _tsr_distance_cat  — scoring category from km:
+	 *                        <8 short · 8–13.9 medium · 14–20.9 long · 21+ bonus
+	 *   _tsr_event_base    — clean event name ("7 Hills Run"), title-derived
+	 *                        with slug fallback (same logic as the Резултати page).
+	 *   _tsr_season        — 4-digit race year from title or slug. NEVER falls
+	 *                        back to post_date (that is the import date).
+	 *
+	 * A meta key is only written when a value could be derived; nothing is
+	 * invented. Existing values are kept unless --force is given.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--map=<file>]
+	 * : Path to category-map.csv.
+	 *   Default: <WP root>/migration/category-map.csv
+	 *
+	 * [--slug=<pattern>]
+	 * : Only process posts whose post_name contains this string.
+	 *
+	 * [--force]
+	 * : Overwrite meta values that already exist. Default: fill missing only.
+	 *
+	 * [--dry-run]
+	 * : Print what would be written without touching the database.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp tsr backfill-meta --dry-run
+	 *     wp tsr backfill-meta --slug=7-hills --dry-run
+	 *     wp tsr backfill-meta
+	 *     wp tsr backfill-meta --force
+	 *
+	 * @subcommand backfill-meta
+	 *
+	 * @param array<int, string>    $args
+	 * @param array<string, string> $assoc_args
+	 */
+	public function backfill_meta( array $args, array $assoc_args ): void {
+		$dry_run     = isset( $assoc_args['dry-run'] );
+		$force       = isset( $assoc_args['force'] );
+		$slug_filter = $assoc_args['slug'] ?? '';
+		$map_path    = $assoc_args['map'] ?? ABSPATH . 'migration/category-map.csv';
+
+		$map = $this->read_category_map( $map_path );
+		if ( array() === $map ) {
+			WP_CLI::error( sprintf( 'Cannot read category map (or it is empty): %s', $map_path ) );
+			return;
+		}
+		WP_CLI::log( sprintf( 'Category map: %d headers loaded from %s', count( $map ), $map_path ) );
+		if ( $dry_run ) {
+			WP_CLI::log( '--- DRY RUN: no database writes ---' );
+		}
+
+		$posts = get_posts( array(
+			'post_type'   => TSR_Post_Types::POST_TYPE,
+			'numberposts' => -1,
+			'post_status' => 'any',
+			'orderby'     => 'name',
+			'order'       => 'ASC',
+		) );
+
+		$stats = array(
+			'processed'   => 0,
+			'km'          => 0,
+			'cat'         => 0,
+			'event_base'  => 0,
+			'season'      => 0,
+			'no_distance' => 0,
+			'no_season'   => 0,
+			'no_event'    => 0,
+			'kept'        => 0,
+		);
+
+		foreach ( $posts as $post ) {
+			if ( '' !== $slug_filter && false === strpos( $post->post_name, $slug_filter ) ) {
+				continue;
+			}
+			++$stats['processed'];
+
+			// ── Derive all four values ────────────────────────────────────────
+			$km = null;
+
+			$cat_raw = $this->title_category_suffix( $post->post_title );
+			if ( '' !== $cat_raw ) {
+				$key = $this->norm_cat_key( $cat_raw );
+				if ( isset( $map[ $key ] ) && '' !== $map[ $key ] ) {
+					$km = (float) $map[ $key ];
+				}
+			}
+			if ( null === $km ) {
+				$km = $this->parse_km( '' !== $cat_raw ? $cat_raw : $post->post_title );
+			}
+			if ( null === $km ) {
+				// Secondary-section slugs carry the category part after "--"
+				// (e.g. "iran-run18-results--16.7km-m").
+				$km = $this->parse_km( $post->post_name );
+			}
+
+			$cat = null !== $km ? $this->km_to_cat( $km ) : null;
+
+			$event_base = $this->event_base_name( $post->post_title );
+			if ( '' === $event_base ) {
+				$event_base = $this->slug_event_name( $post->post_name );
+			}
+
+			$season = $this->title_year( $post->post_title )
+				?? $this->slug_year( $post->post_name );
+
+			// ── Collect writes (respecting --force vs fill-missing) ──────────
+			$derived = array(
+				'_tsr_distance_km'  => null !== $km ? rtrim( rtrim( sprintf( '%.1f', $km ), '0' ), '.' ) : null,
+				'_tsr_distance_cat' => $cat,
+				'_tsr_event_base'   => '' !== $event_base ? $event_base : null,
+				'_tsr_season'       => null !== $season ? (string) $season : null,
+			);
+			$writes  = array();
+			foreach ( $derived as $meta_key => $value ) {
+				if ( null === $value ) {
+					continue;
+				}
+				$existing = (string) get_post_meta( $post->ID, $meta_key, true );
+				if ( '' !== $existing && ! $force ) {
+					++$stats['kept'];
+					continue;
+				}
+				if ( $existing === $value ) {
+					continue;
+				}
+				$writes[ $meta_key ] = $value;
+			}
+
+			if ( null === $km ) {
+				++$stats['no_distance'];
+			}
+			if ( null === $season ) {
+				++$stats['no_season'];
+			}
+			if ( '' === $event_base ) {
+				++$stats['no_event'];
+			}
+
+			// ── Log + write ───────────────────────────────────────────────────
+			WP_CLI::log( sprintf(
+				'%s[%d]  %-50s  km=%-5s cat=%-6s season=%-4s base=%s',
+				$dry_run ? '[DRY] ' : '',
+				$post->ID,
+				mb_strimwidth( $post->post_name, 0, 50, '…' ),
+				$derived['_tsr_distance_km'] ?? '—',
+				$derived['_tsr_distance_cat'] ?? '—',
+				$derived['_tsr_season'] ?? '—',
+				$derived['_tsr_event_base'] ?? '—'
+			) );
+
+			if ( $dry_run || array() === $writes ) {
+				continue;
+			}
+
+			foreach ( $writes as $meta_key => $value ) {
+				update_post_meta( $post->ID, $meta_key, $value );
+			}
+			if ( isset( $writes['_tsr_distance_km'] ) )  { ++$stats['km']; }
+			if ( isset( $writes['_tsr_distance_cat'] ) ) { ++$stats['cat']; }
+			if ( isset( $writes['_tsr_event_base'] ) )   { ++$stats['event_base']; }
+			if ( isset( $writes['_tsr_season'] ) )       { ++$stats['season']; }
+		}
+
+		WP_CLI::log( '' );
+		WP_CLI::log( sprintf(
+			'Derivation gaps: no-distance=%d  no-season=%d  no-event-name=%d  (meta left unset — review manually)',
+			$stats['no_distance'],
+			$stats['no_season'],
+			$stats['no_event']
+		) );
+
+		if ( $dry_run ) {
+			WP_CLI::success( sprintf( 'Dry run over %d posts. Nothing written.', $stats['processed'] ) );
+			return;
+		}
+
+		WP_CLI::success( sprintf(
+			'Processed %d posts. Wrote: km=%d cat=%d event_base=%d season=%d. Existing values kept: %d.',
+			$stats['processed'],
+			$stats['km'],
+			$stats['cat'],
+			$stats['event_base'],
+			$stats['season'],
+			$stats['kept']
+		) );
+	}
+
 	// ── private helpers ────────────────────────────────────────────────────────
 
 	/**
@@ -608,6 +811,196 @@ final class TSR_CLI {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Parse category-map.csv into a normalised-header → canonical_distance_km map.
+	 *
+	 * Keys are produced by norm_cat_key() so lookups tolerate case and
+	 * Latin/Cyrillic KM/КМ variation. Values may be '' for headers whose
+	 * distance is unknown ("Мъже", "Жени" — marked "fill in manually").
+	 *
+	 * @return array<string, string> normalised raw_header => canonical_distance_km.
+	 */
+	private function read_category_map( string $path ): array {
+		if ( ! is_readable( $path ) ) {
+			return array();
+		}
+		$handle = fopen( $path, 'r' );
+		if ( ! $handle ) {
+			return array();
+		}
+
+		$headers = fgetcsv( $handle );
+		if ( ! $headers ) {
+			fclose( $handle );
+			return array();
+		}
+		if ( str_starts_with( $headers[0], "\xEF\xBB\xBF" ) ) {
+			$headers[0] = substr( $headers[0], 3 );
+		}
+
+		$map = array();
+		while ( false !== ( $fields = fgetcsv( $handle ) ) ) {
+			if ( count( $fields ) !== count( $headers ) ) {
+				continue;
+			}
+			$row = array_combine( $headers, $fields );
+			if ( '' === trim( $row['raw_header'] ) ) {
+				continue;
+			}
+			$map[ $this->norm_cat_key( $row['raw_header'] ) ] = trim( $row['canonical_distance_km'] );
+		}
+
+		fclose( $handle );
+		return $map;
+	}
+
+	/**
+	 * Normalise a category header for map lookup: collapse whitespace,
+	 * uppercase, and unify Latin K/M with Cyrillic К/М so "15KM МЪЖЕ"
+	 * and "15КМ МЪЖЕ" produce the same key.
+	 */
+	private function norm_cat_key( string $s ): string {
+		$s = mb_strtoupper( trim( (string) preg_replace( '/\s+/u', ' ', $s ) ), 'UTF-8' );
+		return strtr( $s, array( 'K' => 'К', 'M' => 'М' ) );
+	}
+
+	/**
+	 * Extract the " — {category_raw}" suffix that bulk-import appends to
+	 * post_title. Uses the LAST em-dash separator: category_raw never
+	 * contains one, but a legacy page_title might.
+	 *
+	 * @return string The raw category header, or '' when the title has no suffix.
+	 */
+	private function title_category_suffix( string $title ): string {
+		$pos = mb_strrpos( $title, ' — ' );
+		if ( false === $pos ) {
+			return '';
+		}
+		return trim( mb_substr( $title, $pos + 3 ) );
+	}
+
+	/**
+	 * Fallback distance extraction: first "NN km" / "NN.N КМ" token in the text.
+	 * Comma decimal separators are accepted ("16,7км" → 16.7).
+	 */
+	private function parse_km( string $text ): ?float {
+		if ( preg_match( '/(\d+(?:[.,]\d+)?)\s*(?:km|км)/iu', $text, $m ) ) {
+			return (float) str_replace( ',', '.', $m[1] );
+		}
+		return null;
+	}
+
+	/**
+	 * Map a distance to its scoring category.
+	 *
+	 * Boundaries (confirmed with the series organiser, 2026-07):
+	 *   <8 short · 8–13.9 medium · 14–20.9 long · 21+ bonus
+	 */
+	private function km_to_cat( float $km ): string {
+		if ( $km < 8 ) {
+			return 'short';
+		}
+		if ( $km < 14 ) {
+			return 'medium';
+		}
+		if ( $km < 21 ) {
+			return 'long';
+		}
+		return 'bonus';
+	}
+
+	/**
+	 * Extract a 4-digit race year from a post_title.
+	 * Same logic as tsr_title_year() in the Резултати page template.
+	 */
+	private function title_year( string $title ): ?int {
+		$pos = mb_strpos( $title, ' — ' );
+		$raw = false !== $pos ? mb_substr( $title, 0, $pos ) : $title;
+
+		if ( preg_match( "/['\x{2019}](\d{2})\b/u", $raw, $m ) ) {
+			return 2000 + (int) $m[1];
+		}
+		if ( preg_match( '/\b(20\d{2})\b/', $raw, $m ) ) {
+			return (int) $m[1];
+		}
+		return null;
+	}
+
+	/**
+	 * Extract a 4-digit race year from a post_name.
+	 * Same logic as tsr_slug_year() in the Резултати page template:
+	 * 4-digit segment, 2-digit year attached to a word char, or trailing
+	 * 2-digit segment once the results/ranking label is stripped. Day-of-month
+	 * numbers between hyphens are deliberately not matched.
+	 */
+	private function slug_year( string $slug ): ?int {
+		$base = explode( '--', $slug )[0];
+
+		if ( preg_match( '/(?:^|-)(20\d{2})(?:-|$)/', $base, $m ) ) {
+			return (int) $m[1];
+		}
+		if ( preg_match( '/[\pL\d](1[3-9]|2[0-9])(?:-|$)/u', $base, $m ) ) {
+			return 2000 + (int) $m[1];
+		}
+
+		$stripped = (string) preg_replace(
+			'/(?:^|-)(?:results?|ranking|класиране|резултати)\d*$/iu',
+			'',
+			$base
+		);
+		if ( $stripped !== $base && preg_match( '/-(1[3-9]|2[0-9])$/', $stripped, $m ) ) {
+			return 2000 + (int) $m[1];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Derive a clean event base name from a post_title.
+	 * Same logic as tsr_event_base_name() in the Резултати page template.
+	 * Returns '' when the title yields no usable name.
+	 */
+	private function event_base_name( string $title ): string {
+		$pos = mb_strpos( $title, ' — ' );
+		if ( false !== $pos ) {
+			$title = mb_substr( $title, 0, $pos );
+		}
+		$title = (string) preg_replace( "/['\x{2019}]\d{2}(?:\s*[-–—\s]\s*\S+.*)?\s*$/u", '', $title );
+		$title = (string) preg_replace( '/\s+20\d{2}(?:\s*[-–—]\s*\S+.*)?\s*$/u', '', $title );
+		$title = (string) preg_replace( '/\s*[-–—]\s*(?:results?|ranking|класиране|резултати)\b.*/iu', '', $title );
+		$title = (string) preg_replace( '/\s+(?:класиране|резултати|results?|ranking)\s*$/iu', '', $title );
+		$title = (string) preg_replace( '/[\s\-–—]+$/u', '', $title );
+		$title = (string) preg_replace( '/\s{2,}/u', ' ', $title );
+		return trim( $title );
+	}
+
+	/**
+	 * Derive a human-readable event name from a post_name.
+	 * Same logic as tsr_slug_event_name() in the Резултати page template.
+	 * Returns '' for known-garbage slugs (pure digits, "untitled", …).
+	 */
+	private function slug_event_name( string $slug ): string {
+		$base = explode( '--', $slug )[0];
+
+		$base = (string) preg_replace( '/(?:^|-)20\d{2}(?:-|$)/', '-', $base );
+		$base = trim( (string) preg_replace( '/-+/', '-', $base ), '-' );
+		$base = (string) preg_replace( '/(?:^|-)(?:results?|ranking|класиране|резултати)\d*$/iu', '', $base );
+		$base = (string) preg_replace( '/-(1[3-9]|2[0-9])$/', '', $base );
+		$base = (string) preg_replace( '/([\pL\d])(1[3-9]|2[0-9])(?:-|$)/u', '$1', $base );
+		$base = trim( (string) preg_replace( '/-+/', '-', $base ), '-' );
+
+		$lower = mb_strtolower( $base );
+		if ( '' === $base || ctype_digit( $base ) || in_array( $lower, array( 'untitled', 'news', 'page' ), true ) ) {
+			return '';
+		}
+
+		$words = array_map(
+			static fn( string $w ): string => mb_convert_case( $w, MB_CASE_TITLE, 'UTF-8' ),
+			explode( '-', $base )
+		);
+		return implode( ' ', $words );
 	}
 
 	/**
