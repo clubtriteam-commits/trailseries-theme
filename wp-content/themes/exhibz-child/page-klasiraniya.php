@@ -9,9 +9,8 @@
  *
  * Points formula per race depends on the distance category stored in the
  * `_tsr_distance_cat` post meta (values: 'short'|'medium'|'long'|'bonus').
- * When that meta is absent the race is shown in the list but earns 0 points,
- * so the ranking is incomplete.  Add `_tsr_distance_cat` and `_tsr_season`
- * meta (integer year) to ts_result posts to enable full standings.
+ * When that meta is absent the race earns 0 points. Run `wp tsr backfill-meta`
+ * to populate `_tsr_distance_cat` and `_tsr_season` on all ts_result posts.
  *
  * @package exhibz-child
  */
@@ -34,8 +33,10 @@ $all_ids      = get_posts(
 );
 foreach ( $all_ids as $pid ) {
 	$season_meta = get_post_meta( $pid, '_tsr_season', true );
-	$y           = $season_meta ? (int) $season_meta : (int) get_the_date( 'Y', $pid );
-	$season_years[ $y ] = true;
+	if ( '' === (string) $season_meta ) {
+		continue;
+	}
+	$season_years[ (int) $season_meta ] = true;
 }
 krsort( $season_years );
 $available_seasons = array_keys( $season_years );
@@ -78,23 +79,11 @@ $race_posts = get_posts(
 		'numberposts' => -1,
 		'post_status' => 'publish',
 		'meta_query'  => array(
-			'relation' => 'OR',
-			// Posts with explicit _tsr_season meta.
 			array(
 				'key'     => '_tsr_season',
 				'value'   => $current_season,
 				'compare' => '=',
 				'type'    => 'NUMERIC',
-			),
-			// Posts without explicit meta — fall back to publish year.
-			array(
-				'key'     => '_tsr_season',
-				'compare' => 'NOT EXISTS',
-			),
-		),
-		'date_query'  => array(
-			array(
-				'year' => $current_season,
 			),
 		),
 	)
