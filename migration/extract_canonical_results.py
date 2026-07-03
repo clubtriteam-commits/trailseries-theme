@@ -12,8 +12,8 @@ section to migration/data/canonical/.
 
 Principles (see README "Iron rules"):
   - Names are copied byte-for-byte after HTML whitespace collapse; the script
-    NEVER splits, re-encodes or "fixes" a name. Pages with a single combined
-    name column are skipped and reported, not guessed.
+    NEVER splits, re-encodes or "fixes" a name. A single combined name column
+    is stored whole in first_name (last_name stays empty) — never split.
   - Nothing is silently dropped: excluded rows, skipped sections and dropped
     columns all land in _manifest.csv / _issues.txt next to the output.
   - Output validates against the same rules as the PHP plugin (a finished
@@ -92,6 +92,15 @@ COLUMN_ALIASES: dict[str, set[str]] = {
 # Lap columns become split columns, keeping their label.
 # Matches "Lap", "Lap 1", "lap 11.5km", "Lap10.75" etc.
 LAP_COLUMN = re.compile(r"^lap[\s_]?\d*(?:[.,]\d+)?(?:\s*km)?$", re.IGNORECASE)
+# A cell that can only be part of a category label — a distance or a
+# gender/age-group word. A row made ENTIRELY of such cells is a category row
+# even when they are spread across columns ("(empty) | Мъже | (empty) | 5км").
+CATEGORY_TOKEN = re.compile(
+    r"^(?:\d+(?:[.,]\d+)?\s*(?:км|km|м(?![а-я])|m)"
+    r"|мъже|жени|момчета|момичета|деца|юноши|девойки"
+    r"|kids|men|women|boys|girls)$",
+    re.IGNORECASE,
+)
 # Pattern-based finish_time detection — catches race-named columns and
 # distance-prefixed columns that alias lookups can't handle exhaustively.
 # Matches: "15км/Финал", "10км / Finish", "17KM Finish", "ОББ Vertical Run: Финал",
@@ -129,8 +138,9 @@ DROPPED_COLUMNS = {
     "времe от първият", "времe от първия", "изоставане",
     "from first one",  # birthday-run-3 gap column
 }
-# A single combined-name column means the extractor would have to SPLIT a
-# name, which is forbidden — such sections are skipped and reported.
+# A single combined-name column is stored WHOLE in first_name — splitting a
+# name is forbidden, but skipping the section would lose the runners entirely.
+# Same treatment "Име"-only tables already get via the first_name alias.
 FULL_NAME_COLUMNS = {"name", "име и фамилия", "имена", "участник", "runner", "athlete"}
 
 STATUS_MARKERS = {
@@ -306,6 +316,23 @@ class Section:
         self.rows: list[dict] = []
         self.issues: list[str] = []
         self.has_time_column = False
+        self.headers: list[str] = []  # raw header texts, for finish-column inference
+        # Position whose header cell held the category text ("(empty) | жени 7км |
+        # номер | ..."). What that column holds — combined names (панчарево) or
+        # finish times (pasarel) — is only decidable from the data.
+        self.category_column: int | None = None
+        # True when the column mapping was guessed (headerless inference) or
+        # copied from a previous section (inherited). Rows without a finish
+        # time are EXCLUDED under such mappings instead of becoming DNF — a
+        # layout shift mid-table would otherwise fabricate DNF runners
+        # (birthday-run-results podium lists).
+        self.mapping_inferred = False
+        # Mapping of the preceding section, used as fallback when this section
+        # started from a bare category row and inference fails on its data.
+        self.parent_mapping: tuple | None = None
+        # Data rows seen before a mapping could be established; replayed once
+        # inference succeeds on a later row, or flushed at end of page.
+        self.pending_rows: list[list[str]] = []
 
 
 class PageExtractor:
@@ -344,8 +371,16 @@ class PageExtractor:
                 pending_category = non_empty[0]
                 continue
 
+            # Category label split across cells: "(empty) | Мъже | (empty) | 5км".
+            # Every non-empty cell must be a distance or gender/age-group token.
+            if len(non_empty) <= 2 and all(CATEGORY_TOKEN.match(t) for t in non_empty):
+                pending_category = " ".join(non_empty)
+                continue
+
             column_words = sum(1 for t in non_empty if is_column_word(t))
-            if column_words >= 3:
+            # A row made entirely of column words is a header even when short:
+            # iran-run-results uses two-column "Име | Време" mini-tables.
+            if column_words >= 3 or (len(non_empty) >= 2 and column_words == len(non_empty)):
                 category_position = None
                 if texts[0] and not is_column_word(texts[0]):
                     pending_category = texts[0]
@@ -362,15 +397,66 @@ class PageExtractor:
                 continue
 
             if current is None:
-                # data before any header row — cannot be mapped safely
+                # data before any header row — parse via headerless inference
                 orphan = self._new_section(pending_category)
                 orphan.issues.append(f"data row before any column-header row: {texts[:4]}...")
                 sections.append(orphan)
                 current = orphan
+                pending_category = ""
+                self._parse_data_row(current, texts)
                 continue
+            if pending_category and current.columns:
+                # A category row appeared mid-stream with no column-header row
+                # after it (kids sections, september-run-2). The new section's
+                # layout may differ from the previous one — data-driven
+                # inference gets first shot; the previous mapping is fallback.
+                inherited = self._new_section(pending_category)
+                inherited.parent_mapping = (
+                    list(current.columns),
+                    list(current.split_labels),
+                    list(current.split_positions),
+                    list(current.headers),
+                    current.has_time_column,
+                )
+                sections.append(inherited)
+                current = inherited
+                pending_category = ""
             self._parse_data_row(current, texts)
 
-        return [s for s in sections if s.rows or s.issues]
+        for section in sections:
+            self._flush_pending(section)
+
+        # Keep header-only sections too: a mapped section with zero rows is a
+        # standings table (or a bug) and must surface in the manifest, not vanish.
+        return [s for s in sections if s.rows or s.issues or s.columns]
+
+    def _flush_pending(self, section: Section) -> None:
+        """Resolve rows buffered while no mapping existed for the section.
+
+        If inference never succeeded, the previous section's mapping is the
+        last resort; rows it cannot place are excluded with an issue each
+        (never silently).
+        """
+        if not section.pending_rows:
+            return
+        buffered, section.pending_rows = section.pending_rows, []
+        if not section.columns and section.parent_mapping is not None:
+            cols, labels, positions, headers, has_time = section.parent_mapping
+            section.columns = list(cols)
+            section.split_labels = list(labels)
+            section.split_positions = list(positions)
+            section.headers = list(headers)
+            section.has_time_column = has_time
+            section.mapping_inferred = True
+            section.issues.append(
+                "column mapping inherited from previous section (category row without header row)"
+            )
+        if section.columns:
+            for row in buffered:
+                self._parse_data_row(section, row)
+        else:
+            for row in buffered:
+                section.issues.append(f"row without any usable column mapping excluded: {row[:4]}...")
 
     @staticmethod
     def _expand(cells: list[tuple[str, int]]) -> list[str]:
@@ -397,11 +483,9 @@ class PageExtractor:
                 # observed convention: category name sits where "place" belongs
                 field = "place"
             elif position == category_position == 1:
-                # category above a combined full-name column — splitting names
-                # is forbidden, so the whole section is skipped
-                section.issues.append(
-                    f'combined name column under category "{header}" — section skipped, names must not be split'
-                )
+                # category sits above a data column whose meaning (combined
+                # names or finish times) is resolved from the first data row
+                section.category_column = position
                 field = None
             elif not header:
                 field = None
@@ -412,9 +496,9 @@ class PageExtractor:
                     field = "__split__"
                 elif cf in FULL_NAME_COLUMNS:
                     section.issues.append(
-                        f'combined name column "{header}" — section skipped, names must not be split'
+                        f'combined name column "{header}" — full name stored in first_name'
                     )
-                    field = None
+                    field = "first_name"
                 elif cf in DROPPED_COLUMNS:
                     section.dropped.append(header)
                     field = None
@@ -434,12 +518,141 @@ class PageExtractor:
             if field == "finish_time":
                 section.has_time_column = True
             section.columns.append(field if field != "__split__" else None)
-        if any("names must not be split" in i for i in section.issues):
-            section.columns = []  # disable row parsing entirely
+        section.headers = list(headers)
+
+    def _infer_finish_column(self, section: Section, texts: list[str]) -> None:
+        """Recover a finish-time column the header row failed to label.
+
+        Two source patterns leave a section without a finish column even
+        though its data rows carry times: a mid-table header row whose
+        "Finish" cell was left empty (golyam-sechko-run23), and short-race
+        tables whose only time column is the distance itself ("5км"), which
+        parses as a split (buhovorun-2014). The data disambiguates: the LAST
+        position holding a valid time is the finish. Only positions whose
+        header was empty or a split label are eligible — dropped columns with
+        known headers (gap-to-leader, speed) must never be promoted.
+        """
+        candidates = [
+            pos for pos, text in enumerate(texts)
+            if pos < len(section.columns)
+            and section.columns[pos] is None
+            and (pos in section.split_positions
+                 or pos >= len(section.headers)
+                 or not section.headers[pos].strip())
+            and (TIME_RE.match(text.strip()) or TIME_MS_RE.match(text.strip()))
+        ]
+        if not candidates:
+            return
+        pos = candidates[-1]
+        section.columns[pos] = "finish_time"
+        section.has_time_column = True
+        if pos in section.split_positions:
+            idx = section.split_positions.index(pos)
+            section.split_positions.pop(idx)
+            label = section.split_labels.pop(idx)
+            section.issues.append(
+                f'finish-time column inferred from data at former split "{label}"'
+            )
+        else:
+            section.issues.append(f"finish-time column inferred from data at position {pos}")
+
+    def _resolve_category_column(self, section: Section, texts: list[str]) -> None:
+        """Decide what the column under a category header cell actually holds.
+
+        "(empty) | жени 7км | номер | време" puts the category above a combined
+        full-name column (панчарево-10-ноември), but "(empty) | 6.6км жени |
+        номер | Име | Фамилия" puts it above the finish-time column
+        (pasarel-run-16-06). The header cannot tell them apart — the data can.
+        """
+        pos = section.category_column
+        if pos is None:
+            return
+        value = texts[pos].strip() if pos < len(texts) else ""
+        if not value:
+            return  # wait for a row that has data at this position
+        section.category_column = None  # resolve exactly once
+        if TIME_RE.match(value) or TIME_MS_RE.match(value):
+            if not section.has_time_column:
+                section.columns[pos] = "finish_time"
+                section.has_time_column = True
+                section.issues.append(
+                    "category header sits above the time column — finish_time inferred"
+                )
+        else:
+            section.columns[pos] = "first_name"
+            section.issues.append(
+                "combined name column under category — full name stored in first_name"
+            )
+
+    @staticmethod
+    def _infer_headerless_mapping(texts: list[str]) -> list[str | None] | None:
+        """Column mapping for tables that have NO header row at all.
+
+        Several early pages (baba-marta-run-ranking, simeonovo-run-ranking14,
+        birthday-run-results) start data immediately after a category row:
+        "1 | 431 | Здравко Чандрев | 00:29:24". Only unambiguous shapes are
+        accepted: first cell must be place "1", at most 6 columns, exactly one
+        non-place integer column (bib), 1-2 text columns (combined name, or
+        first+last), and at least one time column (last one = finish). Anything
+        richer (extra int columns could be age or points, a third text column
+        could be a team) stays unmapped rather than guessed.
+        """
+        # Rows are colspan-padded to the enclosing table's width — trailing
+        # empty cells must not disqualify an otherwise simple row shape.
+        last_filled = max((i for i, t in enumerate(texts) if t.strip()), default=-1)
+        effective = texts[: last_filled + 1]
+        if not effective or effective[0].strip() != "1" or len(effective) > 6:
+            return None
+        kinds: list[str] = []
+        for t in effective:
+            s = t.strip()
+            if not s:
+                kinds.append("empty")
+            elif TIME_RE.match(s) or TIME_MS_RE.match(s):
+                kinds.append("time")
+            elif s.isdigit():
+                kinds.append("int")
+            else:
+                kinds.append("text")
+        times = [i for i, k in enumerate(kinds) if k == "time"]
+        texts_pos = [i for i, k in enumerate(kinds) if k == "text"]
+        ints = [i for i, k in enumerate(kinds) if k == "int" and i != 0]
+        if not times or not 1 <= len(texts_pos) <= 2 or len(ints) > 1:
+            return None
+        columns: list[str | None] = [None] * len(texts)
+        columns[0] = "place"
+        if ints:
+            columns[ints[0]] = "bib"
+        columns[texts_pos[0]] = "first_name"
+        if len(texts_pos) == 2:
+            columns[texts_pos[1]] = "last_name"
+        columns[times[-1]] = "finish_time"
+        return columns
 
     def _parse_data_row(self, section: Section, texts: list[str]) -> None:
         if not section.columns:
-            return
+            # No header row was ever seen — try a conservative data-driven
+            # mapping. Rows that fail (e.g. an empty place cell on the first
+            # row) are buffered and replayed once a later row succeeds;
+            # leftovers are flushed by _flush_pending at end of page.
+            inferred = self._infer_headerless_mapping(texts)
+            if inferred is None:
+                section.pending_rows.append(texts)
+                return
+            section.columns = inferred
+            section.has_time_column = True
+            section.mapping_inferred = True
+            section.issues.append(
+                "column mapping inferred from data — table has no header row"
+            )
+            buffered, section.pending_rows = section.pending_rows, []
+            for row in buffered:
+                self._parse_data_row(section, row)
+        self._resolve_category_column(section, texts)
+        if not section.has_time_column:
+            # Header gave no finish column — try to recover it from the data
+            # before writing the section off as a standings table.
+            self._infer_finish_column(section, texts)
         if not section.has_time_column:
             return  # standings/points table — section reported, rows not extracted
         width = len(section.columns)
@@ -460,9 +673,10 @@ class PageExtractor:
                 section.issues.append(f"row without a name excluded: {texts[:5]}...")
             return
 
-        # Skip placeholder / template rows left by race organisers in tables
-        if first_name.casefold() in {"first name", "first", "участник"} or \
-                last_name.casefold() in {"last name", "фамилия"}:
+        # Skip placeholder / template rows left by race organisers in tables,
+        # and header rows that slipped past header detection.
+        if first_name.casefold() in {"first name", "first", "участник", "name", "име"} or \
+                last_name.casefold() in {"last name", "фамилия", "surname"}:
             return
 
         place_raw = field("place")
@@ -483,6 +697,13 @@ class PageExtractor:
                     # Row order is 1-based and counted from already-committed rows.
                     place = len(section.rows) + 1
             else:
+                if section.mapping_inferred:
+                    # Under a guessed/inherited mapping a missing time more
+                    # likely means a layout shift than a DNF — never fabricate.
+                    section.issues.append(
+                        f"row without finish time under inferred mapping excluded: {texts[:4]}..."
+                    )
+                    return
                 # Named runner with no time and no explicit status: treat as DNF.
                 # DNS runners are rarely listed; listed runners with no time are almost
                 # always non-finishers (DNF).
@@ -542,6 +763,7 @@ def main() -> int:
     manifest: list[dict] = []
     issue_lines: list[str] = []
     used_names: set[str] = set()
+    processed_items: set[tuple[str, str]] = set()
     written = skipped_oos = 0
 
     for item in ET.parse(args.xml).getroot().findall("./channel/item"):
@@ -557,6 +779,18 @@ def main() -> int:
         if "out of scope" in listed["notes"]:
             skipped_oos += 1
             continue
+
+        # The same page can appear twice in the WXR (e.g. lyulin-trail-run25:
+        # a published page AND a published post with identical slug + content).
+        # Processing both doubles every section — keep the first occurrence.
+        dup_key = (title, slug)
+        if dup_key in processed_items:
+            issue_lines.append(
+                f"{slug or slugify(title)} [duplicate]: WXR item appears again "
+                f"(post_type={post_type}) — skipped"
+            )
+            continue
+        processed_items.add(dup_key)
 
         content = item.findtext("content:encoded", "", NS) or ""
         page_slug = slug or slugify(title)

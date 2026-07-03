@@ -47,9 +47,10 @@ HEADLINE_SHORTCODE = re.compile(r"\[headline[^\]]*\](.*?)\[/headline\]", re.DOTA
 KNOWN_COLUMN_WORDS = {
     "#", "no", "no.", "място", "номер", "име", "фамилия", "отбор", "възраст",
     "пол", "време", "точки", "подиуми", "км/ч", "km/ч", "km/h", "статус",
-    "rank", "place", "first name", "last name", "name", "team", "club",
-    "country", "age", "gender", "sex", "number", "bib", "finish", "time",
-    "points", "podiums", "status", "категория", "category",
+    "rank", "place", "first name", "last name", "name", "surname", "team",
+    "club", "country", "age", "gender", "sex", "number", "bib", "finish",
+    "time", "points", "podiums", "status", "категория", "category",
+    "№", "final", "gap",
 }
 SPLIT_COLUMN = re.compile(r"^\d+([.,]\d+)?\s*(км|km)$", re.IGNORECASE)
 
