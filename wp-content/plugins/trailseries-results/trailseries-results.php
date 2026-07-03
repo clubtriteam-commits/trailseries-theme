@@ -32,6 +32,7 @@ require TSR_PLUGIN_DIR . 'includes/class-repository.php';
 require TSR_PLUGIN_DIR . 'includes/class-renderer.php';
 require TSR_PLUGIN_DIR . 'includes/class-post-types.php';
 require TSR_PLUGIN_DIR . 'includes/template-functions.php';
+require TSR_PLUGIN_DIR . 'includes/redirects.php';
 
 add_action( 'init', array( TSR_Post_Types::class, 'register' ) );
 
