@@ -81,9 +81,8 @@ $race_posts = get_posts(
 		'meta_query'  => array(
 			array(
 				'key'     => '_tsr_season',
-				'value'   => $current_season,
+				'value'   => (string) $current_season,
 				'compare' => '=',
-				'type'    => 'NUMERIC',
 			),
 		),
 	)
