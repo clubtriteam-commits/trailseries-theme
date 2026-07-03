@@ -22,8 +22,8 @@
  *            → "Xmas Run"). Posts with no usable name from either source are
  *            skipped entirely (fixes empty bullets in old seasons).
  *
- * Permalinks use home_url( '/' . post_name . '/' ) to bypass the CPT rewrite
- * placeholder ('results') in class-post-types.php (ADR-003 pending).
+ * Permalinks use get_permalink() — the CPT rewrite slug is '' (no prefix),
+ * so posts live at /{post_name}/ in line with the old site's URL structure.
  *
  * @package exhibz-child
  */
@@ -300,8 +300,7 @@ krsort( $grouped, SORT_NUMERIC );
 								}
 								usort( $cats, static fn( $a, $b ) => strcmp( $a->post_title, $b->post_title ) );
 
-								// Direct URL — bypasses CPT rewrite placeholder (ADR-003).
-								$primary_url = home_url( '/' . $primary->post_name . '/' );
+								$primary_url = get_permalink( $primary );
 								?>
 
 								<li class="tsr-event-item">
@@ -319,7 +318,7 @@ krsort( $grouped, SORT_NUMERIC );
 												$cat_label = false !== $cat_sep
 													? mb_substr( $cat_post->post_title, $cat_sep + 3 )
 													: $cat_post->post_title;
-												$cat_url   = home_url( '/' . $cat_post->post_name . '/' );
+												$cat_url   = get_permalink( $cat_post );
 												?>
 												<li>
 													<a class="tsr-cat-pill"

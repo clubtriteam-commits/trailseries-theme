@@ -38,13 +38,15 @@ final class TSR_Post_Types {
 					'edit_item'     => __( 'Edit Race Result', 'trailseries-results' ),
 				),
 				'public'       => true,
-				'has_archive'  => true,
+				'has_archive'  => false,       // Archive is the /rezultati/ page template (page-rezultati.php).
 				'show_in_rest' => true,
 				'menu_icon'    => 'dashicons-list-view',
 				'supports'     => array( 'title', 'editor' ),
-				// Placeholder — must be aligned with the legacy URL inventory (ADR-003).
+				// Empty slug = no URL prefix: posts live at /{post_name}/ (ADR-003).
+				// The built-in archive is disabled — an auto-archive with empty slug
+				// would resolve to '/' and conflict with the front page.
 				'rewrite'      => array(
-					'slug'       => 'results',
+					'slug'       => '',
 					'with_front' => false,
 				),
 			)

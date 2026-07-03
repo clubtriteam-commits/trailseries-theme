@@ -1,7 +1,8 @@
 # ADR-003: Legacy URLs are preserved byte-for-byte, verified by crawl diff
 
-- Status: Accepted
+- Status: Implemented
 - Date: 2026-07-02
+- Resolved: 2026-07-03
 
 ## Context
 
@@ -27,12 +28,17 @@ content type (results page / race page / news / other).
 (sanitize/deduplicate) must never run on a legacy URL — the migration tooling
 sets slugs verbatim and fails on collision instead of appending `-2`.
 
-**3. Rewrite structure matches the old paths.** The `ts_result` CPT's rewrite
-config (currently a `results` placeholder in `TSR_Post_Types`) will be set to
-reproduce the old URL shape exactly once the inventory establishes what that
-shape is — including Cyrillic/percent-encoded slugs, trailing-slash behavior,
-and any date or hierarchy components. If old results URLs don't share a common
-prefix, custom rewrite rules per pattern are added rather than moving pages.
+**3. Rewrite structure matches the old paths.** The URL inventory (172 result
+URLs) confirms that all race result pages live at the root: `/{slug}/` with no
+common prefix. The `ts_result` CPT is registered with `'rewrite' => ['slug' =>
+'', 'with_front' => false]`, which places posts at `/{post_name}/` and
+generates the rewrite rule `^([^/]+)/?$`. The built-in CPT archive is disabled
+(`has_archive => false`) because an empty-slug archive would resolve to `/`
+(front-page conflict); the Резултати index lives at the `/rezultati/` WP Page
+with template `page-rezultati.php` instead. Cyrillic slugs are stored verbatim
+as `post_name` (percent-encoding is handled transparently by WP's rewrite
+engine). The single depth-1 URL (`/класиране/генерално-класиране/`) is a
+standings page, not a ts_result post — it is handled by the redirect map.
 
 **4. Verification is automated, on staging, before cutover.** A script fetches
 every inventory URL against `stg.trailseries.bg` and asserts a 200 (or an
@@ -56,6 +62,7 @@ entries per rule 5.
 - Negative: new-site URL aesthetics are constrained by 13-year-old choices; the
   CPT rewrite setup may end up less idiomatic than a greenfield design.
   Accepted — URLs are an interface, and this one has users.
-- Open until inventory exists: the exact old URL patterns, and therefore the
-  final rewrite configuration. The `results` slug in code is a placeholder and
-  must not ship to production.
+- Resolved: the URL inventory confirmed top-level `/{slug}/` structure; the CPT
+  rewrite was updated in `class-post-types.php` (commit on 2026-07-03). Staging
+  must flush rewrite rules after plugin reactivation (`wp rewrite flush`) before
+  the crawl-diff verification pass.
