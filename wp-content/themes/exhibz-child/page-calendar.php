@@ -4,9 +4,10 @@
  *
  * Template for the Календар page (slug: calendar).
  *
- * Renders the EventON calendar via the [add_eventon] shortcode. If EventON
- * is not active the shortcode is left unexpanded by WordPress, so a guard
- * shows a friendly notice instead.
+ * Renders upcoming events as an EventON list (next 6 months, past events
+ * hidden) via the [add_eventon] shortcode. If EventON is not active the
+ * shortcode is left unexpanded by WordPress, so a guard shows a friendly
+ * notice instead.
  *
  * @package exhibz-child
  */
@@ -31,7 +32,7 @@ get_header();
 
 		<section class="tsr-prose-section">
 			<?php if ( shortcode_exists( 'add_eventon' ) ) : ?>
-				<?php echo do_shortcode( '[add_eventon]' ); ?>
+				<?php echo do_shortcode( '[add_eventon style="list" number_of_months="6" hide_past="yes"]' ); ?>
 			<?php else : ?>
 				<div class="tsr-notice">
 					<p>Календарът временно не е достъпен. Следете новините ни за предстоящите състезания.</p>
