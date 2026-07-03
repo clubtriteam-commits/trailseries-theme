@@ -806,6 +806,113 @@ Text Domain:  exhibz-child
 	text-decoration: none;
 }
 
+/* ── Резултати archive — year accordion ─────────────────────────────────────── */
+.tsr-results-archive {
+	margin-top: 2rem;
+}
+
+.tsr-year-group {
+	border: 1px solid rgba(0, 170, 221, 0.18);
+	border-radius: 8px;
+	margin-bottom: 1rem;
+	overflow: hidden;
+}
+
+.tsr-year-group__summary {
+	display:         flex;
+	align-items:     center;
+	justify-content: space-between;
+	gap:             1rem;
+	padding:         0.85rem 1.25rem;
+	background:      var(--tsr-navy);
+	color:           #fff;
+	cursor:          pointer;
+	list-style:      none;
+	user-select:     none;
+}
+/* Remove the default disclosure triangle in all browsers */
+.tsr-year-group__summary::-webkit-details-marker { display: none; }
+.tsr-year-group__summary::marker               { display: none; }
+
+.tsr-year-group__summary::after {
+	content:     '▸';
+	font-size:   0.85em;
+	transition:  transform 0.2s ease;
+	flex-shrink: 0;
+}
+.tsr-year-group[open] > .tsr-year-group__summary::after {
+	transform: rotate(90deg);
+}
+
+.tsr-year-group__year {
+	font-size:   1.15rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+}
+
+.tsr-year-group__count {
+	font-size:   0.8rem;
+	opacity:     0.7;
+	white-space: nowrap;
+}
+
+/* ── Event list inside each year ── */
+.tsr-event-list {
+	list-style: none;
+	margin:     0;
+	padding:    0.5rem 0 0.75rem;
+}
+
+.tsr-event-item {
+	padding:       0.55rem 1.25rem;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.tsr-event-item:last-child {
+	border-bottom: none;
+}
+
+.tsr-event-item__name {
+	display:     inline-block;
+	font-weight: 600;
+	font-size:   0.95rem;
+	color:       var(--tsr-navy);
+	text-decoration: none;
+	margin-bottom: 0.3rem;
+}
+.tsr-event-item__name:hover {
+	color:           var(--tsr-blue);
+	text-decoration: underline;
+}
+
+/* ── Category pill links ── */
+.tsr-cat-list {
+	display:    flex;
+	flex-wrap:  wrap;
+	gap:        0.4rem 0.5rem;
+	list-style: none;
+	margin:     0;
+	padding:    0;
+}
+
+.tsr-cat-pill {
+	display:         inline-block;
+	padding:         0.2em 0.7em;
+	border-radius:   999px;
+	font-size:       0.75rem;
+	font-weight:     500;
+	background:      rgba(0, 170, 221, 0.1);
+	color:           var(--tsr-navy);
+	text-decoration: none;
+	border:          1px solid rgba(0, 170, 221, 0.3);
+	transition:      background 0.15s ease, color 0.15s ease;
+	white-space:     nowrap;
+}
+.tsr-cat-pill:hover {
+	background: var(--tsr-blue);
+	color:      #fff;
+	border-color: var(--tsr-blue);
+}
+
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
 	/* Prevent the header from overflowing on small screens. */
