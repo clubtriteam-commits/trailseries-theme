@@ -1,5 +1,7 @@
 <?php
 /**
+ * Template Name: Рекорди
+ *
  * Template for the Рекорди page (slug: rekordi).
  *
  * Course records — fastest recorded finish time per event name + distance.

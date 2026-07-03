@@ -1,5 +1,7 @@
 <?php
 /**
+ * Template Name: Класирания
+ *
  * Template for the Класирания page (slug: klasiraniya).
  *
  * Season standings — accumulated points per athlete across all races in a

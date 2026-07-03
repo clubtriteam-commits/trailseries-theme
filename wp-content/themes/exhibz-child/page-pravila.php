@@ -1,5 +1,7 @@
 <?php
 /**
+ * Template Name: Правила
+ *
  * Template for the Правила page (slug: pravila).
  *
  * Static content — the scoring system is explained here.

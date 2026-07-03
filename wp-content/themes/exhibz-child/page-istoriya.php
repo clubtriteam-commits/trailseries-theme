@@ -1,5 +1,7 @@
 <?php
 /**
+ * Template Name: История
+ *
  * Template for the История page (slug: istoriya).
  *
  * Static timeline from 2012 to the current season.
