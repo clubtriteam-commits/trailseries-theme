@@ -1,0 +1,468 @@
+﻿old_url,new_url,status_code,notes
+https://trailseries.bg/,https://trailseries.bg/,200,front page — preserved
+https://trailseries.bg/%d0%b4%d0%b0%d1%82%d0%b0%d1%82%d0%b0-%d0%b7%d0%b0-%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-%d0%bf%d0%b0%d0%bb%d0%b0%d0%ba%d0%b0%d1%80%d0%b8%d1%8f-%d1%81%d0%b5-%d0%bc%d0%b5/,https://trailseries.bg/%D0%B4%D0%B0%D1%82%D0%B0%D1%82%D0%B0-%D0%B7%D0%B0-%D0%BF%D0%BE%D0%BB%D1%83%D0%BC%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%BD-%D0%BF%D0%B0%D0%BB%D0%B0%D0%BA%D0%B0%D1%80%D0%B8%D1%8F-%D1%81%D0%B5-%D0%BC%D0%B5/,200,news post — slug preserved by post migration
+https://trailseries.bg/%d0%b4%d0%be%d0%b1%d1%80%d0%b8-%d0%bd%d0%be%d0%b2%d0%b8%d0%bd%d0%b8-%d0%bf%d1%80%d0%be%d0%b1%d0%bb%d0%b5%d0%bc%d1%8a%d1%82-%d1%81-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b0%d1%86%d0%b8%d0%b8/,https://trailseries.bg/%D0%B4%D0%BE%D0%B1%D1%80%D0%B8-%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8-%D0%BF%D1%80%D0%BE%D0%B1%D0%BB%D0%B5%D0%BC%D1%8A%D1%82-%D1%81-%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D0%B8/,200,news post — slug preserved by post migration
+https://trailseries.bg/%d0%ba%d0%b0%d0%ba-%d0%b4%d0%b0-%d1%81%d0%bb%d0%b5%d0%b4%d0%b8%d1%82%d0%b5-%d0%b2%d1%81%d0%b8%d1%87%d0%ba%d0%b8-%d0%bd%d0%be%d0%b2%d0%b8%d0%bd%d0%b8-%d0%be%d1%82-%d1%84%d0%b5%d0%b9%d1%81%d0%b1%d1%83/,https://trailseries.bg/%D0%BA%D0%B0%D0%BA-%D0%B4%D0%B0-%D1%81%D0%BB%D0%B5%D0%B4%D0%B8%D1%82%D0%B5-%D0%B2%D1%81%D0%B8%D1%87%D0%BA%D0%B8-%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8-%D0%BE%D1%82-%D1%84%D0%B5%D0%B9%D1%81%D0%B1%D1%83/,200,news post — slug preserved by post migration
+https://trailseries.bg/%d0%ba%d0%b0%d0%bb%d0%b5%d0%bd%d0%b4%d0%b0%d1%80-2024/,https://trailseries.bg/%D0%BA%D0%B0%D0%BB%D0%B5%D0%BD%D0%B4%D0%B0%D1%80-2024/,200,news post — slug preserved by post migration
+https://trailseries.bg/%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5-malak-sechko-run/,https://trailseries.bg/%D0%BA%D0%BB%D0%B0%D1%81%D0%B8%D1%80%D0%B0%D0%BD%D0%B5-malak-sechko-run/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/%d0%be%d0%b1%d0%b1-vertical-run-results/,https://trailseries.bg/%D0%BE%D0%B1%D0%B1-vertical-run-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-palakaria23-results/,https://trailseries.bg/%D0%BF%D0%BE%D0%BB%D1%83%D0%BC%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%BD-palakaria23-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-palakaria24-ranking/,https://trailseries.bg/%D0%BF%D0%BE%D0%BB%D1%83%D0%BC%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%BD-palakaria24-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/%d0%bf%d1%80%d0%b8%d0%b7%d1%8c%d0%be%d1%80%d0%b8%d1%82%d0%b5-%d0%be%d1%82-golyamsechkorun-19-01-2014/,https://trailseries.bg/%D0%BF%D1%80%D0%B8%D0%B7%D1%8C%D0%BE%D1%80%D0%B8%D1%82%D0%B5-%D0%BE%D1%82-golyamsechkorun-19-01-2014/,200,news post — slug preserved by post migration
+https://trailseries.bg/%d0%bf%d1%80%d0%be%d0%b1%d0%bb%d0%b5%d0%bc-%d1%81-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b0%d1%86%d0%b8%d0%b8%d1%82%d0%b5-%d0%b2-drace-bg/,https://trailseries.bg/%D0%BF%D1%80%D0%BE%D0%B1%D0%BB%D0%B5%D0%BC-%D1%81-%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D0%B8%D1%82%D0%B5-%D0%B2-drace-bg/,200,news post — slug preserved by post migration
+https://trailseries.bg/%d0%bf%d1%80%d0%be%d0%bc%d0%b5%d0%bd%d0%b8-%d1%81%d0%b2%d1%8a%d1%80%d0%b7%d0%b0%d0%bd%d0%b8-%d1%81-covid-19/,https://trailseries.bg/%D0%BF%D1%80%D0%BE%D0%BC%D0%B5%D0%BD%D0%B8-%D1%81%D0%B2%D1%8A%D1%80%D0%B7%D0%B0%D0%BD%D0%B8-%D1%81-covid-19/,200,news post — slug preserved by post migration
+https://trailseries.bg/%d0%bf%d1%80%d0%be%d0%bc%d1%8f%d0%bd%d0%b0-%d0%b2-%d1%82%d1%80%d0%b0%d1%81%d0%b5%d1%82%d0%be-%d0%bd%d0%b0-cactus-run-%d0%bd%d0%b0%d0%bb%d0%be%d0%b6%d0%b5%d0%bd%d0%b0-%d0%be%d1%82-%d1%81%d1%82%d0%be/,https://trailseries.bg/%D0%BF%D1%80%D0%BE%D0%BC%D1%8F%D0%BD%D0%B0-%D0%B2-%D1%82%D1%80%D0%B0%D1%81%D0%B5%D1%82%D0%BE-%D0%BD%D0%B0-cactus-run-%D0%BD%D0%B0%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B0-%D0%BE%D1%82-%D1%81%D1%82%D0%BE/,200,news post — slug preserved by post migration
+https://trailseries.bg/%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8-%d0%be%d1%82-running-zone-challenge/,https://trailseries.bg/%D1%80%D0%B5%D0%B7%D1%83%D0%BB%D1%82%D0%B0%D1%82%D0%B8-%D0%BE%D1%82-running-zone-challenge/,200,news post — slug preserved by post migration
+https://trailseries.bg/50-%d0%bd%d0%b0%d0%bc%d0%b0%d0%bb%d0%b5%d0%bd%d0%b8%d1%8f-%d0%b2-sls/,https://trailseries.bg/50-%D0%BD%D0%B0%D0%BC%D0%B0%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F-%D0%B2-sls/,200,news post — slug preserved by post migration
+https://trailseries.bg/7-hills-run-2024-ranking/,https://trailseries.bg/7-hills-run-2024-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/7-hills-run15-ranking/,https://trailseries.bg/7-hills-run15-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/7-hills-run21-results/,https://trailseries.bg/7-hills-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/7-hills-run22-results/,https://trailseries.bg/7-hills-run22-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/7-hills-run23-results/,https://trailseries.bg/7-hills-run23-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/7-hills-run25-results/,https://trailseries.bg/7-hills-run25-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/7hills-run18-ranking/,https://trailseries.bg/7hills-run18-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/7hills-run19-results/,https://trailseries.bg/7hills-run19-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/baba-marta-run19-ranking/,https://trailseries.bg/baba-marta-run19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/baba-marta-run21-results/,https://trailseries.bg/baba-marta-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/baba-marta-run22-results/,https://trailseries.bg/baba-marta-run22-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/baba-marta-run23-results/,https://trailseries.bg/baba-marta-run23-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/baba-marta-run24-ranking/,https://trailseries.bg/baba-marta-run24-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/baba-marta-run25-results/,https://trailseries.bg/baba-marta-run25-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/baba-marta-run26-results/,https://trailseries.bg/baba-marta-run26-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/bankya-summer-run-ranking/,https://trailseries.bg/bankya-summer-run-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run-3-results/,https://trailseries.bg/birthday-run-3-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run18-results/,https://trailseries.bg/birthday-run18-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run19-ranking/,https://trailseries.bg/birthday-run19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run2-results/,https://trailseries.bg/birthday-run2-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run20-results/,https://trailseries.bg/birthday-run20-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run21-results/,https://trailseries.bg/birthday-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run22-2-results/,https://trailseries.bg/birthday-run22-2-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run23-results/,https://trailseries.bg/birthday-run23-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/birthday-run24-ranking/,https://trailseries.bg/birthday-run24-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/boyana-x-trails-results/,https://trailseries.bg/boyana-x-trails-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/boyana-x-trails21-results/,https://trailseries.bg/boyana-x-trails21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/buhovo-26-may/,https://trailseries.bg/buhovo-26-may/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/buhovo-half-marathon25-results/,https://trailseries.bg/buhovo-half-marathon25-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/buhovo-run15-ranking/,https://trailseries.bg/buhovo-run15-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/buhovorun-ranking-2014/,https://trailseries.bg/buhovorun-ranking-2014/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/cactus-run-10-11-2013/,https://trailseries.bg/cactus-run-10-11-2013/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/cactus-run18-ranking/,https://trailseries.bg/cactus-run18-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/calendar/,https://trailseries.bg/calendar/,200,preserved — becomes the new calendar page
+https://trailseries.bg/golyam-sechko-run-2020-results/,https://trailseries.bg/golyam-sechko-run-2020-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyam-sechko-run19-ranking/,https://trailseries.bg/golyam-sechko-run19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyam-sechko-run21-results/,https://trailseries.bg/golyam-sechko-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyam-sechko-run22-results/,https://trailseries.bg/golyam-sechko-run22-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyam-sechko-run23-ranking/,https://trailseries.bg/golyam-sechko-run23-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyam-sechko-run24-ranking/,https://trailseries.bg/golyam-sechko-run24-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyam-sechko-run25-ranking/,https://trailseries.bg/golyam-sechko-run25-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyam-sechko-run26-results/,https://trailseries.bg/golyam-sechko-run26-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyam-secko-run15-ranking/,https://trailseries.bg/golyam-secko-run15-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/golyamsechkorun-04-results/,https://trailseries.bg/golyamsechkorun-04-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/heat-stroke-run-14-07-2013/,https://trailseries.bg/heat-stroke-run-14-07-2013/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/iran-run-results15/,https://trailseries.bg/iran-run-results15/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/iran-run18-results/,https://trailseries.bg/iran-run18-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/iran-run19-results/,https://trailseries.bg/iran-run19-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run-2025-%d1%81-%d0%bd%d0%be%d0%b2%d0%b0-%d0%b4%d0%b0%d1%82%d0%b0/,https://trailseries.bg/lyulin-trail-run-2025-%D1%81-%D0%BD%D0%BE%D0%B2%D0%B0-%D0%B4%D0%B0%D1%82%D0%B0/,200,news post — slug preserved by post migration
+https://trailseries.bg/lyulin-trail-run18-ranking/,https://trailseries.bg/lyulin-trail-run18-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run19-ranking/,https://trailseries.bg/lyulin-trail-run19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run20-ranking/,https://trailseries.bg/lyulin-trail-run20-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run21-results/,https://trailseries.bg/lyulin-trail-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run22-results/,https://trailseries.bg/lyulin-trail-run22-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run23-results/,https://trailseries.bg/lyulin-trail-run23-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run24-ranking/,https://trailseries.bg/lyulin-trail-run24-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run25-results/,https://trailseries.bg/lyulin-trail-run25-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/lyulin-trail-run26-ranking/,https://trailseries.bg/lyulin-trail-run26-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/malak-sechko-run19-ranking/,https://trailseries.bg/malak-sechko-run19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/malak-sechko-run20-results/,https://trailseries.bg/malak-sechko-run20-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/malak-sechko-run21-results/,https://trailseries.bg/malak-sechko-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/malak-sechko-run22-results/,https://trailseries.bg/malak-sechko-run22-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/malak-sechko-run23-ranking/,https://trailseries.bg/malak-sechko-run23-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/malak-sechko-run24-results/,https://trailseries.bg/malak-sechko-run24-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/malak-sechko-run25-results/,https://trailseries.bg/malak-sechko-run25-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/malak-sechko-run26-results/,https://trailseries.bg/malak-sechko-run26-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/news/,https://trailseries.bg/news/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/palakaria-2018-ranking/,https://trailseries.bg/palakaria-2018-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/palakaria-ranking/,https://trailseries.bg/palakaria-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/palakaria19-ranking/,https://trailseries.bg/palakaria19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/palakaria22-results/,https://trailseries.bg/palakaria22-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/pancharevo-night-run-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,https://trailseries.bg/pancharevo-night-run-%D0%BA%D0%BB%D0%B0%D1%81%D0%B8%D1%80%D0%B0%D0%BD%D0%B5/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/pancharevo-night-run18-ranking/,https://trailseries.bg/pancharevo-night-run18-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/pancharevo-night-run19-ranking/,https://trailseries.bg/pancharevo-night-run19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/pancharevo-night-run21-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://trailseries.bg/pancharevo-night-run21-%D1%80%D0%B5%D0%B7%D1%83%D0%BB%D1%82%D0%B0%D1%82%D0%B8/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/pasare-results/,https://trailseries.bg/pasare-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/results-iran-run15/,https://trailseries.bg/results-iran-run15/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/rossignol-navliza-v-planinskoto-byagane/,https://trailseries.bg/rossignol-navliza-v-planinskoto-byagane/,200,news post — slug preserved by post migration
+https://trailseries.bg/simeonovo-run-ranking/,https://trailseries.bg/simeonovo-run-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/simeonovo-run18-results/,https://trailseries.bg/simeonovo-run18-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/simeonovo-run19-ranking/,https://trailseries.bg/simeonovo-run19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/simeonovo-run20-results/,https://trailseries.bg/simeonovo-run20-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/simeonovo-run21-results/,https://trailseries.bg/simeonovo-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/simeonovo-run23-results/,https://trailseries.bg/simeonovo-run23-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/spodeleno-patuvane/,https://trailseries.bg/spodeleno-patuvane/,200,news post — slug preserved by post migration
+https://trailseries.bg/the-cactus-run-results14/,https://trailseries.bg/the-cactus-run-results14/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run15-results/,https://trailseries.bg/the-cactus-run15-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run19-results/,https://trailseries.bg/the-cactus-run19-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run20-ranking/,https://trailseries.bg/the-cactus-run20-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run21-results/,https://trailseries.bg/the-cactus-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run22-ranking/,https://trailseries.bg/the-cactus-run22-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run23-results/,https://trailseries.bg/the-cactus-run23-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run24-results/,https://trailseries.bg/the-cactus-run24-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run25-results/,https://trailseries.bg/the-cactus-run25-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-chrismas-run19-ranking/,https://trailseries.bg/the-chrismas-run19-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-christmas-run-ranking14/,https://trailseries.bg/the-christmas-run-ranking14/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-christmas-run-ranking23/,https://trailseries.bg/the-christmas-run-ranking23/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-christmas-run18-ranking/,https://trailseries.bg/the-christmas-run18-ranking/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-christmas-run20-results/,https://trailseries.bg/the-christmas-run20-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-christmas-run21-results/,https://trailseries.bg/the-christmas-run21-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-christmas-run22-results/,https://trailseries.bg/the-christmas-run22-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-christmas-run24-results/,https://trailseries.bg/the-christmas-run24-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/the-christmas-run25-results/,https://trailseries.bg/the-christmas-run25-results/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/thechristmasrun/,https://trailseries.bg/thechristmasrun/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/trail-series-edna-ot-8-partnership-2026/,https://trailseries.bg/trail-series-edna-ot-8-partnership-2026/,200,news post — slug preserved by post migration
+https://trailseries.bg/zero-to-hero-%d1%81-%d0%b1%d0%b5%d0%bd%d0%b4%d0%b6%d0%b0%d0%bc%d0%b8%d0%bd-%d0%ba%d0%b5%d0%b9%d0%bd/,https://trailseries.bg/zero-to-hero-%D1%81-%D0%B1%D0%B5%D0%BD%D0%B4%D0%B6%D0%B0%D0%BC%D0%B8%D0%BD-%D0%BA%D0%B5%D0%B9%D0%BD/,200,news post — slug preserved by post migration
+https://trailseries.bg/zero-to-hero-%d1%81-%d1%85%d1%80%d0%b8%d1%81%d1%82%d0%be-%d1%86%d0%b2%d0%b5%d1%82%d0%ba%d0%be%d0%b2/,https://trailseries.bg/zero-to-hero-%D1%81-%D1%85%D1%80%D0%B8%D1%81%D1%82%D0%BE-%D1%86%D0%B2%D0%B5%D1%82%D0%BA%D0%BE%D0%B2/,200,news post — slug preserved by post migration
+https://trailseries.bg/zero-to-hero-%d1%81-%d1%86%d0%b2%d0%b5%d1%82%d0%b5%d0%bb%d0%b8%d0%bd%d0%b0-%d1%82%d1%80%d0%b8%d1%87%d0%ba%d0%be%d0%b2%d0%b0-xmas-edition/,https://trailseries.bg/zero-to-hero-%D1%81-%D1%86%D0%B2%D0%B5%D1%82%D0%B5%D0%BB%D0%B8%D0%BD%D0%B0-%D1%82%D1%80%D0%B8%D1%87%D0%BA%D0%BE%D0%B2%D0%B0-xmas-edition/,200,news post — slug preserved by post migration
+https://trailseries.bg/zero-to-hero-s-ivaylo-hadjiev/,https://trailseries.bg/zero-to-hero-s-ivaylo-hadjiev/,200,news post — slug preserved by post migration
+https://trailseries.bg/zero-to-hero-s-konstantin-ivanov/,https://trailseries.bg/zero-to-hero-s-konstantin-ivanov/,200,news post — slug preserved by post migration
+https://trailseries.bg/zero-to-hero-with-benjamin-kane/,https://trailseries.bg/zero-to-hero-with-benjamin-kane/,200,news post — slug preserved by post migration
+https://trailseries.bg/zheleznitsa-2-0-20-jan/,https://trailseries.bg/zheleznitsa-2-0-20-jan/,200,results page — slug preserved (iron rule 3)
+https://trailseries.bg/%D0%B7%D0%B0-trail-series/calendar/,https://trailseries.bg/calendar/,301,old calendar → new calendar
+https://trailseries.bg/%D0%BA%D0%BB%D0%B0%D1%81%D0%B8%D1%80%D0%B0%D0%BD%D0%B5/%D0%B3%D0%B5%D0%BD%D0%B5%D1%80%D0%B0%D0%BB%D0%BD%D0%BE-%D0%BA%D0%BB%D0%B0%D1%81%D0%B8%D1%80%D0%B0%D0%BD%D0%B5/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%D1%81%D0%B5%D0%B7%D0%BE%D0%BD-1-%D1%80%D0%B5%D0%B7%D1%83%D0%BB%D1%82%D0%B0%D1%82%D0%B8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%D1%81%D0%B5%D0%B7%D0%BE%D0%BD-2-%D1%80%D0%B5%D0%B7%D1%83%D0%BB%D1%82%D0%B0%D1%82%D0%B8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%D1%81%D0%B5%D0%B7%D0%BE%D0%BD-3-%D1%80%D0%B5%D0%B7%D1%83%D0%BB%D1%82%D0%B0%D1%82%D0%B8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%D1%81%D0%B5%D0%B7%D0%BE%D0%BD-4-%D1%80%D0%B5%D0%B7%D1%83%D0%BB%D1%82%D0%B0%D1%82%D0%B8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%D1%81%D0%B5%D0%B7%D0%BE%D0%BD-5-%D1%80%D0%B5%D0%B7%D1%83%D0%BB%D1%82%D0%B0%D1%82%D0%B8/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%D1%81%D0%B5%D0%B7%D0%BE%D0%BD-6-%D1%80%D0%B5%D0%B7%D1%83%D0%BB%D1%82%D0%B0%D1%82%D0%B8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d0%b2%d1%82%d0%be%d1%80%d0%b8-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-20132014/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d0%b3%d0%b5%d0%bd%d0%b5%d1%80%d0%b0%d0%bb%d0%bd%d0%be-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-8/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%d0%b3%d0%b5%d0%bd%d0%b5%d1%80%d0%b0%d0%bb%d0%bd%d0%be-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b522/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%d0%b7%d0%b0-trail-series/,https://trailseries.bg/istoriya/,301,about page → history page
+https://trailseries.bg/%d0%b7%d0%b0-trail-series/rules/,https://trailseries.bg/pravila/,301,old rules page → new rules page
+https://trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2022/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2023/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2024/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-10-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-10/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-11-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-11/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-12-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-12/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-13-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-13/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-4/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-5/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-6-%d0%b3%d0%b5%d0%bd%d0%b5%d1%80%d0%b0%d0%bb%d0%bd%d0%be-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-6/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-7-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-7/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-8-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-9-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-9/,https://trailseries.bg/klasiraniya/,301,season hub/standings → season standings page
+https://trailseries.bg/%d1%82%d1%80%d0%b5%d1%82%d0%b8-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-20142015/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/7-hills-run15/,https://trailseries.bg/7-hills-run15-ranking/,301,event landing page → results page 7-hills-run15-ranking
+https://trailseries.bg/7-hills-run21/,https://trailseries.bg/7-hills-run21-results/,301,event landing page → results page 7-hills-run21-results
+https://trailseries.bg/7-hills-run22/,https://trailseries.bg/7-hills-run22-results/,301,event landing page → results page 7-hills-run22-results
+https://trailseries.bg/7-hills-run23/,https://trailseries.bg/7-hills-run23-results/,301,event landing page → results page 7-hills-run23-results
+https://trailseries.bg/7-hills-run25/,https://trailseries.bg/7-hills-run25-results/,301,event landing page → results page 7-hills-run25-results
+https://trailseries.bg/all-seasons-rankings/,https://trailseries.bg/klasiraniya/,301,all-seasons rankings → season standings page
+https://trailseries.bg/baba-marta-run21/,https://trailseries.bg/baba-marta-run21-results/,301,event landing page → results page baba-marta-run21-results
+https://trailseries.bg/baba-marta-run22/,https://trailseries.bg/baba-marta-run22-results/,301,event landing page → results page baba-marta-run22-results
+https://trailseries.bg/baba-marta-run23/,https://trailseries.bg/baba-marta-run23-results/,301,event landing page → results page baba-marta-run23-results
+https://trailseries.bg/baba-marta-run24/,https://trailseries.bg/baba-marta-run24-ranking/,301,event landing page → results page baba-marta-run24-ranking
+https://trailseries.bg/baba-marta-run25/,https://trailseries.bg/baba-marta-run25-results/,301,event landing page → results page baba-marta-run25-results
+https://trailseries.bg/baba-marta-run26/,https://trailseries.bg/baba-marta-run26-results/,301,event landing page → results page baba-marta-run26-results
+https://trailseries.bg/bankya-summer-run/,https://trailseries.bg/bankya-summer-run-ranking/,301,event landing page → results page bankya-summer-run-ranking
+https://trailseries.bg/birthday-run-3/,https://trailseries.bg/birthday-run-3-results/,301,event landing page → results page birthday-run-3-results
+https://trailseries.bg/birthday-run18/,https://trailseries.bg/birthday-run18-results/,301,event landing page → results page birthday-run18-results
+https://trailseries.bg/birthday-run19/,https://trailseries.bg/birthday-run19-ranking/,301,event landing page → results page birthday-run19-ranking
+https://trailseries.bg/birthday-run20/,https://trailseries.bg/birthday-run20-results/,301,event landing page → results page birthday-run20-results
+https://trailseries.bg/birthday-run21/,https://trailseries.bg/birthday-run21-results/,301,event landing page → results page birthday-run21-results
+https://trailseries.bg/birthday-run23/,https://trailseries.bg/birthday-run23-results/,301,event landing page → results page birthday-run23-results
+https://trailseries.bg/birthday-run24/,https://trailseries.bg/birthday-run24-ranking/,301,event landing page → results page birthday-run24-ranking
+https://trailseries.bg/boyana-x-trails21/,https://trailseries.bg/boyana-x-trails21-results/,301,event landing page → results page boyana-x-trails21-results
+https://trailseries.bg/category/%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8/page/1/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/category/%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8/page/2/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/category/%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8/page/3/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/category/%d0%bd%d0%be%d0%b2%d0%b8%d0%bd%d0%b8/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/category/covid-19/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/category/covid-19/page/1/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/category/covid-19/page/2/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/category/uncategorized/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/category/zero-to-hero/,https://trailseries.bg/novini/,301,category archive → news archive
+https://trailseries.bg/event-directory/,https://trailseries.bg/calendar/,301,event directory → calendar
+https://trailseries.bg/event-location/%d1%81-%d1%8f%d1%80%d0%bb%d0%be%d0%b2%d0%be/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/banderishka-polyana/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/bankya/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/boyansko-hanche/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/buhovo/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/german/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/kokalyane/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/lokorsko/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/path-of-health/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/simeonovski-ezera/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/zheleznitsa/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-location/zhelyava/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-organizer/trail-series/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-organizer/tri-series/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-type/trail/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/event-type/tri-series/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-%d0%bf%d0%b0%d0%bb%d0%b0%d0%ba%d0%b0%d1%80%d0%b8%d1%8f/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/7-hills-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/baba-marta-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/beglika-3/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/birthday-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/boyana-x-trail/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/buhovo-half-marathon/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/duathlon-buhovo/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/golyam-sechko-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/lyulin-trail-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/malak-sechko-run-25/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/malak-sechko-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/pancharevo-night-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/pirin-skyrun/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/pirin-vertical/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/plovdiv-hills/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/simeonovo-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/the-cactus-run25/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/events/the-christmas-run/,https://trailseries.bg/calendar/,301,EventON page → calendar
+https://trailseries.bg/golyam-sechko-run21/,https://trailseries.bg/golyam-sechko-run21-results/,301,event landing page → results page golyam-sechko-run21-results
+https://trailseries.bg/golyam-sechko-run22/,https://trailseries.bg/golyam-sechko-run22-results/,301,event landing page → results page golyam-sechko-run22-results
+https://trailseries.bg/golyam-sechko-run23/,https://trailseries.bg/golyam-sechko-run23-ranking/,301,event landing page → results page golyam-sechko-run23-ranking
+https://trailseries.bg/golyam-sechko-run24/,https://trailseries.bg/golyam-sechko-run24-ranking/,301,event landing page → results page golyam-sechko-run24-ranking
+https://trailseries.bg/golyam-sechko-run25/,https://trailseries.bg/golyam-sechko-run25-ranking/,301,event landing page → results page golyam-sechko-run25-ranking
+https://trailseries.bg/golyam-sechko-run26/,https://trailseries.bg/golyam-sechko-run26-results/,301,event landing page → results page golyam-sechko-run26-results
+https://trailseries.bg/lyulin-trail-run18/,https://trailseries.bg/lyulin-trail-run18-ranking/,301,event landing page → results page lyulin-trail-run18-ranking
+https://trailseries.bg/lyulin-trail-run19/,https://trailseries.bg/lyulin-trail-run19-ranking/,301,event landing page → results page lyulin-trail-run19-ranking
+https://trailseries.bg/lyulin-trail-run20/,https://trailseries.bg/lyulin-trail-run20-ranking/,301,event landing page → results page lyulin-trail-run20-ranking
+https://trailseries.bg/lyulin-trail-run21/,https://trailseries.bg/lyulin-trail-run21-results/,301,event landing page → results page lyulin-trail-run21-results
+https://trailseries.bg/lyulin-trail-run22/,https://trailseries.bg/lyulin-trail-run22-results/,301,event landing page → results page lyulin-trail-run22-results
+https://trailseries.bg/lyulin-trail-run23/,https://trailseries.bg/lyulin-trail-run23-results/,301,event landing page → results page lyulin-trail-run23-results
+https://trailseries.bg/lyulin-trail-run24/,https://trailseries.bg/lyulin-trail-run24-ranking/,301,event landing page → results page lyulin-trail-run24-ranking
+https://trailseries.bg/lyulin-trail-run25/,https://trailseries.bg/lyulin-trail-run25-results/,301,event landing page → results page lyulin-trail-run25-results
+https://trailseries.bg/lyulin-trail-run26/,https://trailseries.bg/lyulin-trail-run26-ranking/,301,event landing page → results page lyulin-trail-run26-ranking
+https://trailseries.bg/malak-sechko-run19/,https://trailseries.bg/malak-sechko-run19-ranking/,301,event landing page → results page malak-sechko-run19-ranking
+https://trailseries.bg/malak-sechko-run20/,https://trailseries.bg/malak-sechko-run20-results/,301,event landing page → results page malak-sechko-run20-results
+https://trailseries.bg/malak-sechko-run21/,https://trailseries.bg/malak-sechko-run21-results/,301,event landing page → results page malak-sechko-run21-results
+https://trailseries.bg/malak-sechko-run22/,https://trailseries.bg/malak-sechko-run22-results/,301,event landing page → results page malak-sechko-run22-results
+https://trailseries.bg/malak-sechko-run23/,https://trailseries.bg/malak-sechko-run23-ranking/,301,event landing page → results page malak-sechko-run23-ranking
+https://trailseries.bg/malak-sechko-run24/,https://trailseries.bg/malak-sechko-run24-results/,301,event landing page → results page malak-sechko-run24-results
+https://trailseries.bg/malak-sechko-run25/,https://trailseries.bg/malak-sechko-run25-results/,301,event landing page → results page malak-sechko-run25-results
+https://trailseries.bg/malak-sechko-run26/,https://trailseries.bg/malak-sechko-run26-results/,301,event landing page → results page malak-sechko-run26-results
+https://trailseries.bg/overal-ranking/,https://trailseries.bg/klasiraniya/,301,overall-ranking hub → season standings page
+https://trailseries.bg/overal-ranking/%d0%b3%d0%b5%d0%bd%d0%b5%d1%80%d0%b0%d0%bb%d0%bd%d0%be-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,https://trailseries.bg/klasiraniya/,301,standings page → season standings page
+https://trailseries.bg/overal-ranking/bankia-24mart/,https://trailseries.bg/bankia-24mart/,301,nested results page → preserved top-level slug
+https://trailseries.bg/overal-ranking/iran-run18-results/,https://trailseries.bg/iran-run18-results/,301,nested results page → preserved top-level slug
+https://trailseries.bg/overal-ranking/lokorsko-23-fevruari/,https://trailseries.bg/lokorsko-23-fevruari/,301,nested results page → preserved top-level slug
+https://trailseries.bg/overal-ranking/runbg-trail-series-%d0%b6%d0%b5%d0%bb%d0%b5%d0%b7%d0%bd%d0%b8%d1%86%d0%b0-13-%d0%be%d0%ba%d1%82%d0%be%d0%bc%d0%b2%d1%80%d0%b8-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,https://trailseries.bg/runbg-trail-series-%D0%B6%D0%B5%D0%BB%D0%B5%D0%B7%D0%BD%D0%B8%D1%86%D0%B0-13-%D0%BE%D0%BA%D1%82%D0%BE%D0%BC%D0%B2%D1%80%D0%B8-%D0%BA%D0%BB%D0%B0%D1%81%D0%B8%D1%80%D0%B0%D0%BD%D0%B5/,301,nested results page → preserved top-level slug
+https://trailseries.bg/overal-ranking/vladaya-21-april/,https://trailseries.bg/vladaya-21-april/,301,nested results page → preserved top-level slug
+https://trailseries.bg/page/1/,https://trailseries.bg/novini/,301,front-page blog pagination → news archive
+https://trailseries.bg/page/2/,https://trailseries.bg/novini/,301,front-page blog pagination → news archive
+https://trailseries.bg/page/3/,https://trailseries.bg/novini/,301,front-page blog pagination → news archive
+https://trailseries.bg/palakaria-2018/,https://trailseries.bg/palakaria-2018-ranking/,301,event landing page → results page palakaria-2018-ranking
+https://trailseries.bg/palakaria/,https://trailseries.bg/palakaria-ranking/,301,event landing page → results page palakaria-ranking
+https://trailseries.bg/pancharevo-night-run/,https://trailseries.bg/pancharevo-night-run-%D0%BA%D0%BB%D0%B0%D1%81%D0%B8%D1%80%D0%B0%D0%BD%D0%B5/,301,event landing page → results page pancharevo-night-run-класиране
+https://trailseries.bg/simeonovo-run/,https://trailseries.bg/simeonovo-run-ranking/,301,event landing page → results page simeonovo-run-ranking
+https://trailseries.bg/simeonovo-run19/,https://trailseries.bg/simeonovo-run19-ranking/,301,event landing page → results page simeonovo-run19-ranking
+https://trailseries.bg/simeonovo-run20/,https://trailseries.bg/simeonovo-run20-results/,301,event landing page → results page simeonovo-run20-results
+https://trailseries.bg/simeonovo-run21/,https://trailseries.bg/simeonovo-run21-results/,301,event landing page → results page simeonovo-run21-results
+https://trailseries.bg/simeonovo-run23/,https://trailseries.bg/simeonovo-run23-results/,301,event landing page → results page simeonovo-run23-results
+https://trailseries.bg/the-cactus-run19/,https://trailseries.bg/the-cactus-run19-results/,301,event landing page → results page the-cactus-run19-results
+https://trailseries.bg/the-cactus-run20/,https://trailseries.bg/the-cactus-run20-ranking/,301,event landing page → results page the-cactus-run20-ranking
+https://trailseries.bg/the-cactus-run21/,https://trailseries.bg/the-cactus-run21-results/,301,event landing page → results page the-cactus-run21-results
+https://trailseries.bg/the-cactus-run22/,https://trailseries.bg/the-cactus-run22-ranking/,301,event landing page → results page the-cactus-run22-ranking
+https://trailseries.bg/the-cactus-run23/,https://trailseries.bg/the-cactus-run23-results/,301,event landing page → results page the-cactus-run23-results
+https://trailseries.bg/the-cactus-run24/,https://trailseries.bg/the-cactus-run24-results/,301,event landing page → results page the-cactus-run24-results
+https://trailseries.bg/the-christmas-run20/,https://trailseries.bg/the-christmas-run20-results/,301,event landing page → results page the-christmas-run20-results
+https://trailseries.bg/the-christmas-run21/,https://trailseries.bg/the-christmas-run21-results/,301,event landing page → results page the-christmas-run21-results
+https://trailseries.bg/the-christmas-run22/,https://trailseries.bg/the-christmas-run22-results/,301,event landing page → results page the-christmas-run22-results
+https://trailseries.bg/the-christmas-run24/,https://trailseries.bg/the-christmas-run24-results/,301,event landing page → results page the-christmas-run24-results
+https://trailseries.bg/%D0%B4%D0%BE%D0%B1%D1%80%D0%BE%D0%B2%D0%BE%D0%BB%D1%87%D0%B5%D1%81%D1%82%D0%B2%D0%BE/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/%d0%b4%d0%bd%d0%b5%d1%81-%d0%b7%d0%b0%d1%82%d0%b2%d0%b0%d1%80%d1%8f-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b0%d1%86%d0%b8%d1%8f%d1%82%d0%b0-%d0%b7%d0%b0-%d0%ba%d0%be%d0%bb%d0%b5%d0%b4%d0%bd/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/%d0%b7%d0%b0-trail-series/%d0%ba%d0%be%d0%bd%d1%82%d0%b0%d0%ba%d1%82%d0%b8/,,410,contact/feedback form — no equivalent yet
+https://trailseries.bg/%d0%b7%d0%b0-trail-series/feedback/,,410,contact/feedback form — no equivalent yet
+https://trailseries.bg/%d0%b7%d0%b0-trail-series/t-shirt-poruchka-no/,,410,t-shirt order confirmation — obsolete
+https://trailseries.bg/%d0%b7%d0%b0-trail-series/t-shirt-poruchka-y/,,410,t-shirt order confirmation — obsolete
+https://trailseries.bg/%d0%bb%d0%b0%d0%b3%d0%b5%d1%80%d0%b0-%d0%bd%d0%b0-%d0%b1%d0%b5%d0%b3%d0%b0%d1%87%d0%b0-%d0%bf%d0%b8%d1%80%d0%b0%d1%82%d0%b8%d1%82%d0%b5/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/%d0%be%d0%b1%d0%b1-vertical-run-2019-%d1%81%d0%bd%d0%b8%d0%bc%d0%ba%d0%b8/,,410,photo gallery — not migrated
+https://trailseries.bg/%d1%81%d0%bf%d0%be%d0%bd%d1%81%d0%be%d1%80%d0%b8/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/100-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b8%d1%80%d0%b0%d0%bd%d0%b8-%d0%b7%d0%b0-thechristmasrun/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/117/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/135-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b8%d1%80%d0%b0%d0%bd%d0%b8-%d0%b7%d0%b0-thechristmasrun/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/1539/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/170-%d0%ba%d0%be%d0%bb%d0%b5%d0%b4%d0%bd%d0%b8-%d0%b1%d0%b5%d0%b3%d0%b0%d1%87%d0%b8/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/2012-2/,,410,junk/placeholder page
+https://trailseries.bg/2143-2/,,410,junk/placeholder page
+https://trailseries.bg/41-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b8%d1%80%d0%b0%d0%bd%d0%b8-%d0%b7%d0%b0-christmas-run/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/7-hills-run-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/7-hills-run-2018/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/7-hills-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/7-hills-run16/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/7-hills-run19/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/7-hills-run24/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/7hills-run-2017-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/7hillsrun16/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/81-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b8%d1%80%d0%b0%d0%bd%d0%b8-%d0%b7%d0%b0-thechristmasrun-04-12/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/90-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b8%d1%80%d0%b0%d0%bd%d0%b8-%d0%b7%d0%b0-thechristmasrun/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/baba-marta-run-2017-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/baba-marta-run-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/baba-marta-run-2019/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/baba-marta-run-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/baba-marta-run-ranking15/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/baba-marta-run-results-2016/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/baba-marta-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/baba-marta-run14/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/baba-marta-run15/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/baba-marta-run16/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/baba-marta-run18-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/baba-marta-run18/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/baba-marta-run20/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/birthday-run-2-0/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/birthday-run-4-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/birthday-run-4-years-trail-series/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/birthday-run-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/birthday-run-zheleznitsa/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/birthday-run17-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/birthday-run17/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/birthday-run22/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/boyana-x-trail/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/buhovo-half-marathon/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/buhovo-run-2-0/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/buhovo-run-2/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/buhovo-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/buhovo-run14/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/cactus-run-2016-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/feedback/,,410,feedback form — no equivalent yet
+https://trailseries.bg/golyam-sechko-run-17/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/golyam-sechko-run-2016/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/golyam-sechko-run-2019/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/golyam-sechko-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/golyam-sechko-run15/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/golyam-sechko-run16-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/golyam-sechko-run17-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/golyam-sechko-run18-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/golyam-sechko-run18/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/golyam-sechko-run20/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/heat-stroke-run-gallery/,,410,photo gallery — not migrated
+https://trailseries.bg/heat-stroke-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/ignitesofia/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/iran-run-2015/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/iran-run-2016/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/iran-run-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/iran-run-2018/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/iran-run-2019/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/iran-run-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/iran-run-results16/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/iran-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/iran-run17-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/koledni-vaucheri/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/koledno-byagane-2/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/koy-oglavyava-top-10/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/livity/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/lokorsko/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/lyulin-trail-run-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/lyulin-trail-run-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/lyulin-trail-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/lyulin-trail-run17-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/malak-sechko-run-2015/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/malak-sechko-run-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/malak-sechko-run-ranking16/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/malak-sechko-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/malak-sechko-run16/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/malak-sechko-run17-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/malak-sechko-run17/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/malak-sechko-run18-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/malak-sechko-run18/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/maliovitsa-skyrun-2/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/maliovitsa-skyrun-4-%d0%b0%d0%b2%d0%b3%d1%83%d1%81%d1%82/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/maliovitsa-skyrun-photos/,,410,photo gallery — not migrated
+https://trailseries.bg/maliovitsa-skyrun/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/obbverticalrun/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/overal-ranking/%d0%bf%d0%b0%d0%bd%d1%87%d0%b0%d1%80%d0%b5%d0%b2%d0%be-10-%d0%bd%d0%be%d0%b5%d0%bc%d0%b2%d1%80%d0%b8/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/palakaria-2016/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/palakaria-2017-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/palakaria-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/palakaria-2019/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/palakaria-2022/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/palakaria-2024/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/palakaria16-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/palakaria23/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/pancharevo-night-run-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b516/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/pancharevo-night-run-%d1%89%d0%b0%d1%84%d0%b5%d1%82%d0%b021/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/pancharevo-night-run-2016/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/pancharevo-night-run-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/pancharevo-night-run-2018-%d1%89%d0%b0%d1%84%d0%b5%d1%82%d0%b0/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/pancharevo-night-run-2019-relay/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/pancharevo-night-run17-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/pasarel-run-16-06/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/pasarel-run-2/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/pasarel-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/plovdiv-hills/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/race-photos/,,410,photo gallery — not migrated
+https://trailseries.bg/ranking-7-hills-run/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/registration/,,410,registration form — obsolete
+https://trailseries.bg/registration/notsuccessful/,,410,registration form — obsolete
+https://trailseries.bg/registration/successful/,,410,registration form — obsolete
+https://trailseries.bg/runbg-trail-series-%d0%bf%d0%b0%d0%bd%d1%87%d0%b0%d1%80%d0%b5%d0%b2%d0%be/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/running-zone-challenge/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/running-zone-challenge16/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/sabitia/,,410,photo gallery — not migrated
+https://trailseries.bg/sabitia/%d0%b6%d0%b5%d0%bb%d0%b5%d0%b7%d0%bd%d0%b8%d1%86%d0%b0/,,410,photo gallery — not migrated
+https://trailseries.bg/sabitia/%d0%bf%d0%b0%d0%bd%d1%87%d0%b0%d1%80%d0%b5%d0%b2%d0%be/,,410,photo gallery — not migrated
+https://trailseries.bg/sabitia/bankia/,,410,photo gallery — not migrated
+https://trailseries.bg/sabitia/pasarel/,,410,photo gallery — not migrated
+https://trailseries.bg/sabitia/the-christmas-run-2016/,,410,photo gallery — not migrated
+https://trailseries.bg/sabitia/vladaya/,,410,photo gallery — not migrated
+https://trailseries.bg/sabitia/zheleznitsa-2-0/,,410,photo gallery — not migrated
+https://trailseries.bg/sabitia/zheleznitsa-2-0/jordan-petrov/,,410,photo gallery — not migrated
+https://trailseries.bg/september-run-2/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/september-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/simeonovo-run-2016/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/simeonovo-run-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/simeonovo-run-2018/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/simeonovo-run-ranking14/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/simeonovo-run15/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/simeonovo-run16-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/simeonovo-run17-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/snimki/,,410,photo gallery — not migrated
+https://trailseries.bg/snimki/baba-marta-run/,,410,photo gallery — not migrated
+https://trailseries.bg/snimki/malak-sechko-run/,,410,photo gallery — not migrated
+https://trailseries.bg/snimki/runbg-trail-series-%D0%BF%D0%B0%D0%BD%D1%87%D0%B0%D1%80%D0%B5%D0%B2%D0%BE/,,410,photo gallery — not migrated
+https://trailseries.bg/snimki/runbg-trail-series-vladaya/,,410,photo gallery — not migrated
+https://trailseries.bg/snimki/runbg-trail-series-zheleznits%D0%B0/,,410,photo gallery — not migrated
+https://trailseries.bg/snimki/the-chrismas-run/,,410,photo gallery — not migrated
+https://trailseries.bg/tag/%d0%b3%d0%b5%d0%bd%d0%b5%d1%80%d0%b0%d0%bb%d0%bd%d0%be-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/%d0%b8%d0%b7%d0%b1%d1%80%d0%b0%d0%bd%d0%be/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/%d0%ba%d0%be%d0%bb%d0%b5%d0%b4%d0%bd%d0%be-%d0%b1%d1%8f%d0%b3%d0%b0%d0%bd%d0%b5-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b8%d1%80%d0%b0%d0%bd%d0%b8/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/%d0%bd%d0%b0%d0%bc%d0%b0%d0%bb%d0%b5%d0%bd%d0%b8%d1%8f/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/%d0%bd%d0%be%d0%b2%d0%b8%d0%bd%d0%b8/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b8%d1%80%d0%b0%d0%bd%d0%b8-%d0%b7%d0%b0-%d1%83%d1%87%d0%b0%d1%81%d1%82%d0%b8%d0%b5/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/%d1%81%d0%b5%d0%b7%d0%be%d0%bd-8/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/%d1%81%d0%bb%d1%81/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/sls/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/trail-series/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/trail/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/tag/zero-to-hero/,,410,tag archive — taxonomy not migrated
+https://trailseries.bg/the-cactus-run-2014/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-cactus-run-2015/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-cactus-run-2016/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-cactus-run-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-cactus-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-cactus-run17-ranking/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/the-cactus-run18/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-cactus-run2025/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-christmas-run-2014/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-christmas-run-2015/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-christmas-run-2017-klasirane/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/the-christmas-run-2017/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-christmas-run-2025/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-christmas-run19/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/the-christmas-run23/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/thechristmasrun-%d1%81%d1%82%d0%b0%d1%80%d1%82%d0%be%d0%b2-%d1%81%d0%bf%d0%b8%d1%81%d1%8a%d0%ba/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/vladaya-eco-run-ranking-2014/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/vladaya-eco-run/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/xmas-run-15-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/xmas-run16-results/,,410,results page with no extracted data — REVIEW: possible extraction gap
+https://trailseries.bg/xmas-run18/,,410,no equivalent on new site — review before cutover
+https://trailseries.bg/zheleznitsa-2-0-20-jan/olympus-digital-camera/,,410,attachment page — not migrated
