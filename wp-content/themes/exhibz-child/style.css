@@ -782,6 +782,30 @@ Text Domain:  exhibz-child
 	border-color: var(--tsr-blue);
 }
 
+/* ── Nav highlight — orange pill for the Новини menu item ──────────────────── */
+/*
+ * Usage: in Appearance → Menus, add the CSS class "menu-highlight" to the
+ * Новини menu item (or any item that should stand out as a CTA pill).
+ */
+.menu-highlight > a,
+.menu-highlight > a:visited {
+	background:    var(--tsr-orange);
+	color:         #fff !important;
+	border-radius: 999px;
+	padding:       0.3em 1em;
+	font-weight:   600;
+	transition:    background 0.2s ease, box-shadow 0.2s ease;
+	white-space:   nowrap;
+}
+
+.menu-highlight > a:hover,
+.menu-highlight > a:focus {
+	background:  #c94e16;       /* 15 % darker than --tsr-orange */
+	box-shadow:  0 2px 8px rgba(224, 92, 30, 0.4);
+	color:       #fff !important;
+	text-decoration: none;
+}
+
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
 	/* Prevent the header from overflowing on small screens. */
