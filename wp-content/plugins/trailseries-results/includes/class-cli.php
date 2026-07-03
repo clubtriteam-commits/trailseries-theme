@@ -449,7 +449,7 @@ final class TSR_CLI {
 	 *
 	 * [--map=<file>]
 	 * : Path to category-map.csv.
-	 *   Default: <WP root>/migration/category-map.csv
+	 *   Default: {plugin}/data/category-map.csv
 	 *
 	 * [--slug=<pattern>]
 	 * : Only process posts whose post_name contains this string.
@@ -476,7 +476,7 @@ final class TSR_CLI {
 		$dry_run     = isset( $assoc_args['dry-run'] );
 		$force       = isset( $assoc_args['force'] );
 		$slug_filter = $assoc_args['slug'] ?? '';
-		$map_path    = $assoc_args['map'] ?? ABSPATH . 'migration/category-map.csv';
+		$map_path    = $assoc_args['map'] ?? TSR_PLUGIN_DIR . 'data/category-map.csv';
 
 		$map = $this->read_category_map( $map_path );
 		if ( array() === $map ) {
