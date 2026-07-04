@@ -106,9 +106,9 @@ foreach ( $race_posts as $rpost ) {
 	}
 
 	foreach ( $data['rows'] as $row ) {
-		// Skip non-finishers.
-		$status = isset( $row['Status'] ) ? strtolower( trim( $row['Status'] ) ) : '';
-		if ( '' !== $status && 'finish' !== $status ) {
+		// Skip non-finishers. Canonical status value is "FIN"; empty means no status recorded.
+		$status = isset( $row['Status'] ) ? strtoupper( trim( $row['Status'] ) ) : '';
+		if ( '' !== $status && 'FIN' !== $status ) {
 			continue;
 		}
 
