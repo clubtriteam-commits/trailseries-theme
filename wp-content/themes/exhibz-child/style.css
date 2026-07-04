@@ -782,29 +782,7 @@ Text Domain:  exhibz-child
 	border-color: var(--tsr-blue);
 }
 
-/* ── Nav highlight — orange pill for the Новини menu item ──────────────────── */
-/*
- * Usage: in Appearance → Menus, add the CSS class "menu-highlight" to the
- * Новини menu item (or any item that should stand out as a CTA pill).
- */
-.menu-highlight > a,
-.menu-highlight > a:visited {
-	background:    var(--tsr-orange);
-	color:         #fff !important;
-	border-radius: 999px;
-	padding:       0.3em 1em;
-	font-weight:   600;
-	transition:    background 0.2s ease, box-shadow 0.2s ease;
-	white-space:   nowrap;
-}
-
-.menu-highlight > a:hover,
-.menu-highlight > a:focus {
-	background:  #c94e16;       /* 15 % darker than --tsr-orange */
-	box-shadow:  0 2px 8px rgba(224, 92, 30, 0.4);
-	color:       #fff !important;
-	text-decoration: none;
-}
+/* menu-highlight orange pill — defined in the site-header section below */
 
 /* ── Резултати archive — year accordion ─────────────────────────────────────── */
 .tsr-results-archive {
@@ -913,138 +891,146 @@ Text Domain:  exhibz-child
 	border-color: var(--tsr-blue);
 }
 
-/* ── Header: override parent theme positioning and layout ────────────────────
+/* ── Site header — two-row layout ───────────────────────────────────────
  *
- * The parent Exhibz theme sets position:absolute on #masthead so it can float
- * transparently over full-bleed hero images. On inner pages the logo ends up
- * on top of .tsr-page-hero content. Fix: sticky in-flow positioning with the
- * brand navy background, plus an explicit flex row (logo left, nav right) so
- * the two elements never overlap each other inside the bar.
- * ──────────────────────────────────────────────────────────────────────────── */
+ * Row 1: logo (left) + site name / subtitle / tagline (right of logo)
+ * Row 2: primary navigation
+ *
+ * Rendered by header.php in this child theme; id="masthead" kept for
+ * any JS or third-party code that targets it.
+ * ──────────────────────────────────────────────────────────────────────── */
 
-#masthead,
-.site-header {
-	position:         sticky !important;
-	top:              0 !important;
-	left:             auto !important;
-	right:            auto !important;
-	width:            100%;
-	background-color: var(--tsr-navy) !important;
-	z-index:          500;
-	box-shadow:       0 1px 0 rgba(255, 255, 255, .07),
-	                  0 2px 14px rgba(0, 0, 0, .28);
+#masthead {
+	position:   sticky;
+	top:        0;
+	z-index:    500;
+	width:      100%;
+	background: var(--tsr-navy);
+	box-shadow: 0 1px 0 rgba(255, 255, 255, .06),
+	            0 2px 14px rgba(0, 0, 0, .32);
 }
 
-/* Inner container: logo left ↔ nav right, single centred row */
-#masthead .container,
-#masthead .exhibz-header-inner,
-#masthead .site-header-main,
-.site-header .container,
-.site-header .site-header-main,
-.site-header .header-inner {
-	display:         flex !important;
-	align-items:     center !important;
-	justify-content: space-between !important;
-	max-width:       var(--tsr-max-w);
-	margin-inline:   auto;
-	padding-inline:  1.25rem;
-	padding-block:   0.7rem;
-	gap:             1.5rem;
+/* ── Row 1: brand block ──────────────────────────────────────────────── */
+
+.tsr-header-brand {
+	display:       flex;
+	align-items:   center;
+	gap:           1rem;
+	padding-block: 1rem 0.75rem;
 }
 
-/* Logo — never shrinks, sits on the left */
-.site-branding,
-.custom-logo-link,
-.header-logo,
-.exhibz-logo-wrap,
-.navbar-brand {
-	flex-shrink: 0;
-	line-height: 1;
+.tsr-header-logo a   { display: block; line-height: 0; }
+.tsr-header-logo img { max-height: 56px; width: auto; }
+
+.tsr-header-name__link {
+	text-decoration: none;
+	color:           inherit;
 }
 
-.site-branding img,
-.custom-logo,
-.header-logo img,
-.exhibz-logo-wrap img,
-.navbar-brand img {
-	max-height: 48px;
-	width:      auto;
-	display:    block;
+.tsr-header-name__title {
+	display:        block;
+	font-size:      clamp(1.5rem, 3.5vw, 2.2rem);
+	font-weight:    900;
+	color:          var(--tsr-white);
+	letter-spacing: -0.025em;
+	line-height:    1.1;
 }
 
-/* Nav — flex row, pushed to the right */
-.main-navigation,
-.site-navigation,
-#site-navigation {
-	flex:        0 0 auto;
-	margin-left: auto;
+.tsr-header-name__tld { color: var(--tsr-blue); }
+
+.tsr-header-name__link:hover .tsr-header-name__title { color: var(--tsr-blue); }
+.tsr-header-name__link:hover .tsr-header-name__tld   { color: var(--tsr-white); }
+
+.tsr-header-name__subtitle {
+	margin:      0.2rem 0 0;
+	font-size:   0.85rem;
+	color:       rgba(255, 255, 255, 0.62);
+	font-weight: 400;
 }
 
-.main-navigation > ul,
-.main-navigation > div > ul,
-.site-navigation > ul,
-#site-navigation > ul {
+.tsr-header-name__tagline {
+	margin:         0.15rem 0 0;
+	font-size:      0.68rem;
+	color:          var(--tsr-blue);
+	font-weight:    600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+/* ── Row 2: navigation ───────────────────────────────────────────────── */
+
+.tsr-header-nav {
+	background:  rgba(0, 0, 0, 0.22);
+	border-top:  1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tsr-header-nav .tsr-container { padding-block: 0; }
+
+.tsr-nav-list {
 	display:     flex;
+	flex-wrap:   wrap;
 	align-items: center;
 	list-style:  none;
 	margin:      0;
 	padding:     0;
 }
 
-/* Nav link colours — white-on-dark */
-.main-navigation a,
-.site-navigation a,
-#site-navigation a {
+.tsr-nav-list > li > a {
 	display:         block;
-	padding:         0.5rem 0.75rem;
-	color:           rgba(255, 255, 255, .82);
+	padding:         0.6rem 0.875rem;
+	color:           rgba(255, 255, 255, 0.78);
 	font-size:       0.875rem;
 	font-weight:     600;
-	letter-spacing:  0.01em;
 	text-decoration: none;
 	white-space:     nowrap;
 	transition:      color 0.15s ease;
 }
 
-.main-navigation a:hover,
-.site-navigation a:hover,
-#site-navigation a:hover,
-.main-navigation .current-menu-item > a,
-.site-navigation .current-menu-item > a,
-#site-navigation .current-menu-item > a {
+.tsr-nav-list > li > a:hover,
+.tsr-nav-list > .current-menu-item > a,
+.tsr-nav-list > .current_page_item > a {
 	color: var(--tsr-blue);
 }
 
-/* ── Responsive ────────────────────────────────────────────────────────────── */
+/* Orange-pill highlight — add class "menu-highlight" in WP menu editor */
+.tsr-nav-list > .menu-highlight > a,
+.tsr-nav-list > .menu-highlight > a:visited {
+	background:    var(--tsr-orange);
+	color:         #fff !important;
+	border-radius: 999px;
+	padding:       0.3em 1em;
+	margin-inline: 0.25rem;
+	font-weight:   600;
+	transition:    background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tsr-nav-list > .menu-highlight > a:hover {
+	background: #c94e16;
+	box-shadow: 0 2px 8px rgba(224, 92, 30, 0.4);
+	color:      #fff !important;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
 @media (max-width: 768px) {
-	/* Mobile header: allow the hamburger toggle to wrap below the logo */
-	#masthead,
-	.site-header {
-		overflow-x: visible;
+	.tsr-header-brand {
+		gap:           0.75rem;
+		padding-block: 0.75rem 0.6rem;
 	}
 
-	#masthead .container,
-	#masthead .exhibz-header-inner,
-	#masthead .site-header-main,
-	.site-header .container,
-	.site-header .site-header-main,
-	.site-header .header-inner {
-		flex-wrap:    wrap;
-		padding-block: 0.5rem;
-	}
+	.tsr-header-logo img      { max-height: 44px; }
+	.tsr-header-name__title   { font-size: 1.35rem; }
+	.tsr-header-name__subtitle { font-size: 0.78rem; }
 
-	/* Logo sizing on mobile */
-	.site-logo img,
-	.custom-logo,
-	.site-branding img,
-	.navbar-brand img,
-	.header-logo img,
-	.exhibz-logo-wrap img {
-		max-height: 40px;
-		max-width:  140px;
-		width:      auto;
-		height:     auto;
+	.tsr-nav-list > li > a {
+		padding:   0.55rem 0.65rem;
+		font-size: 0.82rem;
 	}
+}
+
+@media (max-width: 480px) {
+	.tsr-header-name__subtitle { display: none; }
+	.tsr-header-name__tagline  { margin-top: 0.1rem; }
 }
 
 @media (max-width: 640px) {
