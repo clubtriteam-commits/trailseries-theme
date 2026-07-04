@@ -821,6 +821,32 @@ Text Domain:  exhibz-child
 .tsr-map-legend__dot--active { background: #00aadd; }
 .tsr-map-legend__dot--hist   { background: #888; }
 
+/* ── Calendar page — two-section layout ────────────────────────────────────── */
+
+.tsr-cal-section__title {
+	font-size:     1.25rem;
+	font-weight:   700;
+	color:         var(--tsr-white);
+	margin-bottom: 1.5rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.tsr-cal-section__title--past {
+	color: rgba(255, 255, 255, 0.5);
+	font-size: 1rem;
+}
+
+.tsr-cal-divider {
+	border: none;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+	margin: 3rem 0;
+}
+
+.tsr-cal-past {
+	opacity: 0.75;
+}
+
 /* ── Новини archive — pagination ────────────────────────────────────────────── */
 .tsr-pagination {
 	margin-top: 2.5rem;

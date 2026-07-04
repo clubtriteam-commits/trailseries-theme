@@ -4,9 +4,9 @@
  *
  * Template for the Календар page (slug: calendar).
  *
- * Renders all events for the current year via the [add_eventon_list]
- * shortcode. If EventON is not active the shortcode is left unexpanded by
- * WordPress, so a guard shows a friendly notice instead.
+ * Two sections: upcoming events (next 6 months) and past events this year,
+ * separated by a visual divider. Rendered via the [add_eventon_list]
+ * shortcode. If EventON is not active a friendly notice is shown instead.
  *
  * @package exhibz-child
  */
@@ -29,15 +29,29 @@ get_header();
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
-		<section class="tsr-prose-section">
-			<?php if ( shortcode_exists( 'add_eventon_list' ) ) : ?>
-				<?php echo do_shortcode( '[add_eventon_list number_of_months="12" hide_past="no" hide_empty_months="yes"]' ); ?>
-			<?php else : ?>
+		<?php if ( shortcode_exists( 'add_eventon_list' ) ) : ?>
+
+			<!-- Upcoming events -->
+			<section class="tsr-prose-section tsr-cal-upcoming">
+				<h2 class="tsr-cal-section__title">Предстоящи</h2>
+				<?php echo do_shortcode( '[add_eventon_list number_of_months="6" hide_past="yes" hide_empty_months="yes"]' ); ?>
+			</section>
+
+			<hr class="tsr-cal-divider">
+
+			<!-- Past events this year -->
+			<section class="tsr-prose-section tsr-cal-past">
+				<h2 class="tsr-cal-section__title tsr-cal-section__title--past">Изминали тази година</h2>
+				<?php echo do_shortcode( '[add_eventon_list number_of_months="-6" hide_past="no" hide_empty_months="yes" show_upcoming="no"]' ); ?>
+			</section>
+
+		<?php else : ?>
+			<section class="tsr-prose-section">
 				<div class="tsr-notice">
 					<p>Календарът временно не е достъпен. Следете новините ни за предстоящите състезания.</p>
 				</div>
-			<?php endif; ?>
-		</section>
+			</section>
+		<?php endif; ?>
 
 	</div>
 </main>
