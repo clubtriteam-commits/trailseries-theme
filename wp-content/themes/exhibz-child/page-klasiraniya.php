@@ -106,20 +106,21 @@ foreach ( $race_posts as $rpost ) {
 	}
 
 	foreach ( $data['rows'] as $row ) {
-		// Skip non-finishers. Canonical status value is "FIN"; empty means no status recorded.
-		$status = isset( $row['Status'] ) ? strtoupper( trim( $row['Status'] ) ) : '';
-		if ( '' !== $status && 'FIN' !== $status ) {
+		// Only confirmed finishers score. DNF rows can legally carry a place number
+		// (e.g. golyam-sechko-run25 15km-m DNF at place 39) so we filter by status,
+		// never by place != null. TSR_Result_Row always serialises a status string.
+		if ( ( $row['status'] ?? '' ) !== 'FIN' ) {
 			continue;
 		}
 
-		$place = isset( $row['Place'] ) ? (int) $row['Place'] : 0;
+		$place = is_int( $row['place'] ?? null ) ? $row['place'] : 0;
 		if ( $place < 1 ) {
 			continue;
 		}
 
 		$pts  = '' !== $cat ? tsr_points( $place, $cat ) : 0;
-		$name = trim( ( $row['First name'] ?? '' ) . ' ' . ( $row['Last name'] ?? '' ) );
-		$key  = strtolower( $name );
+		$name = trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) );
+		$key  = mb_strtolower( $name );
 
 		if ( ! isset( $standings[ $key ] ) ) {
 			$standings[ $key ] = array(
