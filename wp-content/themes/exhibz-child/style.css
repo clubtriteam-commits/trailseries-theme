@@ -1173,3 +1173,251 @@ Text Domain:  exhibz-child
 		height: 360px;
 	}
 }
+
+/* ── Runner Profile page ────────────────────────────────────────────────────── */
+
+.tsr-runner-search {
+	display:       flex;
+	gap:           0.75rem;
+	margin-bottom: 2.5rem;
+	flex-wrap:     wrap;
+}
+
+.tsr-runner-search__input {
+	flex:         1;
+	min-width:    200px;
+	padding:      0.65rem 1rem;
+	border:       1px solid var(--tsr-border);
+	border-radius: var(--tsr-radius);
+	font-size:    1rem;
+	color:        var(--tsr-text);
+	background:   var(--tsr-white);
+}
+
+.tsr-runner-search__input:focus {
+	outline:    none;
+	border-color: var(--tsr-blue);
+	box-shadow: 0 0 0 3px rgba(0, 170, 221, 0.15);
+}
+
+.tsr-runner-search__btn {
+	padding:       0.65rem 1.5rem;
+	background:    var(--tsr-blue);
+	color:         var(--tsr-white);
+	border:        none;
+	border-radius: var(--tsr-radius);
+	font-size:     1rem;
+	font-weight:   600;
+	cursor:        pointer;
+	white-space:   nowrap;
+	transition:    background 0.15s;
+}
+
+.tsr-runner-search__btn:hover {
+	background: var(--tsr-blue-dk);
+}
+
+/* Stats strip */
+.tsr-runner-stats {
+	display:       grid;
+	grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+	gap:           1rem;
+	margin-bottom: 2.5rem;
+}
+
+.tsr-runner-stat {
+	background:    var(--tsr-navy);
+	border-radius: var(--tsr-radius);
+	padding:       1rem 1.25rem;
+	text-align:    center;
+}
+
+.tsr-runner-stat__num {
+	font-size:   2rem;
+	font-weight: 900;
+	color:       var(--tsr-blue);
+	line-height: 1;
+}
+
+.tsr-runner-stat__label {
+	font-size:      0.72rem;
+	color:          rgba(255, 255, 255, 0.55);
+	text-transform: uppercase;
+	letter-spacing: 0.09em;
+	margin-top:     0.35rem;
+}
+
+/* Season group */
+.tsr-runner-season {
+	margin-bottom: 2rem;
+}
+
+.tsr-runner-season__heading {
+	font-size:     1.1rem;
+	font-weight:   800;
+	color:         var(--tsr-navy);
+	margin-bottom: 0.75rem;
+	padding-bottom: 0.35rem;
+	border-bottom: 2px solid var(--tsr-blue);
+}
+
+.tsr-runner-season__count {
+	font-weight: 400;
+	color:       var(--tsr-muted);
+	font-size:   0.9rem;
+}
+
+/* Compact table (shared by runner + event pages) */
+.tsr-compact-wrap {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.tsr-compact-table {
+	width:           100%;
+	border-collapse: collapse;
+	font-size:       0.88rem;
+}
+
+.tsr-compact-table th {
+	background:     var(--tsr-navy);
+	color:          rgba(255, 255, 255, 0.72);
+	font-size:      0.72rem;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	padding:        0.45rem 0.875rem;
+	text-align:     left;
+	white-space:    nowrap;
+}
+
+.tsr-compact-table td {
+	padding:     0.55rem 0.875rem;
+	border-bottom: 1px solid var(--tsr-border);
+	color:       var(--tsr-text);
+	white-space: nowrap;
+}
+
+.tsr-compact-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.tsr-compact-table tbody tr:hover td {
+	background: rgba(0, 170, 221, 0.04);
+}
+
+.tsr-compact-table__place {
+	font-weight: 700;
+	color:       var(--tsr-blue);
+}
+
+.tsr-compact-table__time {
+	font-variant-numeric: tabular-nums;
+}
+
+.tsr-compact-table__link {
+	color:           var(--tsr-navy);
+	text-decoration: none;
+	font-weight:     600;
+}
+
+.tsr-compact-table__link:hover {
+	color:           var(--tsr-blue);
+	text-decoration: underline;
+}
+
+/* Non-finisher rows */
+.tsr-runner-row--dnx td {
+	color: var(--tsr-muted);
+}
+
+/* ── Event History page ─────────────────────────────────────────────────────── */
+
+/* Course records heading */
+.tsr-event-records {
+	margin-bottom: 2rem;
+}
+
+.tsr-event-records__title {
+	font-size:      0.78rem;
+	font-weight:    700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color:          var(--tsr-muted);
+	margin-bottom:  0.875rem;
+}
+
+/* Editions list */
+.tsr-editions {
+	display:        flex;
+	flex-direction: column;
+	gap:            0.6rem;
+}
+
+.tsr-edition-item {
+	display:     flex;
+	align-items: baseline;
+	gap:         1rem;
+	padding:     0.7rem 1rem;
+	background:  var(--tsr-bg);
+	border-radius: var(--tsr-radius);
+	border-left: 3px solid var(--tsr-blue);
+}
+
+.tsr-edition-item--multi {
+	flex-direction: column;
+	align-items:    flex-start;
+	gap:            0.4rem;
+}
+
+.tsr-edition-item__year {
+	font-weight: 800;
+	color:       var(--tsr-navy);
+	min-width:   3.25rem;
+	flex-shrink: 0;
+	font-size:   0.95rem;
+}
+
+.tsr-edition-item__links {
+	display:   flex;
+	flex-wrap: wrap;
+	gap:       0.4rem 0.75rem;
+}
+
+.tsr-edition-item__link {
+	color:           var(--tsr-blue);
+	text-decoration: none;
+	font-size:       0.9rem;
+	font-weight:     500;
+}
+
+.tsr-edition-item__link:hover {
+	text-decoration: underline;
+}
+
+/* Event browse list */
+.tsr-event-index {
+	list-style: none;
+	margin:     0;
+	padding:    0;
+	display:    grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap:        0.5rem;
+}
+
+.tsr-event-index__link {
+	display:       block;
+	padding:       0.55rem 0.875rem;
+	background:    var(--tsr-bg);
+	border-radius: var(--tsr-radius);
+	border-left:   3px solid var(--tsr-blue);
+	color:         var(--tsr-navy);
+	text-decoration: none;
+	font-weight:   600;
+	font-size:     0.9rem;
+	transition:    background 0.15s, color 0.15s;
+}
+
+.tsr-event-index__link:hover {
+	background: var(--tsr-blue);
+	color:      var(--tsr-white);
+}
