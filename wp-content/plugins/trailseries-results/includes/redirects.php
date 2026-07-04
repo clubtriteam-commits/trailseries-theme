@@ -196,6 +196,25 @@ add_action(
 			exit;
 		}
 
+		// Wildcard prefix fallback — catches encoded or unlisted taxonomy URLs
+		// that share a root with the exact entries above.
+		$prefix_redirects = array(
+			'/event-location/' => '/calendar/',
+			'/event-organizer/' => '/calendar/',
+			'/event-type/'      => '/calendar/',
+			'/events/'          => '/calendar/',
+			'/category/'        => '/novini/',
+			'/page/'            => '/novini/',
+			'/overal-ranking/'  => '/klasiraniya/',
+			'/klasirane/'       => '/klasiraniya/',
+		);
+		foreach ( $prefix_redirects as $prefix => $target ) {
+			if ( str_starts_with( $path, $prefix ) ) {
+				wp_redirect( home_url( $target ), 301, 'TrailSeries' );
+				exit;
+			}
+		}
+
 		// ── 410 Gone ─────────────────────────────────────────────────────────
 		$gone = array(
 			'/100-регистрирани-за-thechristmasrun' => 1,
@@ -345,6 +364,23 @@ add_action(
 				esc_html__( 'Gone', 'trailseries-results' ),
 				array( 'response' => 410 )
 			);
+		}
+
+		// Wildcard prefix 410 — catches any remaining URL under known dead families
+		// (/tag/*, /snimki/*, /sabitia/*) not enumerated individually above.
+		// status_header() fires explicitly so the 410 goes out even if a custom
+		// wp_die handler is registered.
+		$prefix_gone = array( '/tag/', '/snimki/', '/sabitia/' );
+		foreach ( $prefix_gone as $prefix ) {
+			if ( str_starts_with( $path, $prefix ) ) {
+				status_header( 410 );
+				nocache_headers();
+				wp_die(
+					esc_html__( 'This page has been permanently removed.', 'trailseries-results' ),
+					esc_html__( 'Gone', 'trailseries-results' ),
+					array( 'response' => 410 )
+				);
+			}
 		}
 	},
 	0   // before redirect_canonical (priority 1) and any theme hooks
