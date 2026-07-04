@@ -314,77 +314,94 @@ get_header();
 /* global L */
 (function () {
 	'use strict';
-	if ( typeof L === 'undefined' ) { return; }
 
-	var map = L.map( 'tsr-map', {
-		center: [ 42.60, 23.32 ],
-		zoom: 10,
-		scrollWheelZoom: false,
-	} );
+	var initialized = false;
 
-	// Enable scroll zoom only while the map has focus.
-	map.on( 'focus', function () { map.scrollWheelZoom.enable(); } );
-	map.on( 'blur',  function () { map.scrollWheelZoom.disable(); } );
+	function initTsrMap() {
+		if ( initialized || typeof L === 'undefined' ) { return; }
+		initialized = true;
 
-	L.tileLayer(
-		'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-		{
-			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
-			subdomains: 'abcd',
-			maxZoom: 19,
-		}
-	).addTo( map );
+		var map = L.map( 'tsr-map', {
+			center: [ 42.60, 23.32 ],
+			zoom: 10,
+			scrollWheelZoom: false,
+		} );
 
-	var bluePin = { radius: 9,  fillColor: '#00aadd', color: '#fff', weight: 2, opacity: 1,   fillOpacity: 0.92 };
-	var grayPin = { radius: 8,  fillColor: '#888888', color: '#fff', weight: 2, opacity: 0.8,  fillOpacity: 0.65 };
+		// Enable scroll zoom only while the map has focus.
+		map.on( 'focus', function () { map.scrollWheelZoom.enable(); } );
+		map.on( 'blur',  function () { map.scrollWheelZoom.disable(); } );
 
-	var active = [
-		{ lat: 42.3800, lng: 23.5200, name: 'Golyam Sechko Run',    mountain: 'Плана',  month: 'Януари',    dist: '6 / 9 / 15 км' },
-		{ lat: 42.4000, lng: 23.5000, name: 'Malak Sechko Run',     mountain: 'Плана',  month: 'Февруари',  dist: '6 / 13 / 19 км' },
-		{ lat: 42.5500, lng: 23.4800, name: 'Baba Marta Run',       mountain: 'Лозен',  month: 'Март',      dist: '6 / 10 / 16 км' },
-		{ lat: 42.6800, lng: 23.1900, name: 'Lyulin Trail Run',     mountain: 'Люлин',  month: 'Май',       dist: '5.5 / 11.5 / 17 км' },
-		{ lat: 42.5700, lng: 23.2800, name: '7 Hills Run',          mountain: 'Витоша', month: 'Септември', dist: '6 / 13 / 19 / 26 км' },
-		{ lat: 42.8300, lng: 23.5800, name: 'Buhovo Half Marathon', mountain: 'Мургаш', month: 'Октомври',  dist: '10.7 / 21 км' },
-		{ lat: 42.6100, lng: 23.4500, name: 'The Cactus Run',       mountain: 'Лозен',  month: 'Ноември',   dist: '7 / 14 / 21 км' },
-		{ lat: 42.6600, lng: 23.1800, name: 'The Christmas Run',    mountain: 'Люлин',  month: 'Декември',  dist: '5.5 / 11 / 15 км' },
-	];
+		L.tileLayer(
+			'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+			{
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
+				subdomains: 'abcd',
+				maxZoom: 19,
+			}
+		).addTo( map );
 
-	var historical = [
-		{ lat: 42.6400, lng: 23.3200, name: 'Simeonovo Run',        mountain: 'Витоша', note: 'последно издание 2023' },
-		{ lat: 42.6200, lng: 23.3000, name: 'Birthday Run',         mountain: 'Витоша', note: 'последно издание 2024' },
-		{ lat: 42.6000, lng: 23.4700, name: 'Pancharevo Night Run', mountain: 'Лозен',  note: 'последно издание 2021' },
-		{ lat: 42.6900, lng: 23.2100, name: 'iRan Run',             mountain: 'Люлин',  note: 'последно издание 2019' },
-	];
+		var bluePin = { radius: 9,  fillColor: '#00aadd', color: '#fff', weight: 2, opacity: 1,   fillOpacity: 0.92 };
+		var grayPin = { radius: 8,  fillColor: '#888888', color: '#fff', weight: 2, opacity: 0.8,  fillOpacity: 0.65 };
 
-	active.forEach( function ( e ) {
-		L.circleMarker( [ e.lat, e.lng ], bluePin )
-			.bindPopup(
-				'<strong>' + e.name + '</strong><br>' +
-				e.mountain + ' &middot; ' + e.month + '<br>' +
-				'<span class="tsr-popup-dist">' + e.dist + '</span>'
-			)
-			.addTo( map );
-	} );
+		var active = [
+			{ lat: 42.3800, lng: 23.5200, name: 'Golyam Sechko Run',    mountain: 'Плана',  month: 'Януари',    dist: '6 / 9 / 15 км' },
+			{ lat: 42.4000, lng: 23.5000, name: 'Malak Sechko Run',     mountain: 'Плана',  month: 'Февруари',  dist: '6 / 13 / 19 км' },
+			{ lat: 42.5500, lng: 23.4800, name: 'Baba Marta Run',       mountain: 'Лозен',  month: 'Март',      dist: '6 / 10 / 16 км' },
+			{ lat: 42.6800, lng: 23.1900, name: 'Lyulin Trail Run',     mountain: 'Люлин',  month: 'Май',       dist: '5.5 / 11.5 / 17 км' },
+			{ lat: 42.5700, lng: 23.2800, name: '7 Hills Run',          mountain: 'Витоша', month: 'Септември', dist: '6 / 13 / 19 / 26 км' },
+			{ lat: 42.8300, lng: 23.5800, name: 'Buhovo Half Marathon', mountain: 'Мургаш', month: 'Октомври',  dist: '10.7 / 21 км' },
+			{ lat: 42.6100, lng: 23.4500, name: 'The Cactus Run',       mountain: 'Лозен',  month: 'Ноември',   dist: '7 / 14 / 21 км' },
+			{ lat: 42.6600, lng: 23.1800, name: 'The Christmas Run',    mountain: 'Люлин',  month: 'Декември',  dist: '5.5 / 11 / 15 км' },
+		];
 
-	historical.forEach( function ( e ) {
-		L.circleMarker( [ e.lat, e.lng ], grayPin )
-			.bindPopup(
-				'<strong>' + e.name + '</strong><br>' +
-				e.mountain + '<br>' +
-				'<em>' + e.note + '</em>'
-			)
-			.addTo( map );
-	} );
+		var historical = [
+			{ lat: 42.6400, lng: 23.3200, name: 'Simeonovo Run',        mountain: 'Витоша', note: 'последно издание 2023' },
+			{ lat: 42.6200, lng: 23.3000, name: 'Birthday Run',         mountain: 'Витоша', note: 'последно издание 2024' },
+			{ lat: 42.6000, lng: 23.4700, name: 'Pancharevo Night Run', mountain: 'Лозен',  note: 'последно издание 2021' },
+			{ lat: 42.6900, lng: 23.2100, name: 'iRan Run',             mountain: 'Люлин',  note: 'последно издание 2019' },
+		];
 
-	var legend = L.control( { position: 'bottomright' } );
-	legend.onAdd = function () {
-		var div = L.DomUtil.create( 'div', 'tsr-map-legend' );
-		div.innerHTML =
-			'<span class="tsr-map-legend__dot tsr-map-legend__dot--active"></span>Активни<br>' +
-			'<span class="tsr-map-legend__dot tsr-map-legend__dot--hist"></span>Исторически';
-		return div;
-	};
-	legend.addTo( map );
+		active.forEach( function ( e ) {
+			L.circleMarker( [ e.lat, e.lng ], bluePin )
+				.bindPopup(
+					'<strong>' + e.name + '</strong><br>' +
+					e.mountain + ' &middot; ' + e.month + '<br>' +
+					'<span class="tsr-popup-dist">' + e.dist + '</span>'
+				)
+				.addTo( map );
+		} );
+
+		historical.forEach( function ( e ) {
+			L.circleMarker( [ e.lat, e.lng ], grayPin )
+				.bindPopup(
+					'<strong>' + e.name + '</strong><br>' +
+					e.mountain + '<br>' +
+					'<em>' + e.note + '</em>'
+				)
+				.addTo( map );
+		} );
+
+		var legend = L.control( { position: 'bottomright' } );
+		legend.onAdd = function () {
+			var div = L.DomUtil.create( 'div', 'tsr-map-legend' );
+			div.innerHTML =
+				'<span class="tsr-map-legend__dot tsr-map-legend__dot--active"></span>Активни<br>' +
+				'<span class="tsr-map-legend__dot tsr-map-legend__dot--hist"></span>Исторически';
+			return div;
+		};
+		legend.addTo( map );
+	}
+
+	// If Leaflet loaded synchronously it's available now; otherwise wait for
+	// DOMContentLoaded (fires after deferred scripts) and window.load (fires
+	// after async scripts) so the map initialises regardless of how the parent
+	// theme outputs the <script> tag.
+	if ( typeof L !== 'undefined' ) {
+		initTsrMap();
+	} else {
+		document.addEventListener( 'DOMContentLoaded', initTsrMap );
+		window.addEventListener( 'load', initTsrMap );
+	}
 }() );
 </script>
 
