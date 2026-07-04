@@ -70,7 +70,7 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	}
 	wp_enqueue_style(
 		'leaflet',
-		'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+		'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
 		array(),
 		'1.9.4'
 	);
@@ -78,7 +78,7 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	// script in front-page.php executes during body rendering.
 	wp_enqueue_script(
 		'leaflet',
-		'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+		'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
 		array(),
 		'1.9.4',
 		false
