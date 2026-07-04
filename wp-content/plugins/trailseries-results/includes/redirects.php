@@ -14,8 +14,13 @@
 declare( strict_types=1 );
 
 add_action(
-	'template_redirect',
+	'init',
 	static function (): void {
+		// Skip wp-admin and AJAX requests — front-end only.
+		if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			return;
+		}
+
 		// Decode and strip trailing slash so we match regardless of slash style.
 		$raw  = (string) ( parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ) ?: '/' );
 		$path = untrailingslashit( urldecode( $raw ) );
@@ -383,5 +388,5 @@ add_action(
 			}
 		}
 	},
-	0   // before redirect_canonical (priority 1) and any theme hooks
+	0   // priority 0 on init fires before page-cache output buffers and any theme/plugin hooks
 );
