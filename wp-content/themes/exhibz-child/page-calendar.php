@@ -31,7 +31,7 @@ get_header();
 
 		<section class="tsr-prose-section">
 			<?php if ( shortcode_exists( 'add_eventon_list' ) ) : ?>
-				<?php echo do_shortcode( '[add_eventon_list number_of_months="12" hide_empty_months="yes" show_et_all="1"]' ); ?>
+				<?php echo do_shortcode( '[add_eventon_list number_of_months="12" hide_past="no" hide_empty_months="yes"]' ); ?>
 			<?php else : ?>
 				<div class="tsr-notice">
 					<p>Календарът временно не е достъпен. Следете новините ни за предстоящите състезания.</p>
