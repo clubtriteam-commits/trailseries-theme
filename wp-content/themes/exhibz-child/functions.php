@@ -62,6 +62,29 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	);
 }, 20 );
 
+// ── Leaflet map (front page only) ────────────────────────────────────────────
+
+add_action( 'wp_enqueue_scripts', static function (): void {
+	if ( ! is_front_page() ) {
+		return;
+	}
+	wp_enqueue_style(
+		'leaflet',
+		'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+		array(),
+		'1.9.4'
+	);
+	// Load in <head> (false) so the L global exists when the inline init
+	// script in front-page.php executes during body rendering.
+	wp_enqueue_script(
+		'leaflet',
+		'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+		array(),
+		'1.9.4',
+		false
+	);
+}, 25 );
+
 // ── Homepage stats helper ─────────────────────────────────────────────────────
 
 /**

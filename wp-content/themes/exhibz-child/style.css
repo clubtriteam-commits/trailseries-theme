@@ -750,6 +750,77 @@ Text Domain:  exhibz-child
 	line-height: 1.55;
 }
 
+/* ── Map section (front page — Трасетата) ──────────────────────────────────── */
+
+.tsr-map-section {
+	background:     #060f1e;   /* darker than tsr-navy for contrast below news */
+	padding-bottom: 0;
+}
+
+.tsr-map-section .tsr-section__title       { color: var(--tsr-white); }
+.tsr-map-section .tsr-section__title::after { background: var(--tsr-blue); }
+
+.tsr-map {
+	height:     480px;
+	width:      100%;
+	display:    block;
+	margin-top: 2rem;
+}
+
+/* Dark popup skin */
+.tsr-map .leaflet-popup-content-wrapper,
+.tsr-map .leaflet-popup-tip {
+	background: #0d2040;
+	color:      rgba(255, 255, 255, 0.88);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.tsr-map .leaflet-popup-content-wrapper {
+	border-radius: var(--tsr-radius);
+}
+
+.tsr-map .leaflet-popup-content {
+	margin:      10px 14px;
+	font-size:   0.85rem;
+	line-height: 1.55;
+}
+
+.tsr-map .leaflet-popup-content strong  { color: var(--tsr-white); font-size: 0.95rem; }
+.tsr-map .leaflet-popup-content em      { color: rgba(255, 255, 255, 0.5); font-style: normal; }
+
+.tsr-popup-dist {
+	color:       var(--tsr-blue);
+	font-weight: 600;
+}
+
+.tsr-map .leaflet-popup-close-button       { color: rgba(255, 255, 255, 0.45) !important; }
+.tsr-map .leaflet-popup-close-button:hover { color: var(--tsr-white) !important; }
+
+/* Legend */
+.tsr-map-legend {
+	background:       rgba(10, 22, 40, 0.92);
+	color:            rgba(255, 255, 255, 0.82);
+	padding:          0.55rem 0.875rem;
+	border-radius:    var(--tsr-radius);
+	font-size:        0.78rem;
+	line-height:      1.9;
+	backdrop-filter:  blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+}
+
+.tsr-map-legend__dot {
+	display:        inline-block;
+	width:          10px;
+	height:         10px;
+	border-radius:  50%;
+	margin-right:   6px;
+	vertical-align: middle;
+	border:         2px solid rgba(255, 255, 255, 0.55);
+}
+
+.tsr-map-legend__dot--active { background: #00aadd; }
+.tsr-map-legend__dot--hist   { background: #888; }
+
 /* ── Новини archive — pagination ────────────────────────────────────────────── */
 .tsr-pagination {
 	margin-top: 2.5rem;
@@ -1070,5 +1141,9 @@ Text Domain:  exhibz-child
 
 	.tsr-page-hero {
 		padding: 2.5rem 0 2rem;
+	}
+
+	.tsr-map {
+		height: 360px;
 	}
 }
