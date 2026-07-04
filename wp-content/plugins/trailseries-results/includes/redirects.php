@@ -347,5 +347,5 @@ add_action(
 			);
 		}
 	},
-	20  // before default template selection
+	0   // before redirect_canonical (priority 1) and any theme hooks
 );

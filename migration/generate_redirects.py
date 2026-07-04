@@ -115,7 +115,7 @@ def main() -> None:
         "\t\t\t);",
         "\t\t}",
         "\t},",
-        "\t20  // before default template selection",
+        "\t0   // before redirect_canonical (priority 1) and any theme hooks",
         ");",
         "",
     ]
