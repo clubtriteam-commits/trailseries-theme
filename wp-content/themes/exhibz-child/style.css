@@ -809,6 +809,57 @@ Text Domain:  exhibz-child
 	margin-top: 2rem;
 }
 
+/* Custom pin markers */
+.leaflet-marker-icon {
+	overflow: visible; /* allow scale(1.4) to bleed outside the icon bounding box */
+}
+
+.tsr-map-pin {
+	width:            20px;
+	height:           30px;
+	position:         relative;
+	cursor:           pointer;
+	transform-origin: 50% 100%; /* scale from the anchor point at the pin tip */
+	transition:       transform 0.18s ease, filter 0.18s ease;
+}
+
+/* Circle — top part of the pin */
+.tsr-map-pin::before {
+	content:       '';
+	position:      absolute;
+	top:           0;
+	left:          50%;
+	transform:     translateX(-50%);
+	width:         18px;
+	height:        18px;
+	border-radius: 50%;
+	background:    currentColor;
+	border:        2px solid rgba(255, 255, 255, 0.85);
+	box-shadow:    0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Triangle — tail of the pin */
+.tsr-map-pin::after {
+	content:      '';
+	position:     absolute;
+	bottom:       0;
+	left:         50%;
+	transform:    translateX(-50%);
+	width:        0;
+	height:       0;
+	border-left:  6px solid transparent;
+	border-right: 6px solid transparent;
+	border-top:   12px solid currentColor;
+}
+
+.tsr-map-pin--active { color: #00aadd; }
+.tsr-map-pin--hist   { color: #888888; }
+
+.leaflet-marker-icon:hover .tsr-map-pin {
+	transform: scale(1.4);
+	filter:    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
+}
+
 /* Dark popup skin */
 .tsr-map .leaflet-popup-content-wrapper,
 .tsr-map .leaflet-popup-tip {
