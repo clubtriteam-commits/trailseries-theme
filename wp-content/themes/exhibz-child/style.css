@@ -750,6 +750,48 @@ Text Domain:  exhibz-child
 	line-height: 1.55;
 }
 
+/* ── Zero to HERO section (front page) ─────────────────────────────────────── */
+
+.tsr-zero-section {
+	background: var(--tsr-navy);
+}
+
+.tsr-zero-section .tsr-section__title {
+	color: var(--tsr-orange);
+}
+
+.tsr-zero-section .tsr-section__title::after {
+	background: var(--tsr-orange);
+}
+
+.tsr-zero-card {
+	background:    var(--tsr-navy-2);
+	border-left:   4px solid var(--tsr-orange);
+	border-radius: 0 var(--tsr-radius) var(--tsr-radius) 0;
+	box-shadow:    0 2px 16px rgba(0, 0, 0, 0.35);
+}
+
+.tsr-zero-card:hover {
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(224, 92, 30, 0.2);
+	transform:  translateY(-3px);
+}
+
+.tsr-zero-card .tsr-card__title {
+	color: var(--tsr-white);
+}
+
+.tsr-zero-card .tsr-card__meta {
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.tsr-zero-card .tsr-card__link {
+	color: var(--tsr-orange);
+}
+
+.tsr-zero-card .tsr-card__link:hover {
+	color: #c94e16;
+}
+
 /* ── Map section (front page — Трасетата) ──────────────────────────────────── */
 
 .tsr-map-section {

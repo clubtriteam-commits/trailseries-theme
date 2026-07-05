@@ -75,6 +75,19 @@ $tsr_news = get_posts(
 	)
 );
 
+// 4. Zero to HERO stories — latest 2 from the "zero-to-hero" category.
+$tsr_zero = get_posts(
+	array(
+		'post_type'     => 'post',
+		'numberposts'   => 2,
+		'post_status'   => 'publish',
+		'category_name' => 'zero-to-hero',
+		'orderby'       => 'date',
+		'order'         => 'DESC',
+		'no_found_rows' => true,
+	)
+);
+
 // 4. Stats.
 $tsr_total_races     = tsr_homepage_total_races();
 $tsr_total_finishers = tsr_homepage_total_finishers();
@@ -298,7 +311,43 @@ get_header();
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════════
-     SECTION 5 — MAP: ТРАСЕТАТА
+     SECTION 5 — ZERO TO HERO
+     ════════════════════════════════════════════════════════════════════════ -->
+<?php if ( ! empty( $tsr_zero ) ) : ?>
+<section class="tsr-section tsr-zero-section" aria-labelledby="tsr-zero-title">
+	<div class="tsr-container">
+		<h2 class="tsr-section__title" id="tsr-zero-title">Zero to HERO</h2>
+
+		<div class="tsr-grid">
+			<?php foreach ( $tsr_zero as $tsr_zero_post ) :
+				$tsr_zero_excerpt = $tsr_zero_post->post_excerpt
+					?: wp_trim_words( strip_shortcodes( $tsr_zero_post->post_content ), 20, '…' );
+				?>
+				<article class="tsr-card tsr-zero-card">
+					<div class="tsr-card__body">
+						<p class="tsr-card__meta">
+							<?php echo esc_html( get_the_date( 'j F Y', $tsr_zero_post ) ); ?>
+						</p>
+						<h3 class="tsr-card__title">
+							<?php echo esc_html( get_the_title( $tsr_zero_post ) ); ?>
+						</h3>
+						<p class="tsr-card__meta">
+							<?php echo esc_html( $tsr_zero_excerpt ); ?>
+						</p>
+						<a class="tsr-card__link"
+						   href="<?php echo esc_url( get_permalink( $tsr_zero_post ) ); ?>">
+							Прочети
+						</a>
+					</div>
+				</article>
+			<?php endforeach; ?>
+		</div>
+	</div>
+</section>
+<?php endif; ?>
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     SECTION 6 — MAP: ТРАСЕТАТА
      ════════════════════════════════════════════════════════════════════════ -->
 <section class="tsr-section tsr-map-section" aria-labelledby="tsr-map-title">
 	<div class="tsr-container">
@@ -406,7 +455,7 @@ get_header();
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════════════════
-     SECTION 6 — QUICK STATS
+     SECTION 7 — QUICK STATS
      ════════════════════════════════════════════════════════════════════════ -->
 <section class="tsr-stats" aria-label="Статистика на сезоните">
 	<div class="tsr-container">
