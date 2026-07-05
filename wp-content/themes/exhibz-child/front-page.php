@@ -424,6 +424,8 @@ get_header();
 					e.mountain + ' &middot; ' + e.month + '<br>' +
 					'<span class="tsr-popup-dist">' + e.dist + '</span>'
 				)
+				.on( 'mouseover', function () { this.openPopup(); } )
+				.on( 'mouseout',  function () { this.closePopup(); } )
 				.addTo( map );
 		} );
 
@@ -434,6 +436,8 @@ get_header();
 					e.mountain + '<br>' +
 					'<em>' + e.note + '</em>'
 				)
+				.on( 'mouseover', function () { this.openPopup(); } )
+				.on( 'mouseout',  function () { this.closePopup(); } )
 				.addTo( map );
 		} );
 
