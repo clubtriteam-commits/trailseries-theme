@@ -233,6 +233,25 @@ foreach ( $all_posts as $post ) {
 // Sort years newest-first. Year key 0 ("Без година") is the lowest, so it
 // lands last after krsort — correct position at the bottom of the list.
 krsort( $grouped, SORT_NUMERIC );
+
+// ── Season display labels ─────────────────────────────────────────────────────
+$season_labels = array(
+	2012 => 'Сезон 1 (2012–2013)',
+	2013 => 'Сезон 2 (2013–2014)',
+	2014 => 'Сезон 3 (2014–2015)',
+	2015 => 'Сезон 4 (2015–2016)',
+	2016 => 'Сезон 5 (2016–2017)',
+	2017 => 'Сезон 6 (2017–2018)',
+	2018 => 'Сезон 7 (2018–2019)',
+	2019 => 'Сезон 8 (2019–2020)',
+	2020 => 'Сезон 8 (2019–2020)',
+	2021 => 'Сезон 9 (2021)',
+	2022 => 'Сезон 10 (2022)',
+	2023 => 'Сезон 11 (2023)',
+	2024 => 'Сезон 12 (2024)',
+	2025 => 'Сезон 13 (2025)',
+	2026 => 'Сезон 14 (2026)',
+);
 ?>
 
 <div class="tsr-page-hero">
@@ -259,7 +278,9 @@ krsort( $grouped, SORT_NUMERIC );
 
 				<?php foreach ( $grouped as $year => $events ) : ?>
 					<?php
-					$year_label = $year > 0 ? (string) $year : __( 'Без година', 'exhibz-child' );
+					$year_label = $year > 0
+						? ( $season_labels[ $year ] ?? (string) $year )
+						: __( 'Без година', 'exhibz-child' );
 					$is_current = ( $year === $current_year );
 					?>
 

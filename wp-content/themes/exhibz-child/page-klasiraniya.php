@@ -43,6 +43,26 @@ $available_seasons = array_keys( $season_years );
 
 $current_season = isset( $_GET['sezon'] ) ? (int) $_GET['sezon'] : ( $available_seasons[0] ?? (int) gmdate( 'Y' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
+// ── Season display labels ─────────────────────────────────────────────────────
+$season_labels = array(
+	2012 => 'Сезон 1 (2012–2013)',
+	2013 => 'Сезон 2 (2013–2014)',
+	2014 => 'Сезон 3 (2014–2015)',
+	2015 => 'Сезон 4 (2015–2016)',
+	2016 => 'Сезон 5 (2016–2017)',
+	2017 => 'Сезон 6 (2017–2018)',
+	2018 => 'Сезон 7 (2018–2019)',
+	2019 => 'Сезон 8 (2019–2020)',
+	2020 => 'Сезон 8 (2019–2020)',
+	2021 => 'Сезон 9 (2021)',
+	2022 => 'Сезон 10 (2022)',
+	2023 => 'Сезон 11 (2023)',
+	2024 => 'Сезон 12 (2024)',
+	2025 => 'Сезон 13 (2025)',
+	2026 => 'Сезон 14 (2026)',
+);
+$current_season_label = $season_labels[ $current_season ] ?? "Сезон $current_season";
+
 // ── Max points map ────────────────────────────────────────────────────────────
 $points_map = array(
 	'short'  => 5,
@@ -166,7 +186,7 @@ $standings = array_values( $standings );
 				<?php foreach ( $available_seasons as $yr ) : ?>
 					<a class="tsr-season-nav__item<?php echo $yr === $current_season ? ' tsr-season-nav__item--active' : ''; ?>"
 					   href="<?php echo esc_url( add_query_arg( 'sezon', $yr ) ); ?>">
-						<?php echo esc_html( $yr ); ?>
+						<?php echo esc_html( $season_labels[ $yr ] ?? (string) $yr ); ?>
 					</a>
 				<?php endforeach; ?>
 			</nav>
@@ -186,7 +206,7 @@ $standings = array_values( $standings );
 		<!-- ─── Standings table ────────────────────────────────────────────── -->
 		<?php if ( ! empty( $standings ) ) : ?>
 			<section class="tsr-prose-section">
-				<h2>Сезон <?php echo esc_html( $current_season ); ?></h2>
+				<h2><?php echo esc_html( $current_season_label ); ?></h2>
 				<div class="tsr-results-wrap">
 					<table class="tsr-results">
 						<thead>
@@ -213,7 +233,7 @@ $standings = array_values( $standings );
 		<?php else : ?>
 			<section class="tsr-prose-section">
 				<p class="tsr-empty">
-					Няма резултати за сезон <?php echo esc_html( $current_season ); ?>.
+					Няма резултати за <?php echo esc_html( $current_season_label ); ?>.
 				</p>
 			</section>
 		<?php endif; ?>
