@@ -1056,6 +1056,125 @@ Text Domain:  exhibz-child
 	opacity: 0.75;
 }
 
+/* ── Calendar — month group + event rows ────────────────────────────────────── */
+
+.tsr-cal-month {
+	margin-bottom: 2rem;
+}
+
+.tsr-cal-month__heading {
+	font-size:      0.72rem;
+	font-weight:    700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color:          var(--tsr-blue);
+	margin:         0 0 0.6rem;
+	padding-bottom: 0.35rem;
+	border-bottom:  1px solid rgba(0, 170, 221, 0.2);
+}
+
+.tsr-cal-event-list {
+	list-style: none;
+	margin:     0;
+	padding:    0;
+	display:    flex;
+	flex-direction: column;
+	gap:        0.5rem;
+}
+
+.tsr-cal-event {
+	display:       flex;
+	align-items:   flex-start;
+	gap:           1rem;
+	padding:       0.75rem 1rem;
+	background:    var(--tsr-white);
+	border-radius: var(--tsr-radius);
+	border-left:   3px solid var(--tsr-blue);
+	transition:    background 0.15s ease, border-color 0.15s ease;
+}
+
+.tsr-cal-event:hover {
+	background:         #eaf6fb;
+	border-left-color:  var(--tsr-navy);
+}
+
+.tsr-cal-event--past {
+	border-left-color: var(--tsr-border);
+}
+
+.tsr-cal-event--past:hover {
+	border-left-color: var(--tsr-muted);
+}
+
+.tsr-cal-event__date {
+	display:        flex;
+	flex-direction: column;
+	align-items:    center;
+	min-width:      2.5rem;
+	flex-shrink:    0;
+	line-height:    1.1;
+	padding-top:    0.1rem;
+}
+
+.tsr-cal-event__day {
+	font-size:   1.5rem;
+	font-weight: 900;
+	color:       var(--tsr-navy);
+}
+
+.tsr-cal-event--past .tsr-cal-event__day {
+	color: var(--tsr-muted);
+}
+
+.tsr-cal-event__mon {
+	font-size:      0.6rem;
+	font-weight:    700;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	color:          var(--tsr-muted);
+}
+
+.tsr-cal-event__body {
+	flex: 1;
+	min-width: 0;
+}
+
+.tsr-cal-event__title {
+	display:         block;
+	font-weight:     700;
+	font-size:       1rem;
+	color:           var(--tsr-navy);
+	text-decoration: none;
+	line-height:     1.3;
+}
+
+.tsr-cal-event__title:hover {
+	color:           var(--tsr-blue);
+	text-decoration: underline;
+}
+
+.tsr-cal-event--past .tsr-cal-event__title {
+	color: var(--tsr-muted);
+}
+
+.tsr-cal-event__location {
+	display:     flex;
+	align-items: center;
+	gap:         0.3rem;
+	font-size:   0.8rem;
+	color:       var(--tsr-muted);
+	margin:      0.25rem 0 0;
+}
+
+.tsr-cal-event__location svg {
+	flex-shrink: 0;
+	color:       var(--tsr-blue);
+}
+
+.tsr-cal-event--past .tsr-cal-event__location svg {
+	color: var(--tsr-muted);
+}
+
 /* ── Новини archive — pagination ────────────────────────────────────────────── */
 .tsr-pagination {
 	margin-top: 2.5rem;
