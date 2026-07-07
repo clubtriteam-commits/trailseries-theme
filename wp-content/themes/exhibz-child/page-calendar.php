@@ -42,7 +42,7 @@ get_header();
 			<!-- Past events this year -->
 			<section class="tsr-prose-section tsr-cal-past">
 				<h2 class="tsr-cal-section__title tsr-cal-section__title--past">Изминали тази година</h2>
-				<?php echo do_shortcode( '[add_eventon_list number_of_months="-6" hide_past="no" hide_empty_months="yes" show_upcoming="no"]' ); ?>
+				<?php echo do_shortcode( '[add_eventon_list number_of_months="12" hide_past="no" hide_empty_months="yes" fo="past"]' ); ?>
 			</section>
 
 		<?php else : ?>
