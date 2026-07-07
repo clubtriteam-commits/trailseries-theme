@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Template Name: Резултати
  *
@@ -211,11 +211,15 @@ $grouped      = array();
 $current_year = (int) gmdate( 'Y' );
 
 foreach ( $all_posts as $post ) {
-	// Year: title first, slug second, 0 = "Без година".
+	// Year: _tsr_season meta first (most authoritative), then title heuristics,
+	// then slug heuristics, 0 = "Без година".
 	// NEVER use post_date — it is the import date, not the race year.
-	$year_key = tsr_title_year( $post->post_title )
-		?? tsr_slug_year( $post->post_name )
-		?? 0;
+	$season_meta = get_post_meta( $post->ID, '_tsr_season', true );
+	$year_key    = ( '' !== (string) $season_meta )
+		? (int) $season_meta
+		: ( tsr_title_year( $post->post_title )
+			?? tsr_slug_year( $post->post_name )
+			?? 0 );
 
 	// Event name: title-derived first, slug-derived as fallback.
 	$event_name = tsr_event_base_name( $post->post_title );
