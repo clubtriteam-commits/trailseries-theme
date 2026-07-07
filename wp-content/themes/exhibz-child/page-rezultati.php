@@ -40,6 +40,7 @@
  * @param string $title Full post_title.
  * @return int|null 4-digit year, or null when none is found.
  */
+if ( ! function_exists( 'tsr_title_year' ) ) {
 function tsr_title_year( string $title ): ?int {
 	$pos = mb_strpos( $title, ' — ' );
 	$raw = false !== $pos ? mb_substr( $title, 0, $pos ) : $title;
@@ -53,6 +54,7 @@ function tsr_title_year( string $title ): ?int {
 		return (int) $m[1];
 	}
 	return null;
+}
 }
 
 /**
@@ -78,6 +80,7 @@ function tsr_title_year( string $title ): ?int {
  * @param string $slug post_name.
  * @return int|null 4-digit year, or null when none is found.
  */
+if ( ! function_exists( 'tsr_slug_year' ) ) {
 function tsr_slug_year( string $slug ): ?int {
 	$base = explode( '--', $slug )[0];
 
@@ -104,6 +107,7 @@ function tsr_slug_year( string $slug ): ?int {
 
 	return null;
 }
+}
 
 /**
  * Derive a clean event base name from a ts_result post_title.
@@ -124,6 +128,7 @@ function tsr_slug_year( string $slug ): ?int {
  * @param string $title Full post_title.
  * @return string Clean event name, possibly empty.
  */
+if ( ! function_exists( 'tsr_event_base_name' ) ) {
 function tsr_event_base_name( string $title ): string {
 	$pos = mb_strpos( $title, ' — ' );
 	if ( false !== $pos ) {
@@ -145,6 +150,7 @@ function tsr_event_base_name( string $title ): string {
 	$title = (string) preg_replace( '/\s{2,}/u', ' ', $title );
 	return trim( $title );
 }
+}
 
 /**
  * Derive a human-readable event name from the post_name (slug).
@@ -157,6 +163,7 @@ function tsr_event_base_name( string $title ): string {
  * @param string $slug post_name.
  * @return string Human-readable name, possibly empty.
  */
+if ( ! function_exists( 'tsr_slug_event_name' ) ) {
 function tsr_slug_event_name( string $slug ): string {
 	$base = explode( '--', $slug )[0];
 
@@ -189,6 +196,7 @@ function tsr_slug_event_name( string $slug ): string {
 		explode( '-', $base )
 	);
 	return implode( ' ', $words );
+}
 }
 
 // ── 1. Fetch all published ts_result posts ──────────────────────────────────

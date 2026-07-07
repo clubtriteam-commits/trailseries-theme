@@ -748,6 +748,7 @@ final class TSR_CLI {
 			return TSR_Result_Set::from_array( $data );
 		} catch ( InvalidArgumentException $e ) {
 			WP_CLI::error( sprintf( 'File does not match the canonical schema: %s', $e->getMessage() ) );
+			throw $e; // unreachable; WP_CLI::error() exits — satisfies return-type checker
 		}
 	}
 
