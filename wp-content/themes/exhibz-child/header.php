@@ -56,3 +56,12 @@
 	</nav>
 
 </header><!-- #masthead -->
+<script>
+(function () {
+	var h = document.getElementById( 'masthead' );
+	if ( ! h ) { return; }
+	window.addEventListener( 'scroll', function () {
+		h.classList.toggle( 'tsr-header--scrolled', window.scrollY > 80 );
+	}, { passive: true } );
+}());
+</script>
