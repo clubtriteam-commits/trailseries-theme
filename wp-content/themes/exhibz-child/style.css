@@ -1175,6 +1175,49 @@ Text Domain:  exhibz-child
 	color: var(--tsr-muted);
 }
 
+.tsr-cal-event__thumb {
+	width:         80px;
+	height:        80px;
+	object-fit:    cover;
+	border-radius: calc( var(--tsr-radius) - 2px );
+	flex-shrink:   0;
+}
+
+/* Upcoming events — dark navy style */
+.tsr-cal-upcoming .tsr-cal-event {
+	background:  var(--tsr-navy);
+	border-left: 3px solid var(--tsr-blue);
+}
+
+.tsr-cal-upcoming .tsr-cal-event:hover {
+	background:        #0f1f3a;
+	border-left-color: var(--tsr-blue);
+}
+
+.tsr-cal-upcoming .tsr-cal-event__day {
+	color: #fff;
+}
+
+.tsr-cal-upcoming .tsr-cal-event__mon {
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.tsr-cal-upcoming .tsr-cal-event__title {
+	color: #fff;
+}
+
+.tsr-cal-upcoming .tsr-cal-event__title:hover {
+	color: var(--tsr-blue);
+}
+
+.tsr-cal-upcoming .tsr-cal-event__location {
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.tsr-cal-upcoming .tsr-cal-event__location svg {
+	color: var(--tsr-blue);
+}
+
 /* ── Новини archive — pagination ────────────────────────────────────────────── */
 .tsr-pagination {
 	margin-top: 2.5rem;

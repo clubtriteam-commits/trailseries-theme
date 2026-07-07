@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Template Name: Календар
  *
@@ -48,7 +48,8 @@ while ( $tsr_upcoming_q->have_posts() ) {
 		'title'    => get_the_title(),
 		'url'      => get_permalink(),
 		'ts'       => $tsr_ts,
-		'location' => (string) ( get_post_meta( $tsr_id, 'evcal_location_raw', true ) ?: '' ),
+		'location'      => (string) ( get_post_meta( $tsr_id, 'evcal_location_raw', true ) ?: '' ),
+		'thumbnail_url' => (string) ( get_the_post_thumbnail_url( $tsr_id, 'thumbnail' ) ?: '' ),
 	);
 }
 wp_reset_postdata();
@@ -124,6 +125,13 @@ get_header();
 						<ul class="tsr-cal-event-list">
 							<?php foreach ( $tsr_events as $tsr_ev ) : ?>
 								<li class="tsr-cal-event">
+									<?php if ( '' !== $tsr_ev['thumbnail_url'] ) : ?>
+									<img class="tsr-cal-event__thumb"
+									     src="<?php echo esc_url( $tsr_ev['thumbnail_url'] ); ?>"
+									     alt=""
+									     width="80" height="80"
+									     loading="lazy" decoding="async">
+									<?php endif; ?>
 									<div class="tsr-cal-event__date" aria-hidden="true">
 										<span class="tsr-cal-event__day"><?php echo esc_html( date_i18n( 'j', $tsr_ev['ts'] ) ); ?></span>
 										<span class="tsr-cal-event__mon"><?php echo esc_html( date_i18n( 'M', $tsr_ev['ts'] ) ); ?></span>
