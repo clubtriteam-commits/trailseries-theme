@@ -382,16 +382,16 @@ Text Domain:  exhibz-child
 	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
-.tsr-event-card__location {
+.tsr-event-card__meta-row {
 	display:     flex;
 	align-items: center;
 	gap:         0.35rem;
 	font-size:   0.8rem;
 	color:       rgba(255, 255, 255, 0.78);
-	margin:      0;
+	margin:      0.2rem 0 0;
 }
 
-.tsr-event-card__pin {
+.tsr-event-card__meta-row svg {
 	flex-shrink: 0;
 	color:       var(--tsr-blue);
 }

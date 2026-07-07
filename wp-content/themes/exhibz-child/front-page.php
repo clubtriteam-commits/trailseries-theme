@@ -47,6 +47,7 @@ if ( post_type_exists( 'ajde_events' ) ) {
 			'title'         => get_the_title(),
 			'url'           => get_permalink(),
 			'start_ts'      => (int) get_post_meta( $tsr_id, 'evcal_srow', true ),
+			'time_ts'       => (int) get_post_meta( $tsr_id, '_evcal_etime', true ),
 			'location'      => (string) ( get_post_meta( $tsr_id, 'evcal_location_raw', true ) ?: '' ),
 			'thumbnail_url' => (string) ( get_the_post_thumbnail_url( $tsr_id, 'large' ) ?: '' ),
 		);
@@ -191,6 +192,7 @@ get_header();
 				<?php foreach ( $tsr_upcoming as $ev ) :
 					$tsr_day        = date_i18n( 'j', $ev['start_ts'] );
 					$tsr_month      = date_i18n( 'M', $ev['start_ts'] );
+					$tsr_time       = $ev['time_ts'] > 0 ? date_i18n( 'H:i', $ev['time_ts'] ) . 'ч' : '';
 					$tsr_card_style = $ev['thumbnail_url']
 						? 'background-image:url(' . esc_url( $ev['thumbnail_url'] ) . ')'
 						: '';
@@ -207,9 +209,15 @@ get_header();
 
 						<div class="tsr-event-card__content">
 							<h3 class="tsr-event-card__title"><?php echo esc_html( $ev['title'] ); ?></h3>
+							<?php if ( '' !== $tsr_time ) : ?>
+								<p class="tsr-event-card__meta-row">
+									<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+									<?php echo esc_html( $tsr_time ); ?>
+								</p>
+							<?php endif; ?>
 							<?php if ( '' !== $ev['location'] ) : ?>
-								<p class="tsr-event-card__location">
-									<svg class="tsr-event-card__pin" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+								<p class="tsr-event-card__meta-row">
+									<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
 									<?php echo esc_html( $ev['location'] ); ?>
 								</p>
 							<?php endif; ?>
