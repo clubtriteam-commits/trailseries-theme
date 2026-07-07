@@ -232,7 +232,7 @@ get_header();
 		<?php endif; ?>
 
 		<p class="tsr-view-all">
-			<a class="tsr-card__link" href="<?php echo esc_url( home_url( '/kalendar/' ) ); ?>">
+			<a class="tsr-card__link" href="<?php echo esc_url( home_url( '/calendar/' ) ); ?>">
 				Пълен календар
 			</a>
 		</p>
