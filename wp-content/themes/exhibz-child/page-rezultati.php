@@ -1,4 +1,4 @@
-﻿<?php
+﻿<?php declare( strict_types=1 );
 /**
  * Template Name: Резултати
  *
@@ -27,8 +27,6 @@
  *
  * @package exhibz-child
  */
-
-declare( strict_types=1 );
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
