@@ -44,10 +44,11 @@ if ( post_type_exists( 'ajde_events' ) ) {
 		$tsr_eq->the_post();
 		$tsr_id         = get_the_ID();
 		$tsr_upcoming[] = array(
-			'title'    => get_the_title(),
-			'url'      => get_permalink(),
-			'start_ts' => (int) get_post_meta( $tsr_id, 'evcal_srow', true ),
-			'location' => (string) ( get_post_meta( $tsr_id, 'evcal_location_raw', true ) ?: '' ),
+			'title'         => get_the_title(),
+			'url'           => get_permalink(),
+			'start_ts'      => (int) get_post_meta( $tsr_id, 'evcal_srow', true ),
+			'location'      => (string) ( get_post_meta( $tsr_id, 'evcal_location_raw', true ) ?: '' ),
+			'thumbnail_url' => (string) ( get_the_post_thumbnail_url( $tsr_id, 'large' ) ?: '' ),
 		);
 	}
 	wp_reset_postdata();
@@ -186,24 +187,32 @@ get_header();
 		<h2 class="tsr-section__title" id="tsr-upcoming-title">Предстоящи събития</h2>
 
 		<?php if ( ! empty( $tsr_upcoming ) ) : ?>
-			<div class="tsr-grid">
-				<?php foreach ( $tsr_upcoming as $ev ) : ?>
-					<article class="tsr-card">
-						<div class="tsr-card__body">
-							<p class="tsr-event-date">
-								<?php echo esc_html( date_i18n( 'j F Y', $ev['start_ts'] ) ); ?>
-							</p>
-							<h3 class="tsr-card__title">
-								<?php echo esc_html( $ev['title'] ); ?>
-							</h3>
+			<div class="tsr-event-cards">
+				<?php foreach ( $tsr_upcoming as $ev ) :
+					$tsr_day        = date_i18n( 'j', $ev['start_ts'] );
+					$tsr_month      = date_i18n( 'M', $ev['start_ts'] );
+					$tsr_card_style = $ev['thumbnail_url']
+						? 'background-image:url(' . esc_url( $ev['thumbnail_url'] ) . ')'
+						: '';
+					?>
+					<article class="tsr-event-card"<?php echo $tsr_card_style ? ' style="' . $tsr_card_style . '"' : ''; ?>>
+						<a class="tsr-event-card__link"
+						   href="<?php echo esc_url( $ev['url'] ); ?>"
+						   aria-label="<?php echo esc_attr( $ev['title'] ); ?>"></a>
+
+						<div class="tsr-event-card__date">
+							<span class="tsr-event-card__day"><?php echo esc_html( $tsr_day ); ?></span>
+							<span class="tsr-event-card__month"><?php echo esc_html( $tsr_month ); ?></span>
+						</div>
+
+						<div class="tsr-event-card__content">
+							<h3 class="tsr-event-card__title"><?php echo esc_html( $ev['title'] ); ?></h3>
 							<?php if ( '' !== $ev['location'] ) : ?>
-								<p class="tsr-card__meta">
+								<p class="tsr-event-card__location">
+									<svg class="tsr-event-card__pin" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
 									<?php echo esc_html( $ev['location'] ); ?>
 								</p>
 							<?php endif; ?>
-							<a class="tsr-card__link" href="<?php echo esc_url( $ev['url'] ); ?>">
-								Научи повече
-							</a>
 						</div>
 					</article>
 				<?php endforeach; ?>

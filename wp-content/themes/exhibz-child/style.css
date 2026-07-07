@@ -286,6 +286,122 @@ Text Domain:  exhibz-child
 	margin: 0;
 }
 
+/* ── Upcoming events — image-background card grid ───────────────────────────── */
+
+.tsr-event-cards {
+	display:               grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap:                   1.25rem;
+}
+
+.tsr-event-card {
+	position:            relative;
+	height:              320px;
+	border-radius:       12px;
+	overflow:            hidden;
+	background-size:     cover;
+	background-position: center;
+	background-color:    var(--tsr-navy);
+	transition:          transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tsr-event-card:hover {
+	transform:  scale(1.03);
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* Full-card link sits above gradient, below date/content */
+.tsr-event-card__link {
+	position: absolute;
+	inset:    0;
+	z-index:  2;
+}
+
+/* Dark gradient — light at top, heavy at bottom for text legibility */
+.tsr-event-card::after {
+	content:    '';
+	position:   absolute;
+	inset:      0;
+	background: linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 0.22) 0%,
+		rgba(0, 0, 0, 0.08) 30%,
+		rgba(0, 0, 0, 0.60) 65%,
+		rgba(0, 0, 0, 0.88) 100%
+	);
+	z-index: 1;
+}
+
+/* Date badge — top-left, above gradient */
+.tsr-event-card__date {
+	position:        absolute;
+	top:             1rem;
+	left:            1rem;
+	z-index:         3;
+	display:         flex;
+	flex-direction:  column;
+	align-items:     center;
+	background:      var(--tsr-blue);
+	border-radius:   8px;
+	padding:         0.4rem 0.65rem;
+	min-width:       2.75rem;
+	line-height:     1.1;
+	text-align:      center;
+}
+
+.tsr-event-card__day {
+	font-size:   1.5rem;
+	font-weight: 900;
+	color:       #fff;
+}
+
+.tsr-event-card__month {
+	font-size:      0.65rem;
+	font-weight:    700;
+	color:          rgba(255, 255, 255, 0.85);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+/* Title + location — pinned to bottom, above gradient */
+.tsr-event-card__content {
+	position: absolute;
+	bottom:   0;
+	left:     0;
+	right:    0;
+	z-index:  3;
+	padding:  1.25rem;
+}
+
+.tsr-event-card__title {
+	font-size:   1.05rem;
+	font-weight: 800;
+	color:       #fff;
+	margin:      0 0 0.4rem;
+	line-height: 1.25;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.tsr-event-card__location {
+	display:     flex;
+	align-items: center;
+	gap:         0.35rem;
+	font-size:   0.8rem;
+	color:       rgba(255, 255, 255, 0.78);
+	margin:      0;
+}
+
+.tsr-event-card__pin {
+	flex-shrink: 0;
+	color:       var(--tsr-blue);
+}
+
+@media (max-width: 768px) {
+	.tsr-event-cards {
+		grid-template-columns: 1fr;
+	}
+}
+
 /* ── Past results list ─────────────────────────────────────────────────────── */
 .tsr-past {
 	background: var(--tsr-white);
