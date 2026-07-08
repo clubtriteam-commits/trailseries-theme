@@ -66,22 +66,26 @@ $tsr_past_results = get_posts(
 	)
 );
 
-// 3. Last 3 news posts.
+// 3. Last 3 news posts — exclude Zero to HERO category.
+$tsr_zero_cat    = get_category_by_slug( 'zero-to-hero' );
+$tsr_zero_cat_id = $tsr_zero_cat ? (int) $tsr_zero_cat->term_id : 0;
+
 $tsr_news = get_posts(
 	array(
-		'post_type'   => 'post',
-		'numberposts' => 3,
-		'post_status' => 'publish',
-		'orderby'     => 'date',
-		'order'       => 'DESC',
+		'post_type'        => 'post',
+		'numberposts'      => 3,
+		'post_status'      => 'publish',
+		'orderby'          => 'date',
+		'order'            => 'DESC',
+		'category__not_in' => $tsr_zero_cat_id ? array( $tsr_zero_cat_id ) : array(),
 	)
 );
 
-// 4. Zero to HERO stories — latest 2 from the "zero-to-hero" category.
+// 4. Zero to HERO stories — all posts from the "zero-to-hero" category.
 $tsr_zero = get_posts(
 	array(
 		'post_type'     => 'post',
-		'numberposts'   => 2,
+		'numberposts'   => -1,
 		'post_status'   => 'publish',
 		'category_name' => 'zero-to-hero',
 		'orderby'       => 'date',
@@ -330,35 +334,67 @@ get_header();
 <!-- ════════════════════════════════════════════════════════════════════════════
      SECTION 5 — ZERO TO HERO
      ════════════════════════════════════════════════════════════════════════ -->
-<?php if ( ! empty( $tsr_zero ) ) : ?>
+<?php if ( ! empty( $tsr_zero ) ) :
+	$tsr_zero_visible = array_slice( $tsr_zero, 0, 3 );
+	$tsr_zero_slides  = array_slice( $tsr_zero, 3 );
+?>
 <section class="tsr-section tsr-zero-section" aria-labelledby="tsr-zero-title">
 	<div class="tsr-container">
 		<h2 class="tsr-section__title" id="tsr-zero-title">Zero to HERO</h2>
 
-		<div class="tsr-grid">
-			<?php foreach ( $tsr_zero as $tsr_zero_post ) :
-				$tsr_zero_excerpt = $tsr_zero_post->post_excerpt
-					?: wp_trim_words( strip_shortcodes( $tsr_zero_post->post_content ), 20, '…' );
+		<!-- First 3 posts — always visible -->
+		<div class="tsr-zero-grid">
+			<?php foreach ( $tsr_zero_visible as $tsr_zp ) :
+				$tsr_z_thumb   = get_the_post_thumbnail_url( $tsr_zp, 'large' );
+				$tsr_z_excerpt = $tsr_zp->post_excerpt
+					?: wp_trim_words( strip_shortcodes( $tsr_zp->post_content ), 18, '…' );
 				?>
-				<article class="tsr-card tsr-zero-card">
-					<div class="tsr-card__body">
-						<p class="tsr-card__meta">
-							<?php echo esc_html( get_the_date( 'j F Y', $tsr_zero_post ) ); ?>
-						</p>
-						<h3 class="tsr-card__title">
-							<?php echo esc_html( get_the_title( $tsr_zero_post ) ); ?>
-						</h3>
-						<p class="tsr-card__meta">
-							<?php echo esc_html( $tsr_zero_excerpt ); ?>
-						</p>
-						<a class="tsr-card__link"
-						   href="<?php echo esc_url( get_permalink( $tsr_zero_post ) ); ?>">
-							Прочети
-						</a>
+				<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
+					<div class="tsr-zero-card__body">
+						<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
+						<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
+						<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
 					</div>
 				</article>
 			<?php endforeach; ?>
 		</div>
+
+		<?php if ( ! empty( $tsr_zero_slides ) ) :
+			$tsr_n   = count( $tsr_zero_slides );
+			$tsr_dur = $tsr_n * 5;
+			$tsr_vis = round( 100 / $tsr_n, 3 );
+			$tsr_fd  = round( min( 3, $tsr_vis * 0.15 ), 3 );
+			?>
+			<style>
+			@keyframes tsrZeroSlide {
+				0%                              { opacity: 0; visibility: hidden; }
+				<?php echo $tsr_fd; ?>%         { opacity: 1; visibility: visible; }
+				<?php echo $tsr_vis - $tsr_fd; ?>% { opacity: 1; visibility: visible; }
+				<?php echo $tsr_vis; ?>%        { opacity: 0; visibility: hidden; }
+				100%                            { opacity: 0; visibility: hidden; }
+			}
+			</style>
+
+			<!-- Remaining posts — CSS slideshow, 5 s per slide -->
+			<div class="tsr-zero-slider" aria-label="Допълнителни истории">
+				<?php foreach ( $tsr_zero_slides as $tsr_si => $tsr_zp ) :
+					$tsr_z_thumb   = get_the_post_thumbnail_url( $tsr_zp, 'large' );
+					$tsr_z_excerpt = $tsr_zp->post_excerpt
+						?: wp_trim_words( strip_shortcodes( $tsr_zp->post_content ), 18, '…' );
+					$tsr_delay     = $tsr_si * 5;
+					?>
+					<article class="tsr-zero-slide"
+					         style="animation-duration:<?php echo esc_attr( $tsr_dur ); ?>s;animation-delay:<?php echo esc_attr( $tsr_delay ); ?>s<?php echo $tsr_z_thumb ? ';background-image:url(' . esc_url( $tsr_z_thumb ) . ')' : ''; ?>">
+						<div class="tsr-zero-card__body">
+							<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
+							<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
+							<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
+						</div>
+					</article>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+
 	</div>
 </section>
 <?php endif; ?>

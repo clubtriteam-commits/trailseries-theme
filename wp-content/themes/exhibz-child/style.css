@@ -904,32 +904,109 @@ Text Domain:  exhibz-child
 	background: var(--tsr-orange);
 }
 
+/* ── Zero to HERO — image-background card grid ───────────────────────────── */
+
+.tsr-zero-grid {
+	display:               grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap:                   var(--tsr-gap);
+}
+
 .tsr-zero-card {
-	background:    var(--tsr-navy-2);
-	border-left:   4px solid var(--tsr-orange);
-	border-radius: 0 var(--tsr-radius) var(--tsr-radius) 0;
-	box-shadow:    0 2px 16px rgba(0, 0, 0, 0.35);
+	position:            relative;
+	height:              280px;
+	border-radius:       var(--tsr-radius);
+	overflow:            hidden;
+	background-color:    var(--tsr-navy-2);
+	background-size:     cover;
+	background-position: center;
+	display:             flex;
+	flex-direction:      column;
+	justify-content:     flex-end;
+	transition:          transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tsr-zero-card:hover {
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(224, 92, 30, 0.2);
 	transform:  translateY(-3px);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--tsr-orange);
 }
 
-.tsr-zero-card .tsr-card__title {
-	color: var(--tsr-white);
+.tsr-zero-card__body {
+	padding:    1.25rem;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
+	display:    flex;
+	flex-direction: column;
+	gap:        0.35rem;
 }
 
-.tsr-zero-card .tsr-card__meta {
-	color: rgba(255, 255, 255, 0.5);
+.tsr-zero-card__title {
+	font-size:   1rem;
+	font-weight: 700;
+	color:       var(--tsr-white);
+	line-height: 1.3;
+	margin:      0;
 }
 
-.tsr-zero-card .tsr-card__link {
-	color: var(--tsr-orange);
+.tsr-zero-card__excerpt {
+	font-size:   0.8rem;
+	color:       rgba(255, 255, 255, 0.68);
+	margin:      0;
+	line-height: 1.5;
 }
 
-.tsr-zero-card .tsr-card__link:hover {
+.tsr-zero-card__link {
+	display:         inline-flex;
+	align-items:     center;
+	gap:             0.2rem;
+	font-size:       0.82rem;
+	font-weight:     700;
+	color:           var(--tsr-orange);
+	text-decoration: none;
+	letter-spacing:  0.01em;
+	margin-top:      0.25rem;
+	transition:      color 0.15s ease;
+}
+
+.tsr-zero-card__link:hover {
 	color: #c94e16;
+}
+
+/* ── Zero to HERO — CSS slideshow ────────────────────────────────────────── */
+
+.tsr-zero-slider {
+	position:      relative;
+	height:        280px;
+	border-radius: var(--tsr-radius);
+	overflow:      hidden;
+	margin-top:    var(--tsr-gap);
+}
+
+.tsr-zero-slide {
+	position:            absolute;
+	inset:               0;
+	background-color:    var(--tsr-navy-2);
+	background-size:     cover;
+	background-position: center;
+	display:             flex;
+	flex-direction:      column;
+	justify-content:     flex-end;
+	border-radius:       var(--tsr-radius);
+	opacity:             0;
+	visibility:          hidden;
+	animation-name:           tsrZeroSlide;
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
+}
+
+@media (max-width: 768px) {
+	.tsr-zero-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.tsr-zero-card,
+	.tsr-zero-slider {
+		height: 240px;
+	}
 }
 
 /* ── Map section (front page — Трасетата) ──────────────────────────────────── */
