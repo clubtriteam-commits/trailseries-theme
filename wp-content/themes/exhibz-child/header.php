@@ -2,9 +2,7 @@
 /**
  * Site header — all pages.
  *
- * Overrides the Exhibz parent theme header entirely. Layout (top to bottom):
- *   Row 1 — logo (left) + site name / subtitle / tagline block (right of logo)
- *   Row 2 — primary navigation menu
+ * Single-row layout: [logo] [TrailSeries.bg] ........... [nav menu]
  *
  * @package exhibz-child
  */
@@ -21,27 +19,20 @@
 <a class="skip-link screen-reader-text" href="#main"><?php esc_html_e( 'Към съдържанието', 'exhibz-child' ); ?></a>
 
 <header id="masthead" class="tsr-site-header" role="banner">
+	<div class="tsr-container tsr-header-inner">
 
-	<!-- Row 1: logo + site name block -->
-	<div class="tsr-container tsr-header-brand">
-		<?php if ( has_custom_logo() ) : ?>
-		<div class="tsr-header-logo">
-			<?php the_custom_logo(); ?>
-		</div>
-		<?php endif; ?>
-
-		<div class="tsr-header-name">
+		<div class="tsr-header-brand">
+			<?php if ( has_custom_logo() ) : ?>
+			<div class="tsr-header-logo">
+				<?php the_custom_logo(); ?>
+			</div>
+			<?php endif; ?>
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tsr-header-name__link" rel="home">
 				<span class="tsr-header-name__title">TrailSeries<span class="tsr-header-name__tld">.bg</span></span>
 			</a>
-			<p class="tsr-header-name__subtitle">Серия планинско бягане · България</p>
-			<p class="tsr-header-name__tagline">От 2012 година</p>
 		</div>
-	</div>
 
-	<!-- Row 2: primary navigation -->
-	<nav class="tsr-header-nav" aria-label="<?php esc_attr_e( 'Основна навигация', 'exhibz-child' ); ?>">
-		<div class="tsr-container">
+		<nav class="tsr-header-nav" aria-label="<?php esc_attr_e( 'Основна навигация', 'exhibz-child' ); ?>">
 			<?php
 			wp_nav_menu(
 				array(
@@ -52,9 +43,9 @@
 				)
 			);
 			?>
-		</div>
-	</nav>
+		</nav>
 
+	</div>
 </header><!-- #masthead -->
 <script>
 (function () {

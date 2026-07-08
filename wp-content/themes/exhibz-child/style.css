@@ -1359,10 +1359,9 @@ Text Domain:  exhibz-child
 	border-color: var(--tsr-blue);
 }
 
-/* ── Site header — two-row layout ───────────────────────────────────────
+/* ── Site header — single-row layout ────────────────────────────────────
  *
- * Row 1: logo (left) + site name / subtitle / tagline (right of logo)
- * Row 2: primary navigation
+ * [logo] [TrailSeries.bg] ........... [nav menu]
  *
  * Rendered by header.php in this child theme; id="masthead" kept for
  * any JS or third-party code that targets it.
@@ -1378,18 +1377,25 @@ Text Domain:  exhibz-child
 	            0 2px 14px rgba(0, 0, 0, .32);
 }
 
-/* ── Row 1: brand block ──────────────────────────────────────────────── */
+/* ── Single-row inner layout ─────────────────────────────────────────── */
+
+.tsr-header-inner {
+	display:         flex;
+	align-items:     center;
+	justify-content: space-between;
+	padding-block:   0.75rem;
+	transition:      padding-block 0.3s ease;
+}
 
 .tsr-header-brand {
-	display:       flex;
-	align-items:   center;
-	gap:           1rem;
-	padding-block: 1rem 0.75rem;
-	transition:    padding-block 0.3s ease;
+	display:     flex;
+	align-items: center;
+	gap:         0.75rem;
+	flex-shrink: 0;
 }
 
 .tsr-header-logo a   { display: block; line-height: 0; }
-.tsr-header-logo img { max-height: 56px; width: auto; transition: max-height 0.3s ease; }
+.tsr-header-logo img { max-height: 44px; width: auto; transition: max-height 0.3s ease; }
 
 .tsr-header-name__link {
 	text-decoration: none;
@@ -1398,48 +1404,17 @@ Text Domain:  exhibz-child
 
 .tsr-header-name__title {
 	display:        block;
-	font-size:      clamp(1.5rem, 3.5vw, 2.2rem);
+	font-size:      clamp(1.05rem, 2vw, 1.35rem);
 	font-weight:    900;
 	color:          var(--tsr-white);
-	letter-spacing: -0.025em;
-	line-height:    1.1;
+	letter-spacing: -0.02em;
+	line-height:    1;
 }
 
 .tsr-header-name__tld { color: var(--tsr-blue); }
 
 .tsr-header-name__link:hover .tsr-header-name__title { color: var(--tsr-blue); }
 .tsr-header-name__link:hover .tsr-header-name__tld   { color: var(--tsr-white); }
-
-.tsr-header-name__subtitle {
-	margin:      0.2rem 0 0;
-	font-size:   0.85rem;
-	color:       rgba(255, 255, 255, 0.62);
-	font-weight: 400;
-	overflow:    hidden;
-	max-height:  2rem;
-	transition:  max-height 0.3s ease, opacity 0.25s ease, margin 0.25s ease;
-}
-
-.tsr-header-name__tagline {
-	margin:         0.15rem 0 0;
-	font-size:      0.68rem;
-	color:          var(--tsr-blue);
-	font-weight:    600;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	overflow:       hidden;
-	max-height:     1.5rem;
-	transition:     max-height 0.3s ease, opacity 0.25s ease, margin 0.25s ease;
-}
-
-/* ── Row 2: navigation ───────────────────────────────────────────────── */
-
-.tsr-header-nav {
-	background:  rgba(0, 0, 0, 0.22);
-	border-top:  1px solid rgba(255, 255, 255, 0.06);
-}
-
-.tsr-header-nav .tsr-container { padding-block: 0; }
 
 .tsr-nav-list {
 	display:     flex;
@@ -1492,41 +1467,27 @@ Text Domain:  exhibz-child
 /* ── Responsive ──────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-	.tsr-header-brand {
-		gap:           0.75rem;
-		padding-block: 0.75rem 0.6rem;
+	.tsr-header-inner {
+		padding-block: 0.6rem;
 	}
 
-	.tsr-header-logo img      { max-height: 44px; }
-	.tsr-header-name__title   { font-size: 1.35rem; }
-	.tsr-header-name__subtitle { font-size: 0.78rem; }
+	.tsr-header-logo img    { max-height: 36px; }
+	.tsr-header-name__title { font-size: 1rem; }
 
 	.tsr-nav-list > li > a {
-		padding:   0.55rem 0.65rem;
+		padding:   0.55rem 0.55rem;
 		font-size: 0.82rem;
 	}
 }
 
-@media (max-width: 480px) {
-	.tsr-header-name__subtitle { display: none; }
-	.tsr-header-name__tagline  { margin-top: 0.1rem; }
-}
-
 /* ── Sticky shrink — scrolled state (JS adds .tsr-header--scrolled) ──────── */
 
-#masthead.tsr-header--scrolled .tsr-header-brand {
-	padding-block: 0.4rem 0.35rem;
+#masthead.tsr-header--scrolled .tsr-header-inner {
+	padding-block: 0.4rem;
 }
 
 #masthead.tsr-header--scrolled .tsr-header-logo img {
-	max-height: 40px;
-}
-
-#masthead.tsr-header--scrolled .tsr-header-name__subtitle,
-#masthead.tsr-header--scrolled .tsr-header-name__tagline {
-	max-height: 0;
-	opacity:    0;
-	margin:     0;
+	max-height: 32px;
 }
 
 @media (max-width: 640px) {
