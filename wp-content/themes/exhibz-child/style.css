@@ -1319,6 +1319,120 @@ Text Domain:  exhibz-child
 	color: var(--tsr-blue);
 }
 
+/* ── Трасета page — track groups, stats, star ratings ─────────────────────── */
+.tsr-track-group {
+	margin-bottom: 2.5rem;
+}
+
+.tsr-track-group__title {
+	font-size:      1.25rem;
+	font-weight:    800;
+	color:          var(--tsr-navy);
+	margin:         0 0 0.75rem;
+	padding-bottom: 0.4rem;
+	border-bottom:  2px solid var(--tsr-blue);
+}
+
+.tsr-track-list {
+	list-style:     none;
+	margin:         0;
+	padding:        0;
+	display:        flex;
+	flex-direction: column;
+	gap:            0.6rem;
+}
+
+.tsr-track {
+	display:       flex;
+	flex-wrap:     wrap;
+	align-items:   center;
+	gap:           0.5rem 1.25rem;
+	padding:       0.85rem 1.1rem;
+	background:    var(--tsr-white);
+	border-radius: var(--tsr-radius);
+	border-left:   3px solid var(--tsr-blue);
+}
+
+.tsr-track__head {
+	display:     flex;
+	align-items: center;
+	gap:         0.75rem;
+	flex-basis:  100%;
+}
+
+.tsr-track__name {
+	font-weight: 700;
+	font-size:   1rem;
+	color:       var(--tsr-navy);
+}
+
+.tsr-track__meta {
+	display:   flex;
+	flex-wrap: wrap;
+	gap:       0.4rem 1.5rem;
+	flex:      1;
+}
+
+.tsr-track__stat {
+	display:        flex;
+	flex-direction: column;
+	line-height:    1.3;
+}
+
+.tsr-track__stat-label {
+	font-size:      0.65rem;
+	font-weight:    700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color:          var(--tsr-muted);
+}
+
+.tsr-track__stat-value {
+	font-size:   0.9rem;
+	font-weight: 700;
+	color:       var(--tsr-navy);
+}
+
+.tsr-track__gpx {
+	display:         inline-flex;
+	align-items:     center;
+	gap:             0.35rem;
+	padding:         0.35rem 0.85rem;
+	font-size:       0.8rem;
+	font-weight:     700;
+	color:           #fff;
+	background:      var(--tsr-blue);
+	border-radius:   999px;
+	text-decoration: none;
+	transition:      background 0.15s ease;
+}
+
+.tsr-track__gpx:hover {
+	background: var(--tsr-navy);
+	color:      #fff;
+}
+
+.tsr-stars {
+	display:     inline-flex;
+	gap:         0.1rem;
+	line-height: 1;
+}
+
+.tsr-star {
+	font-size: 0.95rem;
+	color:     var(--tsr-border);
+}
+
+.tsr-star--on {
+	color: var(--tsr-orange);
+}
+
+@media (max-width: 600px) {
+	.tsr-track__meta {
+		flex-basis: 100%;
+	}
+}
+
 /* ── Новини archive — pagination ────────────────────────────────────────────── */
 .tsr-pagination {
 	margin-top: 2.5rem;
