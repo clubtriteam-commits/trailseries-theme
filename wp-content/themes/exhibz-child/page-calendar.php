@@ -106,7 +106,7 @@ get_header();
 		<p class="tsr-page-hero__kicker">TrailSeries.bg</p>
 		<h1 class="tsr-page-hero__title">Календар</h1>
 		<p class="tsr-page-hero__subtitle">
-			Предстоящи състезания от сериите — дати, локации и регистрация
+			Предстоящи състезания от Trail Series — дати и локации
 		</p>
 	</div>
 </div>
