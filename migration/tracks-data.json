@@ -1,6 +1,6 @@
 {
   "generated": "2026-07-08 22:39:27",
-  "count": 58,
+  "count": 59,
   "tracks": [
     {
       "slug": "christmas-run-155km-0",
@@ -749,6 +749,19 @@
       "lowest_m": 1599.0,
       "distance_km": 9.77,
       "gpx_file": "pirin_skyrun_10km.gpx"
+    },
+    {
+      "slug": "7-hills-run-19km",
+      "source_url": "https://drace.bg/track/7-hills-run-19km",
+      "title": "7 Hills Run 19KM",
+      "gpx_url": "https://drace.bg/sites/default/files/tracks/7_hills_run_19km_.gpx",
+      "distance_m": 18108.2,
+      "ascent_m": 954.0,
+      "descent_m": 954.0,
+      "highest_m": 1218.0,
+      "lowest_m": 720.0,
+      "distance_km": 18.11,
+      "gpx_file": "7_hills_run_19km_.gpx"
     }
   ]
 }

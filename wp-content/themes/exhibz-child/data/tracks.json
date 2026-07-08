@@ -6,35 +6,54 @@
         {
           "title": "7 Hills Run 6KM",
           "slug": "7-hills-run-6km",
+          "year": null,
           "distance_km": 5.72,
           "ascent_m": 208,
           "descent_m": 206,
           "highest_m": 896,
           "lowest_m": 719,
           "gpx_file": "7_hills_run_6km_.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "7 Hills Run 13km",
           "slug": "7-hills-run-13km",
+          "year": null,
           "distance_km": 13.27,
           "ascent_m": 639,
           "descent_m": 638,
           "highest_m": 1218,
           "lowest_m": 722,
           "gpx_file": "7_hills_run_13km_2.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
+        },
+        {
+          "title": "7 Hills Run 19KM",
+          "slug": "7-hills-run-19km",
+          "year": null,
+          "distance_km": 18.11,
+          "ascent_m": 954,
+          "descent_m": 954,
+          "highest_m": 1218,
+          "lowest_m": 720,
+          "gpx_file": "7_hills_run_19km_.gpx",
+          "stars": 3,
+          "status": "current"
         },
         {
           "title": "7 Hills Run - Hard Core Edition 26km",
           "slug": "7-hills-run-hard-core-edition-26km",
+          "year": null,
           "distance_km": 26.96,
           "ascent_m": 1268,
           "descent_m": 1270,
           "highest_m": 1222,
           "lowest_m": 721,
           "gpx_file": "7_hills_run_hard_core_edition_26km_.gpx",
-          "stars": 4
+          "stars": 4,
+          "status": "current"
         }
       ]
     },
@@ -44,35 +63,41 @@
         {
           "title": "Baba Marta Run - 6KM",
           "slug": "baba-marta-run-6km-0",
+          "year": null,
           "distance_km": 5.99,
           "ascent_m": 261,
           "descent_m": 261,
           "highest_m": 729,
           "lowest_m": 607,
           "gpx_file": "baba_marta_run_6km_.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Baba Marta Run - 10KM",
           "slug": "baba-marta-run-10km-0",
+          "year": null,
           "distance_km": 9.13,
           "ascent_m": 507,
           "descent_m": 508,
           "highest_m": 982,
           "lowest_m": 607,
           "gpx_file": null,
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Baba Marta Run - 16KM",
           "slug": "baba-marta-run-16km-0",
+          "year": null,
           "distance_km": 15.17,
           "ascent_m": 877,
           "descent_m": 877,
           "highest_m": 1092,
           "lowest_m": 608,
           "gpx_file": "baba_marta_run_16km_0.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         }
       ]
     },
@@ -82,57 +107,67 @@
         {
           "title": "Birthday Run 5.5KM",
           "slug": "birthday-run-55km",
+          "year": null,
           "distance_km": 5.73,
           "ascent_m": 326,
           "descent_m": 356,
           "highest_m": 1262,
           "lowest_m": 1083,
           "gpx_file": "birthday_run_5_5km.gpx",
-          "stars": 1
-        },
-        {
-          "title": "Birthday Run'20 - 6.6km",
-          "slug": "birthday-run20-66km-1",
-          "distance_km": 6.61,
-          "ascent_m": 377,
-          "descent_m": 376,
-          "highest_m": 1250,
-          "lowest_m": 1032,
-          "gpx_file": "birthday_run_20_6_6km.gpx",
-          "stars": 2
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Birthday Run 11KM",
           "slug": "birthday-run-11km",
+          "year": null,
           "distance_km": 11.63,
           "ascent_m": 543,
           "descent_m": 540,
           "highest_m": 1255,
           "lowest_m": 1071,
           "gpx_file": "birthday_run_11km.gpx",
-          "stars": 2
-        },
-        {
-          "title": "Birthday Run'20 12km",
-          "slug": "birthday-run20-12km",
-          "distance_km": 11.91,
-          "ascent_m": 676,
-          "descent_m": 676,
-          "highest_m": 1250,
-          "lowest_m": 1032,
-          "gpx_file": "birthday_run_12km.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Birthday Run 17.5КМ",
           "slug": "birthday-run-175km",
+          "year": null,
           "distance_km": 17.51,
           "ascent_m": 835,
           "descent_m": 820,
           "highest_m": 1264,
           "lowest_m": 1069,
           "gpx_file": "birthday_run_.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
+        },
+        {
+          "title": "Birthday Run'20 - 6.6km",
+          "slug": "birthday-run20-66km-1",
+          "year": 2020,
+          "distance_km": 6.61,
+          "ascent_m": 377,
+          "descent_m": 376,
+          "highest_m": 1250,
+          "lowest_m": 1032,
+          "gpx_file": "birthday_run_20_6_6km.gpx",
+          "stars": 2,
+          "status": "legacy"
+        },
+        {
+          "title": "Birthday Run'20 12km",
+          "slug": "birthday-run20-12km",
+          "year": 2020,
+          "distance_km": 11.91,
+          "ascent_m": 676,
+          "descent_m": 676,
+          "highest_m": 1250,
+          "lowest_m": 1032,
+          "gpx_file": "birthday_run_12km.gpx",
+          "stars": 2,
+          "status": "legacy"
         }
       ]
     },
@@ -142,24 +177,28 @@
         {
           "title": "Boyana X Trail - 10km",
           "slug": "boyana-x-trail-10km",
+          "year": null,
           "distance_km": 9.98,
           "ascent_m": 808,
           "descent_m": 807,
           "highest_m": 1360,
           "lowest_m": 755,
           "gpx_file": "boyana_x_trail_10km.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Boyana X Trails - long",
           "slug": "boyana-x-trails-long",
+          "year": null,
           "distance_km": 16.56,
           "ascent_m": 1519,
           "descent_m": 1519,
           "highest_m": 1407,
           "lowest_m": 761,
           "gpx_file": "boyana_x_trails_long.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         }
       ]
     },
@@ -169,13 +208,15 @@
         {
           "title": "Buhovo Half Marathon",
           "slug": "buhovo-half-marathon",
+          "year": null,
           "distance_km": 21.04,
           "ascent_m": 1073,
           "descent_m": 1072,
           "highest_m": 1285,
           "lowest_m": 717,
           "gpx_file": "buhovo_half_marathon.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         }
       ]
     },
@@ -185,13 +226,15 @@
         {
           "title": "Buhovo Trail Run",
           "slug": "buhovo-trail-run",
+          "year": null,
           "distance_km": 10.71,
           "ascent_m": 579,
           "descent_m": 579,
           "highest_m": 1285,
           "lowest_m": 717,
           "gpx_file": "buhovo_trail_run.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         }
       ]
     },
@@ -199,81 +242,95 @@
       "name": "Golyam Sechko Run",
       "tracks": [
         {
-          "title": "Golyam Sechko Run'22",
-          "slug": "golyam-sechko-run22",
-          "distance_km": null,
-          "ascent_m": null,
-          "descent_m": null,
-          "highest_m": null,
-          "lowest_m": null,
-          "gpx_file": null,
-          "stars": null
-        },
-        {
           "title": "Golyam Sechko 6.2km",
           "slug": "golyam-sechko-62km",
+          "year": null,
           "distance_km": 6.26,
           "ascent_m": 314,
           "descent_m": 313,
           "highest_m": 953,
           "lowest_m": 711,
           "gpx_file": "golyam_sechko_6_2km.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Golyam Sechko Run - 6.5KM",
           "slug": "golyam-sechko-run-65km",
+          "year": null,
           "distance_km": 6.5,
           "ascent_m": 323,
           "descent_m": 317,
           "highest_m": 954,
           "lowest_m": 710,
           "gpx_file": "golyam_sechko_run_6_5km_0.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Golyam Sechko Run - Middle 9KM",
           "slug": "golyam-sechko-run-middle-9km-0",
+          "year": null,
           "distance_km": 8.58,
           "ascent_m": 510,
           "descent_m": 509,
           "highest_m": 1118,
           "lowest_m": 719,
           "gpx_file": "golyam_sechko_run_middle_9km.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Golyam Sechko Run 9.4km",
           "slug": "golyam-sechko-run-94km",
+          "year": null,
           "distance_km": 9.37,
           "ascent_m": 566,
           "descent_m": 567,
           "highest_m": 1130,
           "lowest_m": 708,
           "gpx_file": "golyam_sechko_run_12_4km_0.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Golyam Sechko Run - 15KM long",
           "slug": "golyam-sechko-run-15km-long",
+          "year": null,
           "distance_km": 14.9,
           "ascent_m": 712,
           "descent_m": 712,
           "highest_m": 1129,
           "lowest_m": 726,
           "gpx_file": "golyam_sechko_run_15km_long_0.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         },
         {
           "title": "Golyam Sechko Run 16K",
           "slug": "golyam-sechko-run-16k",
+          "year": null,
           "distance_km": 15.37,
           "ascent_m": 717,
           "descent_m": 716,
           "highest_m": 1129,
           "lowest_m": 726,
           "gpx_file": "golyam_sechko_run_16k_0.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
+        },
+        {
+          "title": "Golyam Sechko Run'22",
+          "slug": "golyam-sechko-run22",
+          "year": 2022,
+          "distance_km": null,
+          "ascent_m": null,
+          "descent_m": null,
+          "highest_m": null,
+          "lowest_m": null,
+          "gpx_file": null,
+          "stars": null,
+          "status": "legacy"
         }
       ]
     },
@@ -283,35 +340,41 @@
         {
           "title": "iRan Run 5.2km",
           "slug": "iran-run-52km",
+          "year": null,
           "distance_km": 5.19,
           "ascent_m": 216,
           "descent_m": 216,
           "highest_m": 930,
           "lowest_m": 750,
           "gpx_file": "iran_run_5_5km.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "iRan Run 11.5km",
           "slug": "iran-run-115km",
+          "year": null,
           "distance_km": 11.57,
           "ascent_m": 453,
           "descent_m": 454,
           "highest_m": 998,
           "lowest_m": 749,
           "gpx_file": "11_5km_0.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "iRan Run 16.7km",
           "slug": "iran-run-167km",
+          "year": null,
           "distance_km": 16.82,
           "ascent_m": 583,
           "descent_m": 581,
           "highest_m": 990,
           "lowest_m": 762,
           "gpx_file": "iran_run_16_7km.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         }
       ]
     },
@@ -321,57 +384,67 @@
         {
           "title": "Lyulin Trail Run 6KM",
           "slug": "lyulin-trail-run-6km",
+          "year": null,
           "distance_km": 5.56,
           "ascent_m": 243,
           "descent_m": 242,
           "highest_m": 932,
           "lowest_m": 816,
           "gpx_file": "lyulin_trail_run_6km.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Lyulin Trail Run 12km - 2019 update",
           "slug": "lyulin-trail-run-12km-2019-update",
+          "year": 2019,
           "distance_km": 11.55,
           "ascent_m": 556,
           "descent_m": 555,
           "highest_m": 1070,
           "lowest_m": 764,
           "gpx_file": "lyulin_trail_run_12km_2019_update.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Lyulin Trail Run 16KM",
           "slug": "lyulin-trail-run-16km-0",
+          "year": null,
           "distance_km": 15.95,
           "ascent_m": 724,
           "descent_m": 722,
           "highest_m": 1203,
           "lowest_m": 772,
           "gpx_file": "lyulin_trail_run_16km.gpx",
-          "stars": 3
-        },
-        {
-          "title": "Lyulin Trail Run 17KM (2 обиколки)",
-          "slug": "lyulin-trail-run-17km-2-obikolki",
-          "distance_km": 17.06,
-          "ascent_m": 647,
-          "descent_m": 648,
-          "highest_m": 1012,
-          "lowest_m": 666,
-          "gpx_file": "lyulin_trail_run_18km_2_obikolki_.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         },
         {
           "title": "Lyulin Trail Run 17km - 2019 update",
           "slug": "lyulin-trail-run-17km-2019-update",
+          "year": 2019,
           "distance_km": 17.12,
           "ascent_m": 803,
           "descent_m": 797,
           "highest_m": 1070,
           "lowest_m": 764,
           "gpx_file": "lyulin_trail_run_18km_2019_update_0.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
+        },
+        {
+          "title": "Lyulin Trail Run 17KM (2 обиколки)",
+          "slug": "lyulin-trail-run-17km-2-obikolki",
+          "year": null,
+          "distance_km": 17.06,
+          "ascent_m": 647,
+          "descent_m": 648,
+          "highest_m": 1012,
+          "lowest_m": 666,
+          "gpx_file": "lyulin_trail_run_18km_2_obikolki_.gpx",
+          "stars": 3,
+          "status": "legacy"
         }
       ]
     },
@@ -381,35 +454,41 @@
         {
           "title": "Malak Sechko Run - 6KM",
           "slug": "malak-sechko-run-6km",
+          "year": null,
           "distance_km": 5.83,
           "ascent_m": 397,
           "descent_m": 403,
           "highest_m": 824,
           "lowest_m": 570,
           "gpx_file": "6km.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Malak Sechko Run - 13KM",
           "slug": "malak-sechko-run-13km",
+          "year": null,
           "distance_km": 12.78,
           "ascent_m": 440,
           "descent_m": 441,
           "highest_m": 981,
           "lowest_m": 598,
           "gpx_file": null,
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Malak Sechko Run - 19KM",
           "slug": "malak-sechko-run-19km",
+          "year": null,
           "distance_km": 18.63,
           "ascent_m": 688,
           "descent_m": 692,
           "highest_m": 986,
           "lowest_m": 601,
           "gpx_file": "malak_sechko_run_19km.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         }
       ]
     },
@@ -419,35 +498,41 @@
         {
           "title": "Palakaria 5km",
           "slug": "palakaria-5km",
+          "year": null,
           "distance_km": 4.91,
           "ascent_m": 123,
           "descent_m": 122,
           "highest_m": 1197,
           "lowest_m": 1092,
           "gpx_file": "palakaria_5km.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Palakaria 10.7km",
           "slug": "palakaria-107km",
+          "year": null,
           "distance_km": 10.75,
           "ascent_m": 326,
           "descent_m": 263,
           "highest_m": 1356,
           "lowest_m": 1084,
           "gpx_file": "palakaria_10_7km.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Palakaria 21.5KM",
           "slug": "palakaria-215km",
+          "year": null,
           "distance_km": 21.29,
           "ascent_m": 681,
           "descent_m": 680,
           "highest_m": 1345,
           "lowest_m": 1077,
           "gpx_file": "palakaria_21_5km.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         }
       ]
     },
@@ -457,35 +542,41 @@
         {
           "title": "Pancharevo Night Run 6.3KM",
           "slug": "pancharevo-night-run-63km",
+          "year": null,
           "distance_km": 6.46,
           "ascent_m": 315,
           "descent_m": 315,
           "highest_m": 706,
           "lowest_m": 598,
           "gpx_file": "pancharevo_night_run_6_3km.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Pancharevo Night Run 13.6KM",
           "slug": "pancharevo-night-run-136km-0",
+          "year": null,
           "distance_km": 13.69,
           "ascent_m": 826,
           "descent_m": 826,
           "highest_m": 710,
           "lowest_m": 598,
           "gpx_file": "pancharevo_night_run_13_6km.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         },
         {
           "title": "Pancharevo Night Run 19KM",
           "slug": "pancharevo-night-run-19km",
+          "year": null,
           "distance_km": 18.81,
           "ascent_m": 924,
           "descent_m": 925,
           "highest_m": 1220,
           "lowest_m": 721,
           "gpx_file": "pancharevo_night_run_19km_0.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         }
       ]
     },
@@ -495,46 +586,54 @@
         {
           "title": "Pirin Skyrun 10KM",
           "slug": "pirin-skyrun-10km",
+          "year": null,
           "distance_km": 9.77,
           "ascent_m": 1312,
           "descent_m": 195,
           "highest_m": 2733,
           "lowest_m": 1599,
           "gpx_file": "pirin_skyrun_10km.gpx",
-          "stars": 3
-        },
-        {
-          "title": "Pirin Skyrun 14KM - 2018",
-          "slug": "pirin-skyrun-14km-2018",
-          "distance_km": 13.32,
-          "ascent_m": 1205,
-          "descent_m": 1202,
-          "highest_m": 2622,
-          "lowest_m": 1608,
-          "gpx_file": "pirin_skyrun_14km_2018_0.gpx",
-          "stars": 3
-        },
-        {
-          "title": "Pirin Skyrun 30KM - 2018",
-          "slug": "pirin-skyrun-30km-2018-0",
-          "distance_km": 30.22,
-          "ascent_m": 2114,
-          "descent_m": 2112,
-          "highest_m": 2629,
-          "lowest_m": 1609,
-          "gpx_file": null,
-          "stars": 4
+          "stars": 3,
+          "status": "current"
         },
         {
           "title": "Pirin Skyrun 34KM",
           "slug": "pirin-skyrun-34km-0",
+          "year": null,
           "distance_km": 33.58,
           "ascent_m": 2437,
           "descent_m": 2419,
           "highest_m": 2752,
           "lowest_m": 1624,
           "gpx_file": "pirin_skyrun_34km__0.gpx",
-          "stars": 4
+          "stars": 4,
+          "status": "current"
+        },
+        {
+          "title": "Pirin Skyrun 14KM - 2018",
+          "slug": "pirin-skyrun-14km-2018",
+          "year": 2018,
+          "distance_km": 13.32,
+          "ascent_m": 1205,
+          "descent_m": 1202,
+          "highest_m": 2622,
+          "lowest_m": 1608,
+          "gpx_file": "pirin_skyrun_14km_2018_0.gpx",
+          "stars": 3,
+          "status": "legacy"
+        },
+        {
+          "title": "Pirin Skyrun 30KM - 2018",
+          "slug": "pirin-skyrun-30km-2018-0",
+          "year": 2018,
+          "distance_km": 30.22,
+          "ascent_m": 2114,
+          "descent_m": 2112,
+          "highest_m": 2629,
+          "lowest_m": 1609,
+          "gpx_file": null,
+          "stars": 4,
+          "status": "legacy"
         }
       ]
     },
@@ -544,24 +643,28 @@
         {
           "title": "Pirin Vertical",
           "slug": "pirin-vertical",
+          "year": null,
           "distance_km": 3.95,
           "ascent_m": 1164,
           "descent_m": 88,
           "highest_m": 2892,
           "lowest_m": 1815,
           "gpx_file": "pirin_vertical_.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Pirin Vertical 2016",
           "slug": "pirin-vertical-2016",
+          "year": 2016,
           "distance_km": 5.86,
           "ascent_m": 1376,
           "descent_m": 83,
           "highest_m": 2891,
           "lowest_m": 1598,
           "gpx_file": "pirin_vertical_2016_0.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "legacy"
         }
       ]
     },
@@ -571,35 +674,41 @@
         {
           "title": "Simeonovo Run 5KM",
           "slug": "simeonovo-run-5km",
+          "year": null,
           "distance_km": 5.35,
           "ascent_m": 319,
           "descent_m": 322,
           "highest_m": 1146,
           "lowest_m": 898,
           "gpx_file": null,
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "Simeonovo Run 11km",
           "slug": "simeonovo-run-11km",
+          "year": null,
           "distance_km": 10.13,
           "ascent_m": 588,
           "descent_m": 589,
           "highest_m": 1388,
           "lowest_m": 912,
           "gpx_file": "simeonovo_run_11km_0.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "Simeonovo Run - 19.5km",
           "slug": "simeonovo-run-195km",
+          "year": null,
           "distance_km": 19.39,
           "ascent_m": 1165,
           "descent_m": 1166,
           "highest_m": 1483,
           "lowest_m": 904,
           "gpx_file": null,
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         }
       ]
     },
@@ -607,70 +716,82 @@
       "name": "The Cactus Run",
       "tracks": [
         {
-          "title": "The Cactus Run 6.6km",
-          "slug": "cactus-run-66km",
-          "distance_km": 6.61,
-          "ascent_m": 161,
-          "descent_m": 163,
-          "highest_m": 697,
-          "lowest_m": 591,
-          "gpx_file": "the_cactus_run_6_6km.gpx",
-          "stars": 1
-        },
-        {
           "title": "The Cactus Run'7km - 2025",
           "slug": "cactus-run7km-2025",
+          "year": 2025,
           "distance_km": 6.98,
           "ascent_m": 246,
           "descent_m": 246,
           "highest_m": 725,
           "lowest_m": 607,
           "gpx_file": "the_cactus_run_7km_2025.gpx",
-          "stars": 1
-        },
-        {
-          "title": "The Cactus Run 13.5km",
-          "slug": "cactus-run-135km",
-          "distance_km": 13.49,
-          "ascent_m": 785,
-          "descent_m": 785,
-          "highest_m": 709,
-          "lowest_m": 598,
-          "gpx_file": "the_cactus_run_20km.gpx",
-          "stars": 3
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "The Cactus Run'15km - 2025",
           "slug": "cactus-run15km-2025",
+          "year": 2025,
           "distance_km": 15.11,
           "ascent_m": 614,
           "descent_m": 614,
           "highest_m": 1091,
           "lowest_m": 607,
           "gpx_file": "the_cactus_run_15km_2025.gpx",
-          "stars": 3
-        },
-        {
-          "title": "The Cactus Run 20km",
-          "slug": "cactus-run-20km",
-          "distance_km": 19.86,
-          "ascent_m": 425,
-          "descent_m": 408,
-          "highest_m": 736,
-          "lowest_m": 600,
-          "gpx_file": "the_cactus_run_20km_0.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         },
         {
           "title": "The Cactus Run'21km - 2025",
           "slug": "cactus-run21km-2025",
+          "year": 2025,
           "distance_km": 21.67,
           "ascent_m": 866,
           "descent_m": 866,
           "highest_m": 1090,
           "lowest_m": 608,
           "gpx_file": null,
-          "stars": 3
+          "stars": 3,
+          "status": "current"
+        },
+        {
+          "title": "The Cactus Run 6.6km",
+          "slug": "cactus-run-66km",
+          "year": null,
+          "distance_km": 6.61,
+          "ascent_m": 161,
+          "descent_m": 163,
+          "highest_m": 697,
+          "lowest_m": 591,
+          "gpx_file": "the_cactus_run_6_6km.gpx",
+          "stars": 1,
+          "status": "legacy"
+        },
+        {
+          "title": "The Cactus Run 13.5km",
+          "slug": "cactus-run-135km",
+          "year": null,
+          "distance_km": 13.49,
+          "ascent_m": 785,
+          "descent_m": 785,
+          "highest_m": 709,
+          "lowest_m": 598,
+          "gpx_file": "the_cactus_run_20km.gpx",
+          "stars": 3,
+          "status": "legacy"
+        },
+        {
+          "title": "The Cactus Run 20km",
+          "slug": "cactus-run-20km",
+          "year": null,
+          "distance_km": 19.86,
+          "ascent_m": 425,
+          "descent_m": 408,
+          "highest_m": 736,
+          "lowest_m": 600,
+          "gpx_file": "the_cactus_run_20km_0.gpx",
+          "stars": 3,
+          "status": "legacy"
         }
       ]
     },
@@ -680,46 +801,54 @@
         {
           "title": "The Christmas Run 5.5km",
           "slug": "christmas-run-55km",
+          "year": null,
           "distance_km": 5.22,
           "ascent_m": 145,
           "descent_m": 141,
           "highest_m": 791,
           "lowest_m": 661,
           "gpx_file": "the_christmas_run_5_5km.gpx",
-          "stars": 1
+          "stars": 1,
+          "status": "current"
         },
         {
           "title": "The Christmas Run 11km",
           "slug": "christmas-run-11km",
+          "year": null,
           "distance_km": 10.46,
           "ascent_m": 262,
           "descent_m": 261,
           "highest_m": 774,
           "lowest_m": 667,
           "gpx_file": "the_christmas_run_11km.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         },
         {
           "title": "The Christmas Run - 15km",
           "slug": "christmas-run-15km",
+          "year": null,
           "distance_km": 14.2,
           "ascent_m": 616,
           "descent_m": 622,
           "highest_m": 944,
           "lowest_m": 665,
           "gpx_file": "the_christmas_run_15km.gpx",
-          "stars": 3
+          "stars": 3,
+          "status": "current"
         },
         {
           "title": "The Christmas Run - 15.5km",
           "slug": "christmas-run-155km-0",
+          "year": null,
           "distance_km": 15.49,
           "ascent_m": 420,
           "descent_m": 420,
           "highest_m": 785,
           "lowest_m": 659,
           "gpx_file": "the_christmas_run_15_5km.gpx",
-          "stars": 2
+          "stars": 2,
+          "status": "current"
         }
       ]
     }

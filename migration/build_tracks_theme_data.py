@@ -56,6 +56,36 @@ EVENT_ALIASES = {
     "Boyana X Trails": "Boyana X Trail",
 }
 
+# Year tokens: apostrophe-year ('20 → 2020) and literal 4-digit (2018).
+RE_YEAR_APOS = re.compile(r"['’](\d\d)\b")
+RE_YEAR_FULL = re.compile(r"\b(20\d\d)\b")
+
+# Dated editions from this year onward are current, older ones are archives
+# (when the event also has undated canonical pages).
+RECENT_YEAR = 2024
+
+# Undated tracks superseded by a newer dated version of the same course.
+# The year rule can't catch these (no year in title or slug), so they are
+# marked legacy explicitly.
+LEGACY_SLUGS = {
+    "cactus-run-66km",                  # → The Cactus Run'7km - 2025
+    "cactus-run-135km",                 # → The Cactus Run'15km - 2025
+    "cactus-run-20km",                  # → The Cactus Run'21km - 2025
+    "lyulin-trail-run-17km-2-obikolki",  # → Lyulin Trail Run 17km - 2019 update
+}
+
+
+def track_year(title: str, slug: str) -> int | None:
+    """Extract an edition year from the title or slug, None when undated."""
+    for text in (html.unescape(title), slug):
+        m = RE_YEAR_APOS.search(text)
+        if m:
+            return 2000 + int(m.group(1))
+        m = RE_YEAR_FULL.search(text)
+        if m:
+            return int(m.group(1))
+    return None
+
 
 def event_name(title: str) -> str:
     """Strip distance/year/edition tokens from the end of a page title."""
@@ -97,6 +127,7 @@ def main() -> int:
         entry = {
             "title":       html.unescape(t["title"]),
             "slug":        t["slug"],
+            "year":        track_year(t["title"], t["slug"]),
             "distance_km": t.get("distance_km"),
             "ascent_m":    round(t["ascent_m"]) if t.get("ascent_m") is not None else None,
             "descent_m":   round(t["descent_m"]) if t.get("descent_m") is not None else None,
@@ -113,9 +144,29 @@ def main() -> int:
                 shutil.copy2(src, GPX_DST / t["gpx_file"])
                 copied += 1
 
-    # Sort tracks inside each event by distance; events alphabetically.
+    # Status: undated tracks are the canonical course pages → current (unless
+    # explicitly superseded via LEGACY_SLUGS). A dated track is legacy when a
+    # newer dated edition exists in the event, or when the event also has
+    # undated canonical pages and the dated one is an old edition archive
+    # (year < RECENT_YEAR and not an "update" of the course).
     for tracks in events.values():
-        tracks.sort(key=lambda x: x["distance_km"] or 0)
+        years = [t["year"] for t in tracks if t["year"] is not None]
+        max_year = max(years) if years else None
+        has_undated = any(t["year"] is None for t in tracks)
+        for t in tracks:
+            y = t["year"]
+            legacy = (
+                t["slug"] in LEGACY_SLUGS
+                or (y is not None and max_year is not None and y < max_year)
+                or (y is not None and has_undated and y < RECENT_YEAR
+                    and "update" not in t["title"].lower())
+            )
+            t["status"] = "legacy" if legacy else "current"
+
+    # Sort tracks inside each event: current first, then legacy, by distance;
+    # events alphabetically.
+    for tracks in events.values():
+        tracks.sort(key=lambda x: (x["status"] != "current", x["distance_km"] or 0))
 
     out = {
         "events": [

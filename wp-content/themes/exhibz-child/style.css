@@ -1412,6 +1412,57 @@ Text Domain:  exhibz-child
 	color:      #fff;
 }
 
+.tsr-track__badge {
+	display:        inline-block;
+	padding:        0.15rem 0.6rem;
+	font-size:      0.65rem;
+	font-weight:    700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	border-radius:  999px;
+	line-height:    1.4;
+}
+
+.tsr-track__badge--current {
+	background: var(--tsr-blue);
+	color:      #fff;
+}
+
+.tsr-track__badge--legacy {
+	background: var(--tsr-border);
+	color:      var(--tsr-muted);
+}
+
+.tsr-track--legacy {
+	border-left-color: var(--tsr-border);
+	opacity:           0.85;
+}
+
+.tsr-track--legacy .tsr-track__name {
+	color: var(--tsr-muted);
+}
+
+.tsr-track-legacy-group {
+	margin-top: 0.6rem;
+}
+
+.tsr-track-legacy-group__summary {
+	cursor:      pointer;
+	font-size:   0.85rem;
+	font-weight: 700;
+	color:       var(--tsr-muted);
+	padding:     0.35rem 0;
+	user-select: none;
+}
+
+.tsr-track-legacy-group__summary:hover {
+	color: var(--tsr-navy);
+}
+
+.tsr-track-legacy-group[open] .tsr-track-legacy-group__summary {
+	margin-bottom: 0.6rem;
+}
+
 .tsr-stars {
 	display:     inline-flex;
 	gap:         0.1rem;
