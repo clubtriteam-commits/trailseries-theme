@@ -1414,7 +1414,7 @@ Text Domain:  exhibz-child
 	padding:     0;
 }
 
-.tsr-nav-list > li > a {
+#masthead .tsr-nav-list > li > a {
 	display:         block;
 	padding:         0.6rem 0.875rem;
 	color:           rgba(255, 255, 255, 0.78);
@@ -1423,31 +1423,36 @@ Text Domain:  exhibz-child
 	text-decoration: none;
 	white-space:     nowrap;
 	letter-spacing:  0.03em;
+	background:      none;
+	border:          none;
 	border-bottom:   2px solid transparent;
+	border-radius:   0;
+	box-shadow:      none;
 	transition:      color 0.2s ease, border-color 0.2s ease;
 }
 
-.tsr-nav-list > li > a:hover,
-.tsr-nav-list > .current-menu-item > a,
-.tsr-nav-list > .current_page_item > a {
+#masthead .tsr-nav-list > li > a:hover,
+#masthead .tsr-nav-list > .current-menu-item > a,
+#masthead .tsr-nav-list > .current_page_item > a {
 	color:               var(--tsr-blue);
 	border-bottom-color: var(--tsr-blue);
 }
 
 /* Orange-pill highlight — add class "menu-highlight" in WP menu editor */
-.tsr-nav-list > .menu-highlight > a,
-.tsr-nav-list > .menu-highlight > a:visited {
+#masthead .tsr-nav-list > .menu-highlight > a,
+#masthead .tsr-nav-list > .menu-highlight > a:visited {
 	background:    var(--tsr-orange);
 	color:         #fff !important;
+	border:        none;
 	border-radius: 999px;
 	padding:       0.3em 1em;
 	margin-inline: 0.25rem;
 	font-weight:   600;
-	border-bottom: none;
+	box-shadow:    none;
 	transition:    background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.tsr-nav-list > .menu-highlight > a:hover {
+#masthead .tsr-nav-list > .menu-highlight > a:hover {
 	background: #c94e16;
 	box-shadow: 0 2px 8px rgba(224, 92, 30, 0.4);
 	color:      #fff !important;
@@ -1462,7 +1467,7 @@ Text Domain:  exhibz-child
 
 	.tsr-header-logo img { max-height: 36px; }
 
-	.tsr-nav-list > li > a {
+	#masthead .tsr-nav-list > li > a {
 		padding:   0.55rem 0.55rem;
 		font-size: 0.82rem;
 	}
