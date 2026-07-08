@@ -596,6 +596,30 @@ Text Domain:  exhibz-child
 	color: var(--tsr-text);
 }
 
+/* ── Single post ──────────────────────────────────────────────────────────── */
+
+.tsr-single-thumbnail {
+	margin-bottom: 2rem;
+}
+
+.tsr-single-thumbnail img {
+	width:         100%;
+	max-width:     860px;
+	height:        auto;
+	border-radius: var(--tsr-radius);
+	display:       block;
+}
+
+.tsr-single-content {
+	max-width: 72ch;
+}
+
+.tsr-single-content img {
+	max-width:     100%;
+	height:        auto;
+	border-radius: var(--tsr-radius);
+}
+
 /* ── Правила — scoring category cards ──────────────────────────────────────── */
 .tsr-scoring-grid {
 	display: grid;
