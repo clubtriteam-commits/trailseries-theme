@@ -134,15 +134,17 @@ def main() -> int:
             "highest_m":   round(t["highest_m"]) if t.get("highest_m") is not None else None,
             "lowest_m":    round(t["lowest_m"]) if t.get("lowest_m") is not None else None,
             "gpx_file":    t.get("gpx_file"),
+            "kml_file":    t.get("kml_file"),
             "stars":       stars(t.get("distance_km"), t.get("ascent_m")),
         }
         events.setdefault(ev, []).append(entry)
 
-        if t.get("gpx_file"):
-            src = GPX_SRC / t["gpx_file"]
-            if src.exists():
-                shutil.copy2(src, GPX_DST / t["gpx_file"])
-                copied += 1
+        for key in ("gpx_file", "kml_file"):
+            if t.get(key):
+                src = GPX_SRC / t[key]
+                if src.exists():
+                    shutil.copy2(src, GPX_DST / t[key])
+                    copied += 1
 
     # Status: undated tracks are the canonical course pages → current (unless
     # explicitly superseded via LEGACY_SLUGS). A dated track is legacy when a

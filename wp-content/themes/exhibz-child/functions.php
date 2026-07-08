@@ -62,10 +62,11 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	);
 }, 20 );
 
-// ── Leaflet map (front page only) ────────────────────────────────────────────
+// ── Leaflet map (front page + Трасета template) ─────────────────────────────
 
 add_action( 'wp_enqueue_scripts', static function (): void {
-	if ( ! is_front_page() ) {
+	$is_traseta = is_page_template( 'page-traseta.php' );
+	if ( ! is_front_page() && ! $is_traseta ) {
 		return;
 	}
 	wp_enqueue_style(
@@ -83,7 +84,116 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 		'1.9.4',
 		false
 	);
+
+	if ( $is_traseta ) {
+		wp_enqueue_script(
+			'tsr-traseta-modal',
+			get_stylesheet_directory_uri() . '/js/traseta-modal.js',
+			array( 'leaflet' ),
+			wp_get_theme()->get( 'Version' ),
+			true
+		);
+	}
 }, 25 );
+
+// ── Трасета: admin-controlled current/legacy labels ─────────────────────────
+
+/**
+ * Read the theme tracks.json (source data for the Трасета page).
+ *
+ * @return array<int, array<string, mixed>> Events array, empty on failure.
+ */
+function tsr_tracks_events(): array {
+	$file = get_stylesheet_directory() . '/data/tracks.json';
+	if ( ! is_readable( $file ) ) {
+		return array();
+	}
+	$json = json_decode( (string) file_get_contents( $file ), true );
+	return ( is_array( $json ) && ! empty( $json['events'] ) ) ? $json['events'] : array();
+}
+
+/**
+ * Effective status for a track: admin override first, JSON default second.
+ *
+ * Overrides live in the 'tsr_track_status' option as slug => 'current'|'legacy',
+ * managed via Tools → Трасета — етикети.
+ *
+ * @param array<string, mixed> $track Track entry from tracks.json.
+ */
+function tsr_track_status( array $track ): string {
+	static $overrides = null;
+	if ( null === $overrides ) {
+		$overrides = (array) get_option( 'tsr_track_status', array() );
+	}
+	$status = $overrides[ $track['slug'] ] ?? ( $track['status'] ?? 'current' );
+	return ( 'legacy' === $status ) ? 'legacy' : 'current';
+}
+
+add_action( 'admin_menu', static function (): void {
+	add_management_page(
+		'Трасета — етикети',
+		'Трасета — етикети',
+		'manage_options',
+		'tsr-track-labels',
+		'tsr_track_labels_page'
+	);
+} );
+
+/**
+ * Render (and save) the Tools → Трасета — етикети admin page.
+ */
+function tsr_track_labels_page(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( 'Недостатъчни права.' );
+	}
+
+	$events = tsr_tracks_events();
+
+	// Save.
+	if ( isset( $_POST['tsr_track_status'] ) && check_admin_referer( 'tsr_track_labels' ) ) {
+		$posted = (array) wp_unslash( $_POST['tsr_track_status'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- values whitelisted below.
+		$clean  = array();
+		foreach ( $events as $event ) {
+			foreach ( $event['tracks'] as $track ) {
+				$slug = $track['slug'];
+				$val  = isset( $posted[ $slug ] ) && 'legacy' === $posted[ $slug ] ? 'legacy' : 'current';
+				$clean[ $slug ] = $val;
+			}
+		}
+		update_option( 'tsr_track_status', $clean, false );
+		echo '<div class="notice notice-success is-dismissible"><p>Етикетите са запазени.</p></div>';
+	}
+
+	echo '<div class="wrap"><h1>Трасета — етикети (Актуално / Легаси)</h1>';
+
+	if ( empty( $events ) ) {
+		echo '<p>data/tracks.json не е намерен или е празен.</p></div>';
+		return;
+	}
+
+	echo '<p>Етикетът определя подредбата на страницата „Трасета“: актуалните трасета са отгоре, легаси версиите — в свито поле отдолу.</p>';
+	echo '<form method="post">';
+	wp_nonce_field( 'tsr_track_labels' );
+
+	foreach ( $events as $event ) {
+		echo '<h2 style="margin:1.5em 0 0.4em">' . esc_html( $event['name'] ) . '</h2>';
+		echo '<table class="widefat striped" style="max-width:760px">';
+		echo '<thead><tr><th>Трасе</th><th style="width:110px">Дистанция</th><th style="width:180px">Етикет</th></tr></thead><tbody>';
+		foreach ( $event['tracks'] as $track ) {
+			$status = tsr_track_status( $track );
+			echo '<tr><td>' . esc_html( $track['title'] ) . '</td>';
+			echo '<td>' . ( ! empty( $track['distance_km'] ) ? esc_html( number_format_i18n( (float) $track['distance_km'], 1 ) ) . ' км' : '—' ) . '</td>';
+			echo '<td><select name="tsr_track_status[' . esc_attr( $track['slug'] ) . ']">';
+			echo '<option value="current"' . selected( $status, 'current', false ) . '>Актуално</option>';
+			echo '<option value="legacy"' . selected( $status, 'legacy', false ) . '>Легаси</option>';
+			echo '</select></td></tr>';
+		}
+		echo '</tbody></table>';
+	}
+
+	submit_button( 'Запази етикетите' );
+	echo '</form></div>';
+}
 
 // ── Homepage stats helper ─────────────────────────────────────────────────────
 

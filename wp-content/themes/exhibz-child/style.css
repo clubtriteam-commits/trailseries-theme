@@ -1463,6 +1463,155 @@ Text Domain:  exhibz-child
 	margin-bottom: 0.6rem;
 }
 
+.tsr-track[role="button"] {
+	cursor: pointer;
+}
+
+.tsr-track[role="button"]:hover {
+	background: #eaf6fb;
+}
+
+.tsr-track--legacy[role="button"]:hover {
+	background: var(--tsr-white);
+	opacity:    1;
+}
+
+.tsr-track__gpx--secondary {
+	background: var(--tsr-navy);
+}
+
+.tsr-track__gpx--secondary:hover {
+	background: var(--tsr-blue);
+}
+
+/* ── Трасета — track detail modal ───────────────────────────────────────────── */
+.tsr-modal {
+	position: fixed;
+	inset:    0;
+	z-index:  10000;
+	display:  flex;
+	align-items:     center;
+	justify-content: center;
+	padding: 1rem;
+}
+
+.tsr-modal[hidden] {
+	display: none;
+}
+
+body.tsr-modal-open {
+	overflow: hidden;
+}
+
+.tsr-modal__overlay {
+	position:   absolute;
+	inset:      0;
+	background: rgba(10, 22, 40, 0.72);
+}
+
+.tsr-modal__dialog {
+	position:      relative;
+	width:         min(860px, 100%);
+	max-height:    calc(100vh - 2rem);
+	overflow-y:    auto;
+	background:    #fff;
+	border-radius: var(--tsr-radius);
+	padding:       1.5rem;
+	box-shadow:    0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.tsr-modal__close {
+	position:    absolute;
+	top:         0.75rem;
+	right:       0.75rem;
+	width:       2.2rem;
+	height:      2.2rem;
+	border:      0;
+	border-radius: 50%;
+	background:  var(--tsr-navy);
+	color:       #fff;
+	font-size:   1.3rem;
+	line-height: 1;
+	cursor:      pointer;
+	z-index:     1;
+}
+
+.tsr-modal__close:hover {
+	background: var(--tsr-blue);
+}
+
+.tsr-modal__title {
+	font-size:    1.35rem;
+	font-weight:  800;
+	color:        var(--tsr-navy);
+	margin:       0 2.5rem 1rem 0;
+}
+
+.tsr-modal__map {
+	height:        340px;
+	border-radius: var(--tsr-radius);
+	margin-bottom: 1rem;
+	z-index:       0;
+}
+
+.tsr-modal__chart-wrap {
+	margin-bottom: 1rem;
+}
+
+.tsr-modal__chart {
+	display: block;
+	width:   100%;
+	height:  auto;
+}
+
+.tsr-chart__grid {
+	stroke:       var(--tsr-border);
+	stroke-width: 1;
+}
+
+.tsr-chart__tick {
+	stroke:       var(--tsr-muted);
+	stroke-width: 1;
+}
+
+.tsr-chart__line {
+	stroke:          #e05c1e;
+	stroke-width:    2;
+	stroke-linejoin: round;
+}
+
+.tsr-chart__ylabel {
+	font-size:   11px;
+	fill:        var(--tsr-muted);
+	text-anchor: end;
+	dominant-baseline: middle;
+}
+
+.tsr-chart__xlabel {
+	font-size:   11px;
+	fill:        var(--tsr-muted);
+	text-anchor: middle;
+}
+
+.tsr-modal__stats {
+	margin-bottom: 1rem;
+}
+
+.tsr-modal__actions {
+	display: flex;
+	gap:     0.6rem;
+}
+
+@media (max-width: 600px) {
+	.tsr-modal__map {
+		height: 240px;
+	}
+
+	.tsr-modal__dialog {
+		padding: 1rem;
+	}
+}
+
 .tsr-stars {
 	display:     inline-flex;
 	gap:         0.1rem;

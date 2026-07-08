@@ -13,6 +13,7 @@
           "highest_m": 896,
           "lowest_m": 719,
           "gpx_file": "7_hills_run_6km_.gpx",
+          "kml_file": "7_hills_run_6km_.kml",
           "stars": 1,
           "status": "current"
         },
@@ -26,6 +27,7 @@
           "highest_m": 1218,
           "lowest_m": 722,
           "gpx_file": "7_hills_run_13km_2.gpx",
+          "kml_file": "7_hills_run_13km_2.kml",
           "stars": 2,
           "status": "current"
         },
@@ -39,6 +41,7 @@
           "highest_m": 1218,
           "lowest_m": 720,
           "gpx_file": "7_hills_run_19km_.gpx",
+          "kml_file": "7_hills_run_19km_.kml",
           "stars": 3,
           "status": "current"
         },
@@ -52,6 +55,7 @@
           "highest_m": 1222,
           "lowest_m": 721,
           "gpx_file": "7_hills_run_hard_core_edition_26km_.gpx",
+          "kml_file": "7_hills_run_hard_core_edition_26km_.kml",
           "stars": 4,
           "status": "current"
         }
@@ -70,6 +74,7 @@
           "highest_m": 729,
           "lowest_m": 607,
           "gpx_file": "baba_marta_run_6km_.gpx",
+          "kml_file": "baba_marta_run_6km_.kml",
           "stars": 1,
           "status": "current"
         },
@@ -83,6 +88,7 @@
           "highest_m": 982,
           "lowest_m": 607,
           "gpx_file": null,
+          "kml_file": null,
           "stars": 2,
           "status": "current"
         },
@@ -96,6 +102,7 @@
           "highest_m": 1092,
           "lowest_m": 608,
           "gpx_file": "baba_marta_run_16km_0.gpx",
+          "kml_file": "baba_marta_run_16km_0.kml",
           "stars": 3,
           "status": "current"
         }
@@ -114,6 +121,7 @@
           "highest_m": 1262,
           "lowest_m": 1083,
           "gpx_file": "birthday_run_5_5km.gpx",
+          "kml_file": "birthday_run_5_5km.kml",
           "stars": 1,
           "status": "current"
         },
@@ -127,6 +135,7 @@
           "highest_m": 1255,
           "lowest_m": 1071,
           "gpx_file": "birthday_run_11km.gpx",
+          "kml_file": "birthday_run_11km.kml",
           "stars": 2,
           "status": "current"
         },
@@ -140,6 +149,7 @@
           "highest_m": 1264,
           "lowest_m": 1069,
           "gpx_file": "birthday_run_.gpx",
+          "kml_file": "birthday_run_.kml",
           "stars": 3,
           "status": "current"
         },
@@ -153,6 +163,7 @@
           "highest_m": 1250,
           "lowest_m": 1032,
           "gpx_file": "birthday_run_20_6_6km.gpx",
+          "kml_file": "birthday_run_20_6_6km.kml",
           "stars": 2,
           "status": "legacy"
         },
@@ -166,6 +177,7 @@
           "highest_m": 1250,
           "lowest_m": 1032,
           "gpx_file": "birthday_run_12km.gpx",
+          "kml_file": "birthday_run_12km.kml",
           "stars": 2,
           "status": "legacy"
         }
@@ -184,6 +196,7 @@
           "highest_m": 1360,
           "lowest_m": 755,
           "gpx_file": "boyana_x_trail_10km.gpx",
+          "kml_file": "boyana_x_trail_10km.kml",
           "stars": 2,
           "status": "current"
         },
@@ -197,6 +210,7 @@
           "highest_m": 1407,
           "lowest_m": 761,
           "gpx_file": "boyana_x_trails_long.gpx",
+          "kml_file": "boyana_x_trails_long.kml",
           "stars": 3,
           "status": "current"
         }
@@ -215,6 +229,7 @@
           "highest_m": 1285,
           "lowest_m": 717,
           "gpx_file": "buhovo_half_marathon.gpx",
+          "kml_file": "buhovo_half_marathon.kml",
           "stars": 3,
           "status": "current"
         }
@@ -233,6 +248,7 @@
           "highest_m": 1285,
           "lowest_m": 717,
           "gpx_file": "buhovo_trail_run.gpx",
+          "kml_file": "buhovo_trail_run.kml",
           "stars": 2,
           "status": "current"
         }
@@ -251,6 +267,7 @@
           "highest_m": 953,
           "lowest_m": 711,
           "gpx_file": "golyam_sechko_6_2km.gpx",
+          "kml_file": "golyam_sechko_6_2km.kml",
           "stars": 1,
           "status": "current"
         },
@@ -264,6 +281,7 @@
           "highest_m": 954,
           "lowest_m": 710,
           "gpx_file": "golyam_sechko_run_6_5km_0.gpx",
+          "kml_file": "golyam_sechko_run_6_5km_0.kml",
           "stars": 1,
           "status": "current"
         },
@@ -277,6 +295,7 @@
           "highest_m": 1118,
           "lowest_m": 719,
           "gpx_file": "golyam_sechko_run_middle_9km.gpx",
+          "kml_file": "golyam_sechko_run_middle_9km.kml",
           "stars": 2,
           "status": "current"
         },
@@ -290,6 +309,7 @@
           "highest_m": 1130,
           "lowest_m": 708,
           "gpx_file": "golyam_sechko_run_12_4km_0.gpx",
+          "kml_file": "golyam_sechko_run_12_4km_0.kml",
           "stars": 2,
           "status": "current"
         },
@@ -303,6 +323,7 @@
           "highest_m": 1129,
           "lowest_m": 726,
           "gpx_file": "golyam_sechko_run_15km_long_0.gpx",
+          "kml_file": "golyam_sechko_run_15km_long_0.kml",
           "stars": 3,
           "status": "current"
         },
@@ -316,6 +337,7 @@
           "highest_m": 1129,
           "lowest_m": 726,
           "gpx_file": "golyam_sechko_run_16k_0.gpx",
+          "kml_file": "golyam_sechko_run_16k_0.kml",
           "stars": 3,
           "status": "current"
         },
@@ -329,6 +351,7 @@
           "highest_m": null,
           "lowest_m": null,
           "gpx_file": null,
+          "kml_file": null,
           "stars": null,
           "status": "legacy"
         }
@@ -347,6 +370,7 @@
           "highest_m": 930,
           "lowest_m": 750,
           "gpx_file": "iran_run_5_5km.gpx",
+          "kml_file": "iran_run_5_5km.kml",
           "stars": 1,
           "status": "current"
         },
@@ -360,6 +384,7 @@
           "highest_m": 998,
           "lowest_m": 749,
           "gpx_file": "11_5km_0.gpx",
+          "kml_file": "11_5km_0.kml",
           "stars": 2,
           "status": "current"
         },
@@ -373,6 +398,7 @@
           "highest_m": 990,
           "lowest_m": 762,
           "gpx_file": "iran_run_16_7km.gpx",
+          "kml_file": "iran_run_16_7km.kml",
           "stars": 3,
           "status": "current"
         }
@@ -391,6 +417,7 @@
           "highest_m": 932,
           "lowest_m": 816,
           "gpx_file": "lyulin_trail_run_6km.gpx",
+          "kml_file": "lyulin_trail_run_6km.kml",
           "stars": 1,
           "status": "current"
         },
@@ -404,6 +431,7 @@
           "highest_m": 1070,
           "lowest_m": 764,
           "gpx_file": "lyulin_trail_run_12km_2019_update.gpx",
+          "kml_file": "lyulin_trail_run_12km_2019_update.kml",
           "stars": 2,
           "status": "current"
         },
@@ -417,6 +445,7 @@
           "highest_m": 1203,
           "lowest_m": 772,
           "gpx_file": "lyulin_trail_run_16km.gpx",
+          "kml_file": "lyulin_trail_run_16km.kml",
           "stars": 3,
           "status": "current"
         },
@@ -430,6 +459,7 @@
           "highest_m": 1070,
           "lowest_m": 764,
           "gpx_file": "lyulin_trail_run_18km_2019_update_0.gpx",
+          "kml_file": "lyulin_trail_run_18km_2019_update_0.kml",
           "stars": 3,
           "status": "current"
         },
@@ -443,6 +473,7 @@
           "highest_m": 1012,
           "lowest_m": 666,
           "gpx_file": "lyulin_trail_run_18km_2_obikolki_.gpx",
+          "kml_file": "lyulin_trail_run_18km_2_obikolki_.kml",
           "stars": 3,
           "status": "legacy"
         }
@@ -461,6 +492,7 @@
           "highest_m": 824,
           "lowest_m": 570,
           "gpx_file": "6km.gpx",
+          "kml_file": "6km.kml",
           "stars": 1,
           "status": "current"
         },
@@ -474,6 +506,7 @@
           "highest_m": 981,
           "lowest_m": 598,
           "gpx_file": null,
+          "kml_file": null,
           "stars": 2,
           "status": "current"
         },
@@ -487,6 +520,7 @@
           "highest_m": 986,
           "lowest_m": 601,
           "gpx_file": "malak_sechko_run_19km.gpx",
+          "kml_file": "malak_sechko_run_19km.kml",
           "stars": 3,
           "status": "current"
         }
@@ -505,6 +539,7 @@
           "highest_m": 1197,
           "lowest_m": 1092,
           "gpx_file": "palakaria_5km.gpx",
+          "kml_file": "palakaria_5km.kml",
           "stars": 1,
           "status": "current"
         },
@@ -518,6 +553,7 @@
           "highest_m": 1356,
           "lowest_m": 1084,
           "gpx_file": "palakaria_10_7km.gpx",
+          "kml_file": "palakaria_10_7km.kml",
           "stars": 2,
           "status": "current"
         },
@@ -531,6 +567,7 @@
           "highest_m": 1345,
           "lowest_m": 1077,
           "gpx_file": "palakaria_21_5km.gpx",
+          "kml_file": "palakaria_21_5km.kml",
           "stars": 3,
           "status": "current"
         }
@@ -549,6 +586,7 @@
           "highest_m": 706,
           "lowest_m": 598,
           "gpx_file": "pancharevo_night_run_6_3km.gpx",
+          "kml_file": "pancharevo_night_run_6_3km.kml",
           "stars": 1,
           "status": "current"
         },
@@ -562,6 +600,7 @@
           "highest_m": 710,
           "lowest_m": 598,
           "gpx_file": "pancharevo_night_run_13_6km.gpx",
+          "kml_file": "pancharevo_night_run_13_6km.kml",
           "stars": 3,
           "status": "current"
         },
@@ -575,6 +614,7 @@
           "highest_m": 1220,
           "lowest_m": 721,
           "gpx_file": "pancharevo_night_run_19km_0.gpx",
+          "kml_file": "pancharevo_night_run_19km_0.kml",
           "stars": 3,
           "status": "current"
         }
@@ -593,6 +633,7 @@
           "highest_m": 2733,
           "lowest_m": 1599,
           "gpx_file": "pirin_skyrun_10km.gpx",
+          "kml_file": "pirin_skyrun_10km.kml",
           "stars": 3,
           "status": "current"
         },
@@ -606,6 +647,7 @@
           "highest_m": 2752,
           "lowest_m": 1624,
           "gpx_file": "pirin_skyrun_34km__0.gpx",
+          "kml_file": "pirin_skyrun_34km__0.kml",
           "stars": 4,
           "status": "current"
         },
@@ -619,6 +661,7 @@
           "highest_m": 2622,
           "lowest_m": 1608,
           "gpx_file": "pirin_skyrun_14km_2018_0.gpx",
+          "kml_file": "pirin_skyrun_14km_2018_0.kml",
           "stars": 3,
           "status": "legacy"
         },
@@ -632,6 +675,7 @@
           "highest_m": 2629,
           "lowest_m": 1609,
           "gpx_file": null,
+          "kml_file": null,
           "stars": 4,
           "status": "legacy"
         }
@@ -650,6 +694,7 @@
           "highest_m": 2892,
           "lowest_m": 1815,
           "gpx_file": "pirin_vertical_.gpx",
+          "kml_file": "pirin_vertical_.kml",
           "stars": 2,
           "status": "current"
         },
@@ -663,6 +708,7 @@
           "highest_m": 2891,
           "lowest_m": 1598,
           "gpx_file": "pirin_vertical_2016_0.gpx",
+          "kml_file": "pirin_vertical_2016_0.kml",
           "stars": 2,
           "status": "legacy"
         }
@@ -681,6 +727,7 @@
           "highest_m": 1146,
           "lowest_m": 898,
           "gpx_file": null,
+          "kml_file": null,
           "stars": 1,
           "status": "current"
         },
@@ -694,6 +741,7 @@
           "highest_m": 1388,
           "lowest_m": 912,
           "gpx_file": "simeonovo_run_11km_0.gpx",
+          "kml_file": "simeonovo_run_11km_0.kml",
           "stars": 2,
           "status": "current"
         },
@@ -707,6 +755,7 @@
           "highest_m": 1483,
           "lowest_m": 904,
           "gpx_file": null,
+          "kml_file": null,
           "stars": 3,
           "status": "current"
         }
@@ -725,6 +774,7 @@
           "highest_m": 725,
           "lowest_m": 607,
           "gpx_file": "the_cactus_run_7km_2025.gpx",
+          "kml_file": "the_cactus_run_7km_2025.kml",
           "stars": 1,
           "status": "current"
         },
@@ -738,6 +788,7 @@
           "highest_m": 1091,
           "lowest_m": 607,
           "gpx_file": "the_cactus_run_15km_2025.gpx",
+          "kml_file": "the_cactus_run_15km_2025.kml",
           "stars": 3,
           "status": "current"
         },
@@ -751,6 +802,7 @@
           "highest_m": 1090,
           "lowest_m": 608,
           "gpx_file": null,
+          "kml_file": null,
           "stars": 3,
           "status": "current"
         },
@@ -764,6 +816,7 @@
           "highest_m": 697,
           "lowest_m": 591,
           "gpx_file": "the_cactus_run_6_6km.gpx",
+          "kml_file": "the_cactus_run_6_6km.kml",
           "stars": 1,
           "status": "legacy"
         },
@@ -777,6 +830,7 @@
           "highest_m": 709,
           "lowest_m": 598,
           "gpx_file": "the_cactus_run_20km.gpx",
+          "kml_file": "the_cactus_run_20km.kml",
           "stars": 3,
           "status": "legacy"
         },
@@ -790,6 +844,7 @@
           "highest_m": 736,
           "lowest_m": 600,
           "gpx_file": "the_cactus_run_20km_0.gpx",
+          "kml_file": "the_cactus_run_20km_0.kml",
           "stars": 3,
           "status": "legacy"
         }
@@ -808,6 +863,7 @@
           "highest_m": 791,
           "lowest_m": 661,
           "gpx_file": "the_christmas_run_5_5km.gpx",
+          "kml_file": "the_christmas_run_5_5km.kml",
           "stars": 1,
           "status": "current"
         },
@@ -821,6 +877,7 @@
           "highest_m": 774,
           "lowest_m": 667,
           "gpx_file": "the_christmas_run_11km.gpx",
+          "kml_file": "the_christmas_run_11km.kml",
           "stars": 2,
           "status": "current"
         },
@@ -834,6 +891,7 @@
           "highest_m": 944,
           "lowest_m": 665,
           "gpx_file": "the_christmas_run_15km.gpx",
+          "kml_file": "the_christmas_run_15km.kml",
           "stars": 3,
           "status": "current"
         },
@@ -847,6 +905,7 @@
           "highest_m": 785,
           "lowest_m": 659,
           "gpx_file": "the_christmas_run_15_5km.gpx",
+          "kml_file": "the_christmas_run_15_5km.kml",
           "stars": 2,
           "status": "current"
         }

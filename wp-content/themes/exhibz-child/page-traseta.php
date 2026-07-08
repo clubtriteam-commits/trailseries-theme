@@ -66,14 +66,27 @@ function tsr_star_rating( ?int $stars ): string {
 /**
  * Render one track row (<li>).
  *
+ * Rows carry data attributes consumed by js/traseta-modal.js: clicking a
+ * row (or Enter/Space when focused) opens the detail modal with a Leaflet
+ * map and elevation profile parsed from the local GPX file.
+ *
  * @param array<string, mixed> $tr       Track entry from tracks.json.
  * @param string               $gpx_base Base URL of the theme /gpx/ directory.
  */
 if ( ! function_exists( 'tsr_track_row' ) ) {
 function tsr_track_row( array $tr, string $gpx_base ): void {
-	$is_legacy = ( 'legacy' === ( $tr['status'] ?? 'current' ) );
+	$is_legacy = ( 'legacy' === tsr_track_status( $tr ) );
 	?>
-	<li class="tsr-track<?php echo $is_legacy ? ' tsr-track--legacy' : ''; ?>">
+	<li class="tsr-track<?php echo $is_legacy ? ' tsr-track--legacy' : ''; ?>"
+	    role="button" tabindex="0" aria-haspopup="dialog"
+	    data-title="<?php echo esc_attr( $tr['title'] ); ?>"
+	    data-gpx="<?php echo esc_attr( ! empty( $tr['gpx_file'] ) ? $gpx_base . $tr['gpx_file'] : '' ); ?>"
+	    data-kml="<?php echo esc_attr( ! empty( $tr['kml_file'] ) ? $gpx_base . $tr['kml_file'] : '' ); ?>"
+	    data-distance="<?php echo esc_attr( (string) ( $tr['distance_km'] ?? '' ) ); ?>"
+	    data-ascent="<?php echo esc_attr( (string) ( $tr['ascent_m'] ?? '' ) ); ?>"
+	    data-descent="<?php echo esc_attr( (string) ( $tr['descent_m'] ?? '' ) ); ?>"
+	    data-highest="<?php echo esc_attr( (string) ( $tr['highest_m'] ?? '' ) ); ?>"
+	    data-lowest="<?php echo esc_attr( (string) ( $tr['lowest_m'] ?? '' ) ); ?>">
 
 		<div class="tsr-track__head">
 			<span class="tsr-track__name"><?php echo esc_html( $tr['title'] ); ?></span>
@@ -153,15 +166,22 @@ get_header();
 
 				<?php foreach ( $tsr_events as $tsr_event ) : ?>
 					<?php
+					// Effective status comes from tsr_track_status() — the admin
+					// override (Tools → Трасета — етикети) wins over the JSON default.
 					$tsr_current = array();
 					$tsr_legacy  = array();
 					foreach ( $tsr_event['tracks'] as $tsr_tr ) {
-						if ( 'legacy' === ( $tsr_tr['status'] ?? 'current' ) ) {
+						if ( 'legacy' === tsr_track_status( $tsr_tr ) ) {
 							$tsr_legacy[] = $tsr_tr;
 						} else {
 							$tsr_current[] = $tsr_tr;
 						}
 					}
+					$tsr_by_distance = static function ( array $a, array $b ): int {
+						return ( $a['distance_km'] ?? 0 ) <=> ( $b['distance_km'] ?? 0 );
+					};
+					usort( $tsr_current, $tsr_by_distance );
+					usort( $tsr_legacy, $tsr_by_distance );
 					?>
 					<section class="tsr-track-group">
 						<h2 class="tsr-track-group__title"><?php echo esc_html( $tsr_event['name'] ); ?></h2>
@@ -198,5 +218,31 @@ get_header();
 
 	</div>
 </main>
+
+<!-- Track detail modal — populated by js/traseta-modal.js on row click. -->
+<div class="tsr-modal" id="tsr-track-modal" hidden>
+	<div class="tsr-modal__overlay" data-close></div>
+	<div class="tsr-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="tsr-modal-title">
+		<button class="tsr-modal__close" type="button" data-close aria-label="Затвори">&times;</button>
+		<h2 class="tsr-modal__title" id="tsr-modal-title"></h2>
+		<div class="tsr-modal__map" id="tsr-modal-map"></div>
+		<div class="tsr-modal__chart-wrap" id="tsr-modal-chart-wrap" hidden>
+			<svg class="tsr-modal__chart" id="tsr-modal-chart"
+			     viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet"
+			     role="img" aria-label="Профил на изкачването"></svg>
+		</div>
+		<div class="tsr-modal__stats tsr-track__meta" id="tsr-modal-stats"></div>
+		<div class="tsr-modal__actions">
+			<a class="tsr-track__gpx" id="tsr-modal-gpx" href="#" download hidden>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+				GPX
+			</a>
+			<a class="tsr-track__gpx tsr-track__gpx--secondary" id="tsr-modal-kml" href="#" download hidden>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+				KML
+			</a>
+		</div>
+	</div>
+</div>
 
 <?php get_footer(); ?>

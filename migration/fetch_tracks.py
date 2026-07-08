@@ -31,6 +31,8 @@ UA = "Mozilla/5.0 (compatible; TrailSeriesMigration/1.0; +https://trailseries.bg
 RE_TITLE = re.compile(r'<meta property="og:title" content="([^"]+)"')
 # GPX link:  https://drace.bg/sites/default/files/tracks/xxx.gpx
 RE_GPX = re.compile(r'href="(https?://drace\.bg/sites/default/files/tracks/[^"]+\.gpx)"')
+# KML link:  same file area, .kml extension.
+RE_KML = re.compile(r'href="(https?://drace\.bg/sites/default/files/tracks/[^"]+\.kml)"')
 # Metric rows:  Distance: </span><div class="field-content">15494.50m</div>
 RE_METRIC = re.compile(
     r'(Distance|Ascending|Descending|Highest point|Lowest point):\s*'
@@ -71,6 +73,9 @@ def parse_track(url: str, html: str) -> dict:
     m = RE_GPX.search(html)
     track["gpx_url"] = m.group(1) if m else None
 
+    m = RE_KML.search(html)
+    track["kml_url"] = m.group(1) if m else None
+
     for label, value in RE_METRIC.findall(html):
         track[METRIC_KEYS[label]] = float(value)
 
@@ -98,19 +103,22 @@ def main() -> int:
 
         track = parse_track(url, str(html))
 
-        if track["gpx_url"]:
-            gpx_name = track["gpx_url"].rsplit("/", 1)[-1]
-            gpx_path = GPX_DIR / gpx_name
-            track["gpx_file"] = gpx_name
-            if not gpx_path.exists():
-                try:
-                    gpx_path.write_bytes(fetch(track["gpx_url"], binary=True))
-                except RuntimeError as e:
-                    print(f"    GPX ERROR: {e}", file=sys.stderr)
-                    track["gpx_file"] = None
-        else:
-            print("    WARN: no GPX link on page", file=sys.stderr)
-            track["gpx_file"] = None
+        for kind, url_key, file_key in (("GPX", "gpx_url", "gpx_file"),
+                                        ("KML", "kml_url", "kml_file")):
+            if track[url_key]:
+                name = track[url_key].rsplit("/", 1)[-1]
+                path = GPX_DIR / name
+                track[file_key] = name
+                if not path.exists():
+                    try:
+                        path.write_bytes(fetch(track[url_key], binary=True))
+                    except RuntimeError as e:
+                        print(f"    {kind} ERROR: {e}", file=sys.stderr)
+                        track[file_key] = None
+            else:
+                if kind == "GPX":
+                    print("    WARN: no GPX link on page", file=sys.stderr)
+                track[file_key] = None
 
         missing = [k for k in METRIC_KEYS.values() if k not in track]
         if missing:
