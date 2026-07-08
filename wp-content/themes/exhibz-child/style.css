@@ -1361,7 +1361,7 @@ Text Domain:  exhibz-child
 
 /* ── Site header — single-row layout ────────────────────────────────────
  *
- * [logo] [TrailSeries.bg] ........... [nav menu]
+ * [logo] ........... [nav menu]
  *
  * Rendered by header.php in this child theme; id="masthead" kept for
  * any JS or third-party code that targets it.
@@ -1397,24 +1397,6 @@ Text Domain:  exhibz-child
 .tsr-header-logo a   { display: block; line-height: 0; }
 .tsr-header-logo img { max-height: 44px; width: auto; transition: max-height 0.3s ease; }
 
-.tsr-header-name__link {
-	text-decoration: none;
-	color:           inherit;
-}
-
-.tsr-header-name__title {
-	display:        block;
-	font-size:      clamp(1.05rem, 2vw, 1.35rem);
-	font-weight:    900;
-	color:          var(--tsr-white);
-	letter-spacing: -0.02em;
-	line-height:    1;
-}
-
-.tsr-header-name__tld { color: var(--tsr-blue); }
-
-.tsr-header-name__link:hover .tsr-header-name__title { color: var(--tsr-blue); }
-.tsr-header-name__link:hover .tsr-header-name__tld   { color: var(--tsr-white); }
 
 .tsr-nav-list {
 	display:     flex;
@@ -1471,8 +1453,7 @@ Text Domain:  exhibz-child
 		padding-block: 0.6rem;
 	}
 
-	.tsr-header-logo img    { max-height: 36px; }
-	.tsr-header-name__title { font-size: 1rem; }
+	.tsr-header-logo img { max-height: 36px; }
 
 	.tsr-nav-list > li > a {
 		padding:   0.55rem 0.55rem;

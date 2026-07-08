@@ -2,7 +2,7 @@
 /**
  * Site header — all pages.
  *
- * Single-row layout: [logo] [TrailSeries.bg] ........... [nav menu]
+ * Single-row layout: [logo] ........... [nav menu]
  *
  * @package exhibz-child
  */
@@ -27,9 +27,6 @@
 				<?php the_custom_logo(); ?>
 			</div>
 			<?php endif; ?>
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tsr-header-name__link" rel="home">
-				<span class="tsr-header-name__title">TrailSeries<span class="tsr-header-name__tld">.bg</span></span>
-			</a>
 		</div>
 
 		<nav class="tsr-header-nav" aria-label="<?php esc_attr_e( 'Основна навигация', 'exhibz-child' ); ?>">
