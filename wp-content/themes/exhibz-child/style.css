@@ -1383,7 +1383,8 @@ Text Domain:  exhibz-child
 	display:         flex !important;
 	flex-direction:  row !important;
 	align-items:     center !important;
-	justify-content: space-between;
+	justify-content: center;
+	gap:             3rem;
 	padding-block:   0.75rem;
 	transition:      padding-block 0.3s ease;
 }
@@ -1402,7 +1403,7 @@ Text Domain:  exhibz-child
 }
 
 .tsr-header-logo a   { display: block; line-height: 0; }
-.tsr-header-logo img { max-height: 44px; width: auto; transition: max-height 0.3s ease; }
+.tsr-header-logo img { max-height: 70px; width: auto; transition: max-height 0.3s ease; }
 
 
 .tsr-nav-list {
@@ -1465,7 +1466,7 @@ Text Domain:  exhibz-child
 		padding-block: 0.6rem;
 	}
 
-	.tsr-header-logo img { max-height: 36px; }
+	.tsr-header-logo img { max-height: 50px; }
 
 	#masthead .tsr-nav-list > li > a {
 		padding:   0.55rem 0.55rem;
