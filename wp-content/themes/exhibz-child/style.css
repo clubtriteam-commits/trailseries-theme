@@ -1368,7 +1368,7 @@ Text Domain:  exhibz-child
  * ──────────────────────────────────────────────────────────────────────── */
 
 #masthead {
-	position:   sticky;
+	position:   sticky !important;
 	top:        0;
 	z-index:    500;
 	width:      100%;
@@ -1380,9 +1380,9 @@ Text Domain:  exhibz-child
 /* ── Single-row inner layout ─────────────────────────────────────────── */
 
 .tsr-header-inner {
-	display:         flex;
-	flex-direction:  row;
-	align-items:     center;
+	display:         flex !important;
+	flex-direction:  row !important;
+	align-items:     center !important;
 	justify-content: space-between;
 	padding-block:   0.75rem;
 	transition:      padding-block 0.3s ease;
@@ -1397,8 +1397,8 @@ Text Domain:  exhibz-child
 }
 
 .tsr-header-nav {
-	display:     flex;
-	align-items: center;
+	display:     flex !important;
+	align-items: center !important;
 }
 
 .tsr-header-logo a   { display: block; line-height: 0; }
