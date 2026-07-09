@@ -29,7 +29,15 @@
 			<?php endif; ?>
 		</div>
 
-		<nav class="tsr-header-nav" aria-label="<?php esc_attr_e( 'Основна навигация', 'exhibz-child' ); ?>">
+		<button class="tsr-nav-toggle" type="button"
+		        aria-expanded="false" aria-controls="tsr-primary-nav"
+		        aria-label="<?php esc_attr_e( 'Отвори менюто', 'exhibz-child' ); ?>">
+			<span class="tsr-nav-toggle__bar" aria-hidden="true"></span>
+			<span class="tsr-nav-toggle__bar" aria-hidden="true"></span>
+			<span class="tsr-nav-toggle__bar" aria-hidden="true"></span>
+		</button>
+
+		<nav id="tsr-primary-nav" class="tsr-header-nav" aria-label="<?php esc_attr_e( 'Основна навигация', 'exhibz-child' ); ?>">
 			<?php
 			wp_nav_menu(
 				array(
@@ -51,5 +59,22 @@
 	window.addEventListener( 'scroll', function () {
 		h.classList.toggle( 'tsr-header--scrolled', window.scrollY > 80 );
 	}, { passive: true } );
+
+	// Mobile nav toggle.
+	var toggle = h.querySelector( '.tsr-nav-toggle' );
+	if ( ! toggle ) { return; }
+	toggle.addEventListener( 'click', function () {
+		var open = h.classList.toggle( 'tsr-nav-open' );
+		toggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+		toggle.setAttribute( 'aria-label', open ? 'Затвори менюто' : 'Отвори менюто' );
+	} );
+	// Close the menu when the viewport grows past the mobile breakpoint,
+	// so a stale open state never lingers after rotation/resize.
+	window.addEventListener( 'resize', function () {
+		if ( window.innerWidth > 768 && h.classList.contains( 'tsr-nav-open' ) ) {
+			h.classList.remove( 'tsr-nav-open' );
+			toggle.setAttribute( 'aria-expanded', 'false' );
+		}
+	} );
 }());
 </script>
