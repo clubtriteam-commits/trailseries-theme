@@ -36,6 +36,11 @@ require TSR_PLUGIN_DIR . 'includes/redirects.php';
 
 add_action( 'init', array( TSR_Post_Types::class, 'register' ) );
 
+if ( is_admin() ) {
+	require TSR_PLUGIN_DIR . 'includes/class-admin-upload.php';
+	TSR_Admin_Upload::register();
+}
+
 add_action( 'init', static function (): void {
 	load_plugin_textdomain( 'trailseries-results', false, dirname( plugin_basename( TSR_PLUGIN_FILE ) ) . '/languages' );
 } );
