@@ -7,10 +7,22 @@
  * Season standings — accumulated points per athlete across all races in a
  * season, using the scoring rules from Правила.
  *
- * Points formula per race depends on the distance category stored in the
- * `_tsr_distance_cat` post meta (values: 'short'|'medium'|'long'|'bonus').
- * When that meta is absent the race earns 0 points. Run `wp tsr backfill-meta`
- * to populate `_tsr_distance_cat` and `_tsr_season` on all ts_result posts.
+ * Points per race:
+ *   short  (<8 km)      → top 5 score,  1st = 5  (6 - place)
+ *   medium (8-13.9 km)  → top 10 score, 1st = 10 (11 - place)
+ *   long   (14+ km)     → top 15 score, 1st = 15 (16 - place)
+ *   BONUS races         → top 20 score, 1st = 20 (21 - place)
+ *
+ * Bonus is NOT a distance category — each season designates exactly two
+ * specific races (event + distance) as bonus; see $tsr_bonus_races below.
+ * Note the legacy `_tsr_distance_cat` meta value 'bonus' (backfill assigned
+ * it to all 21+ km races) is treated as 'long' here unless the race is in
+ * the season's designated bonus list. Verified against the live Season 13
+ * (2025) standings: Vincent Sliman 88, Leo Sliman 82, Иван Венков 60.
+ *
+ * Distance category comes from `_tsr_distance_cat` post meta; the distance
+ * itself from `_tsr_distance_km`. When meta is absent the race earns 0
+ * points. Run `wp tsr backfill-meta` to populate them.
  *
  * @package exhibz-child
  */
@@ -63,24 +75,45 @@ $season_labels = array(
 );
 $current_season_label = $season_labels[ $current_season ] ?? "Сезон $current_season";
 
-// ── Max points map ────────────────────────────────────────────────────────────
-$points_map = array(
-	'short'  => 5,
-	'medium' => 10,
-	'long'   => 15,
-	'bonus'  => 20,
+// ── Bonus race designation ────────────────────────────────────────────────────
+//
+// Exactly two races per season score as bonus (top 20, 21 - place). They are
+// identified by legacy page slug + distance, because the designation changes
+// per season and a distance category alone can't express it (e.g. in 2025
+// The Cactus Run 21km is a regular long race while Buhovo HM 21km is bonus).
+//
+// 'slug' is the base post_name of the imported result posts (the part before
+// any '--category' suffix); 'km' matches against the `_tsr_distance_km` meta.
+// Seasons set in the 'tsr_bonus_races' option override these defaults.
+$tsr_bonus_defaults = array(
+	2025 => array(
+		array( 'slug' => '7-hills-run25-results', 'km' => 26.0 ),          // 7 Hills Run 26km (Hardcore edition)
+		array( 'slug' => 'buhovo-half-marathon25-results', 'km' => 21.0 ), // Buhovo Half Marathon'25
+	),
 );
+$tsr_bonus_races = (array) get_option( 'tsr_bonus_races', array() ) + $tsr_bonus_defaults;
 
 /**
- * Return points earned for a given place and distance category.
+ * Return points earned for a given place, distance category and bonus flag.
  *
- * @param int    $place Place number (1-based).
- * @param string $cat   Distance category: short|medium|long|bonus.
+ * @param int    $place    Place number (1-based).
+ * @param string $cat      Distance category: short|medium|long (a legacy
+ *                         'bonus' value means 21+ km and scores as long).
+ * @param bool   $is_bonus True when the race is one of the season's two
+ *                         designated bonus races.
  * @return int Points, or 0 if outside the scoring window.
  */
-function tsr_points( int $place, string $cat ): int {
-	global $points_map;
-	$max = $points_map[ $cat ] ?? 0;
+function tsr_points( int $place, string $cat, bool $is_bonus = false ): int {
+	if ( $is_bonus ) {
+		$max = 20;
+	} else {
+		$max = match ( $cat ) {
+			'short'         => 5,
+			'medium'        => 10,
+			'long', 'bonus' => 15, // legacy 'bonus' cat = 21+ km distance, not a designated bonus race
+			default         => 0,
+		};
+	}
 	if ( 0 === $max || $place < 1 || $place > $max ) {
 		return 0;
 	}
@@ -110,10 +143,25 @@ $race_posts = get_posts(
 
 $has_cat_meta = false; // Flip to true once we find any distance category meta.
 
+$tsr_season_bonus = $tsr_bonus_races[ $current_season ] ?? array();
+
 foreach ( $race_posts as $rpost ) {
 	$cat = (string) ( get_post_meta( $rpost->ID, '_tsr_distance_cat', true ) ?: '' );
 	if ( '' !== $cat ) {
 		$has_cat_meta = true;
+	}
+
+	// Designated bonus race? Match base slug (before '--category') + distance.
+	$tsr_base_slug = explode( '--', $rpost->post_name )[0];
+	$tsr_km_meta   = (string) get_post_meta( $rpost->ID, '_tsr_distance_km', true );
+	$is_bonus      = false;
+	foreach ( $tsr_season_bonus as $tsr_br ) {
+		if ( $tsr_br['slug'] === $tsr_base_slug
+			&& '' !== $tsr_km_meta
+			&& abs( (float) $tsr_km_meta - (float) $tsr_br['km'] ) < 0.25 ) {
+			$is_bonus = true;
+			break;
+		}
 	}
 
 	$json_raw = get_post_meta( $rpost->ID, '_tsr_result_set', true );
@@ -138,7 +186,7 @@ foreach ( $race_posts as $rpost ) {
 			continue;
 		}
 
-		$pts  = '' !== $cat ? tsr_points( $place, $cat ) : 0;
+		$pts  = ( '' !== $cat || $is_bonus ) ? tsr_points( $place, $cat, $is_bonus ) : 0;
 		$name = trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) );
 		$key  = mb_strtolower( $name );
 
