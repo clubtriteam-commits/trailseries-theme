@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * The canonical results schema. Single source of truth for column set and order.
  *
@@ -13,8 +14,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

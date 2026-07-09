@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Template Name: Правила
  *
@@ -9,8 +10,6 @@
  *
  * @package exhibz-child
  */
-
-declare( strict_types=1 );
 
 get_header();
 ?>

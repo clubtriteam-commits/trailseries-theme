@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * A complete results table for one race. Owns the split-column definition and
  * guarantees every row matches it: a row with the wrong number of splits is
@@ -10,8 +11,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * One result row. Immutable; validated at construction — an invalid row
  * cannot exist.
@@ -10,8 +11,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

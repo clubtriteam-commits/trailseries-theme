@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Template Name: История на събитие
  *
@@ -14,8 +15,6 @@
  *
  * @package exhibz-child
  */
-
-declare( strict_types=1 );
 
 // ── Shared helpers (guarded against redeclaration) ────────────────────────────
 

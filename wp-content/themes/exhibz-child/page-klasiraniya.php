@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Template Name: Класирания
  *
@@ -28,8 +29,6 @@
  *
  * @package exhibz-child
  */
-
-declare( strict_types=1 );
 
 get_header();
 

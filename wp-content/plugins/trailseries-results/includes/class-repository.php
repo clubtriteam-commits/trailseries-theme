@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Persistence for result sets. The ONLY read/write path for results data —
  * everything goes through TSR_Result_Set validation on both save and load.
@@ -9,8 +10,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

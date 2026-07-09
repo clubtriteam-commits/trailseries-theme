@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * URL redirect and 410 Gone handler.
  *
@@ -10,8 +11,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 add_action(
 	'init',

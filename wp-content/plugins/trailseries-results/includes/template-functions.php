@@ -1,12 +1,11 @@
 <?php
+declare( strict_types=1 );
 /**
  * Public template API. This is the entire surface the theme is allowed to use:
  * it accepts a post ID and returns the canonical table — no column options.
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

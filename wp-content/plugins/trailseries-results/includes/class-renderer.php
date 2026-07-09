@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * The single rendering path for results tables. Takes a TSR_Result_Set and
  * nothing else — there is no parameter for choosing, hiding or reordering
@@ -8,8 +9,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

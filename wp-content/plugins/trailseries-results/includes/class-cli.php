@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * WP-CLI commands for the TrailSeries Results plugin.
  *
@@ -14,8 +15,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

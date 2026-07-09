@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Plugin Name:       TrailSeries Results
  * Plugin URI:        https://trailseries.bg
@@ -12,8 +13,6 @@
  * Text Domain:       trailseries-results
  * Domain Path:       /languages
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

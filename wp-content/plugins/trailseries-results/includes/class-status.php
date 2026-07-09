@@ -1,11 +1,10 @@
 <?php
+declare( strict_types=1 );
 /**
  * Runner status — closed set. A row can never carry an ad-hoc status string.
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

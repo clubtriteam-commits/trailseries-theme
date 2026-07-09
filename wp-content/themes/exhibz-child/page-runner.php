@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Template Name: Профил на бегач
  *
@@ -10,8 +11,6 @@
  *
  * @package exhibz-child
  */
-
-declare( strict_types=1 );
 
 // ── Shared helpers (guarded so this template can coexist with page-rezultati.php) ─
 

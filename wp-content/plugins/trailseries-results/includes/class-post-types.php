@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * CPT and taxonomy registration.
  *
@@ -12,8 +13,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

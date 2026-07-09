@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Homepage template — TrailSeries.bg.
  *
@@ -13,8 +14,6 @@
  *
  * @package exhibz-child
  */
-
-declare( strict_types=1 );
 
 // ── Data collection (before any HTML output) ──────────────────────────────────
 

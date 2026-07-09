@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * Archive template — used for the Новини posts archive.
  *
@@ -8,8 +9,6 @@
  *
  * @package exhibz-child
  */
-
-declare( strict_types=1 );
 
 get_header();
 

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 /**
  * TrailSeries Child Theme (Exhibz) — setup and hooks.
  *
@@ -8,8 +9,6 @@
  *
  * @package exhibz-child
  */
-
-declare( strict_types=1 );
 
 // ── Theme setup ──────────────────────────────────────────────────────────────
 
