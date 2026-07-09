@@ -81,7 +81,14 @@
 
 	// ── Elevation profile (SVG) ─────────────────────────────────────────────
 
-	function niceStep( totalKm ) {
+	function niceStep( totalKm, isMobile ) {
+		if ( isMobile ) {
+			if ( totalKm <= 4 )  { return 1; }
+			if ( totalKm <= 10 ) { return 2; }
+			if ( totalKm <= 20 ) { return 5; }
+			if ( totalKm <= 40 ) { return 10; }
+			return 20;
+		}
 		if ( totalKm <= 6 )  { return 1; }
 		if ( totalKm <= 14 ) { return 2; }
 		if ( totalKm <= 30 ) { return 5; }
@@ -97,8 +104,14 @@
 		}
 		chartWrap.hidden = false;
 
-		var W = 800, H = 240;
-		var padL = 46, padR = 14, padT = 14, padB = 28;
+		// Narrower viewBox on mobile: the SVG scales via width:100%, so at a
+		// fixed 800-unit viewBox a ~340px-wide modal renders 11px labels at
+		// ~4-5px — illegible. Halving the viewBox width doubles the effective
+		// scale factor at the same screen size, and the CSS font-size bump
+		// below (mobile media query) stacks with that for real legibility.
+		var isMobile = window.matchMedia( '(max-width: 640px)' ).matches;
+		var W = isMobile ? 440 : 800, H = 240;
+		var padL = isMobile ? 50 : 46, padR = 14, padT = 14, padB = isMobile ? 34 : 28;
 		var iw = W - padL - padR, ih = H - padT - padB;
 
 		var totalM  = points[ points.length - 1 ].dist;
@@ -132,8 +145,9 @@
 			'<stop offset="100%" stop-color="#e05c1e" stop-opacity="0.55"/>' +
 			'</linearGradient></defs>';
 
-		// Horizontal gridlines + y labels (4 steps).
-		var ySteps = 4;
+		// Horizontal gridlines + y labels (fewer on mobile — larger text needs
+		// more vertical room to avoid overlapping).
+		var ySteps = isMobile ? 3 : 4;
 		for ( var g = 0; g <= ySteps; g++ ) {
 			var e  = minE + ( maxE - minE ) * g / ySteps;
 			var yy = y( e ).toFixed( 1 );
@@ -142,7 +156,7 @@
 		}
 
 		// X ticks every niceStep km.
-		var kmStep = niceStep( totalKm );
+		var kmStep = niceStep( totalKm, isMobile );
 		for ( var km = 0; km <= totalKm; km += kmStep ) {
 			var xx = x( km * 1000 ).toFixed( 1 );
 			svg += '<line x1="' + xx + '" y1="' + ( padT + ih ) + '" x2="' + xx + '" y2="' + ( padT + ih + 4 ) + '" class="tsr-chart__tick"/>';
@@ -157,6 +171,7 @@
 		svg += '<line class="tsr-chart__hover-line" x1="0" y1="' + padT + '" x2="0" y2="' + ( padT + ih ) + '"/>';
 		svg += '<circle class="tsr-chart__hover-dot" cx="0" cy="0" r="4"/>';
 
+		chartEl.setAttribute( 'viewBox', '0 0 ' + W + ' ' + H );
 		chartEl.innerHTML = svg;
 
 		chartState = {
@@ -273,6 +288,26 @@
 
 	chartEl.addEventListener( 'mousemove', handleChartMove );
 	chartEl.addEventListener( 'mouseleave', hideChartHover );
+
+	/**
+	 * Touch equivalent of handleChartMove — mousemove/mouseleave never fire
+	 * on touch devices, so without this the chart/map hover-link is
+	 * desktop-only. Scrubs the profile with a finger; preventDefault stops
+	 * the page from scrolling vertically while dragging across the chart.
+	 */
+	function handleChartTouch( ev ) {
+		if ( ! ev.touches || ! ev.touches.length ) {
+			return;
+		}
+		ev.preventDefault();
+		var touch = ev.touches[ 0 ];
+		handleChartMove( { clientX: touch.clientX, clientY: touch.clientY } );
+	}
+
+	chartEl.addEventListener( 'touchstart', handleChartTouch, { passive: false } );
+	chartEl.addEventListener( 'touchmove', handleChartTouch, { passive: false } );
+	chartEl.addEventListener( 'touchend', hideChartHover );
+	chartEl.addEventListener( 'touchcancel', hideChartHover );
 
 	// ── Map ─────────────────────────────────────────────────────────────────
 

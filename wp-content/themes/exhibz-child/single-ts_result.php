@@ -13,19 +13,31 @@ get_header();
 while ( have_posts() ) :
 	the_post();
 	?>
-	<article <?php post_class(); ?>>
-		<h1 class="entry-title"><?php echo esc_html( get_the_title() ); ?></h1>
-
-		<div class="entry-content">
-			<?php the_content(); ?>
+	<div class="tsr-page-hero">
+		<div class="tsr-container">
+			<p class="tsr-page-hero__kicker">TrailSeries.bg</p>
+			<h1 class="tsr-page-hero__title"><?php echo esc_html( get_the_title() ); ?></h1>
 		</div>
+	</div>
 
-		<?php
-		if ( function_exists( 'tsr_render_results' ) ) {
-			echo tsr_render_results( get_the_ID() ); // phpcs:ignore WordPress.Security.EscapeOutput -- plugin renderer escapes all output.
-		}
-		?>
-	</article>
+	<main class="tsr-page-content">
+		<div class="tsr-container">
+			<article <?php post_class( 'tsr-prose-section' ); ?>>
+
+				<?php if ( trim( (string) get_the_content() ) !== '' ) : ?>
+					<div class="entry-content">
+						<?php the_content(); ?>
+					</div>
+				<?php endif; ?>
+
+				<?php
+				if ( function_exists( 'tsr_render_results' ) ) {
+					echo tsr_render_results( get_the_ID() ); // phpcs:ignore WordPress.Security.EscapeOutput -- plugin renderer escapes all output.
+				}
+				?>
+			</article>
+		</div>
+	</main>
 	<?php
 endwhile;
 

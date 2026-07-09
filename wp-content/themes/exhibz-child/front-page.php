@@ -433,6 +433,17 @@ get_header();
 		map.on( 'focus', function () { map.scrollWheelZoom.enable(); } );
 		map.on( 'blur',  function () { map.scrollWheelZoom.disable(); } );
 
+		// Close the previously-open popup whenever a new one opens — covers
+		// both desktop hover (mouseover/mouseout below) and mobile tap,
+		// where mouseout never fires so popups would otherwise stack open.
+		var tsrOpenPopupMarker = null;
+		map.on( 'popupopen', function ( ev ) {
+			if ( tsrOpenPopupMarker && tsrOpenPopupMarker !== ev.popup._source ) {
+				tsrOpenPopupMarker.closePopup();
+			}
+			tsrOpenPopupMarker = ev.popup._source;
+		} );
+
 		L.tileLayer(
 			'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
 			{
@@ -534,7 +545,7 @@ get_header();
 				<div class="tsr-stat__num">
 					<?php
 					if ( $tsr_total_finishers > 0 ) {
-						echo esc_html( number_format( $tsr_total_finishers, 0, ',', '\u{00A0}' ) );
+						echo esc_html( number_format( $tsr_total_finishers, 0, ',', "\u{00A0}" ) );
 					} else {
 						echo '&mdash;';
 					}

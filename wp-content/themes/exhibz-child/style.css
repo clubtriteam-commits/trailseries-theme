@@ -500,6 +500,39 @@ Text Domain:  exhibz-child
 /* ── Results table (plugin output — active theme must own this CSS) ──────────── */
 .tsr-results-wrap {
 	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* Scroll hint on wide (nowrap) tables — mobile only, both the plugin's
+   own wrapper and the theme's compact-table wrapper (runner/event pages). */
+@media (max-width: 640px) {
+	.tsr-results-wrap,
+	.tsr-compact-wrap {
+		position: relative;
+	}
+
+	.tsr-results-wrap::before,
+	.tsr-compact-wrap::before {
+		content:        '→ плъзнете за повече';
+		display:        block;
+		font-size:      0.72rem;
+		font-weight:    600;
+		color:          var(--tsr-muted);
+		text-align:     right;
+		margin-bottom:  0.35rem;
+	}
+
+	.tsr-results-wrap::after,
+	.tsr-compact-wrap::after {
+		content:        '';
+		position:       absolute;
+		top:            0;
+		right:          0;
+		bottom:         0;
+		width:          28px;
+		pointer-events: none;
+		background:     linear-gradient(to right, transparent, rgba(0, 0, 0, 0.14));
+	}
 }
 
 .tsr-results {
@@ -1576,10 +1609,11 @@ body.tsr-modal-open {
 }
 
 .tsr-modal__chart {
-	display: block;
-	width:   100%;
-	height:  auto;
-	cursor:  crosshair;
+	display:     block;
+	width:       100%;
+	height:      auto;
+	cursor:      crosshair;
+	touch-action: none;
 }
 
 .tsr-chart__hover-line {
@@ -1675,6 +1709,18 @@ body.tsr-modal-open {
 	font-size:   11px;
 	fill:        var(--tsr-muted);
 	text-anchor: middle;
+}
+
+/* SVG text font-size resolves in the chart's own viewBox coordinate space,
+   so it scales with the viewBox regardless of screen pixels. JS switches to
+   a narrower (440 vs 800) viewBox at this same breakpoint — this bump keeps
+   the *rendered* label size legible on a ~340px-wide modal instead of the
+   ~4-5px that 11px/800-wide would produce. */
+@media (max-width: 640px) {
+	.tsr-chart__ylabel,
+	.tsr-chart__xlabel {
+		font-size: 16px;
+	}
 }
 
 .tsr-modal__stats {
