@@ -4,15 +4,24 @@
  *
  * Two render modes:
  *
- *  - Standalone: a "--category" section post renders its own hero + table,
- *    exactly as before (linked from /rezultati/ etc.).
+ *  - Standalone: a section post with no extending siblings renders its own
+ *    hero + table, exactly as before (linked from /rezultati/ etc.).
  *
- *  - Hub: a post whose slug is the bare legacy page slug (no "--") and that
- *    has sibling posts slugged "{slug}--{cat}" renders ALL sections of the
- *    original legacy page as an accordion — one section per category. This
- *    preserves the old site's single-page-multi-category format at the exact
- *    legacy URL (SEO, iron rule 3), e.g. /baba-marta-run26-results/ shows
- *    16КМ МЪЖЕ, 16КМ ЖЕНИ, 10КМ МЪЖЕ, ... together.
+ *  - Hub: a post whose slug other posts extend ("{slug}-{cat}") renders ALL
+ *    those sections as an accordion — one per category. This preserves the
+ *    old site's single-page-multi-category format at the exact legacy URL
+ *    (SEO, iron rule 3), e.g. /baba-marta-run26-results/ shows 16КМ МЪЖЕ,
+ *    16КМ ЖЕНИ, 10КМ МЪЖЕ, ... together.
+ *
+ * Slug reality: bulk-import derives "{page_slug}--{cat_part}" but
+ * wp_insert_post()'s sanitize_title() collapses the double dash, so stored
+ * sibling slugs are "{page_slug}-{cat_part}" (Cyrillic parts URL-encoded).
+ * Verified against the migration manifest: no legacy page slug is a dash
+ * prefix of another page's slug, so a hub only ever absorbs its own page's
+ * sections. The only prefix-extension pairs WITHIN a page are duplicate
+ * category headers ("...-мъже" / "...-мъже-2"); a direct visit to such a
+ * section URL therefore renders a mini-hub with its continuation table —
+ * intended, since "-2" files are the same category's second table.
  *
  * Siblings are matched by slug prefix, NOT by _tsr_event_base/_tsr_season
  * meta: the prefix exactly reconstructs the legacy page (meta could merge two
@@ -36,10 +45,6 @@ get_header();
  * @return WP_Post[] Ordered sections, or empty array.
  */
 function tsr_hub_sections( WP_Post $post ): array {
-	if ( str_contains( $post->post_name, '--' ) ) {
-		return array(); // A "--category" section is never a hub.
-	}
-
 	global $wpdb;
 	$sibling_ids = array_map(
 		'intval',
@@ -48,7 +53,7 @@ function tsr_hub_sections( WP_Post $post ): array {
 				"SELECT ID FROM {$wpdb->posts}
 				 WHERE post_type = %s AND post_status = 'publish' AND post_name LIKE %s",
 				$post->post_type,
-				$wpdb->esc_like( $post->post_name . '--' ) . '%'
+				$wpdb->esc_like( $post->post_name . '-' ) . '%'
 			)
 		)
 	);
@@ -67,9 +72,13 @@ function tsr_hub_sections( WP_Post $post ): array {
 /**
  * Category label for one section — bulk-import appends " — {category_raw}"
  * to the legacy page title, so take the part after the LAST em-dash.
- * Falls back to the slug's category part when the title has no suffix.
+ * Falls back to the slug's category part (everything after the hub slug,
+ * URL-decoded for Cyrillic) when the title has no suffix.
+ *
+ * @param WP_Post $post     Section post.
+ * @param string  $hub_slug post_name of the hub post heading this page.
  */
-function tsr_section_label( WP_Post $post ): string {
+function tsr_section_label( WP_Post $post, string $hub_slug ): string {
 	$pos = mb_strrpos( $post->post_title, ' — ' );
 	if ( false !== $pos ) {
 		$label = trim( mb_substr( $post->post_title, $pos + 3 ) );
@@ -77,9 +86,8 @@ function tsr_section_label( WP_Post $post ): string {
 			return $label;
 		}
 	}
-	$sep = strpos( $post->post_name, '--' );
-	if ( false !== $sep ) {
-		$cat_part = substr( $post->post_name, $sep + 2 );
+	if ( str_starts_with( $post->post_name, $hub_slug . '-' ) ) {
+		$cat_part = urldecode( substr( $post->post_name, strlen( $hub_slug ) + 1 ) );
 		// Unnamed tables on very old pages produce "all", "all-2", ... parts.
 		if ( preg_match( '/^all(?:-(\d+))?$/', $cat_part, $m ) ) {
 			return isset( $m[1] ) ? 'Резултати — част ' . $m[1] : 'Резултати';
@@ -128,7 +136,7 @@ while ( have_posts() ) :
 						<?php foreach ( $tsr_sections as $tsr_i => $tsr_section ) : ?>
 							<details class="tsr-result-hub__section"<?php echo 0 === $tsr_i ? ' open' : ''; ?>>
 								<summary class="tsr-result-hub__summary">
-									<?php echo esc_html( tsr_section_label( $tsr_section ) ); ?>
+									<?php echo esc_html( tsr_section_label( $tsr_section, get_post()->post_name ) ); ?>
 								</summary>
 								<?php
 								if ( function_exists( 'tsr_render_results' ) ) {

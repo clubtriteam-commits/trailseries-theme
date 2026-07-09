@@ -83,9 +83,12 @@ $current_season_label = $season_labels[ $current_season ] ?? "Сезон $curren
 // per season and a distance category alone cannot express it (e.g. in 2025
 // The Cactus Run 21km is a regular long race while Buhovo HM 21km is bonus).
 //
-// 'slug' is the base post_name of the imported result posts (the part before
-// any '--category' suffix); 'km' matches against the `_tsr_distance_km` meta.
-// Seasons set in the 'tsr_bonus_races' option override these defaults.
+// 'slug' is the legacy page slug — the bare post_name of the page's first
+// imported section; sibling sections extend it as "{slug}-{cat}" (single
+// dash: sanitize_title collapses the importer's "--"). 'km' matches against
+// the `_tsr_distance_km` meta, so BOTH gender categories of the designated
+// distance score as bonus. Seasons set in the 'tsr_bonus_races' option
+// override these defaults.
 $tsr_bonus_defaults = array(
 	2025 => array(
 		array( 'slug' => '7-hills-run25-results', 'km' => 26.0 ),          // 7 Hills Run 26km (Hardcore edition)
@@ -112,7 +115,8 @@ function tsr_race_gender( WP_Post $post ): string {
 	if ( preg_match( '/-f$/i', $post->post_name ) ) {
 		return 'F';
 	}
-	$slug = mb_strtolower( $post->post_name, 'UTF-8' );
+	// Cyrillic slug parts are stored URL-encoded in post_name — decode first.
+	$slug = mb_strtolower( urldecode( $post->post_name ), 'UTF-8' );
 	if ( str_contains( $slug, 'мъже' ) ) {
 		return 'M';
 	}
@@ -194,12 +198,17 @@ foreach ( $race_posts as $rpost ) {
 		$has_cat_meta = true;
 	}
 
-	// Designated bonus race? Match base slug (before '--category') + distance.
-	$tsr_base_slug = explode( '--', $rpost->post_name )[0];
-	$tsr_km_meta   = (string) get_post_meta( $rpost->ID, '_tsr_distance_km', true );
-	$is_bonus      = false;
+	// Designated bonus race? A post belongs to the designated legacy page when
+	// its slug IS the page slug or extends it ("{page_slug}-{cat}" — note
+	// sanitize_title collapses the importer's "--" separator to one dash), and
+	// its distance matches. Prefix matching is collision-free: no legacy page
+	// slug is a dash-prefix of another page's slug (manifest-verified).
+	$tsr_km_meta = (string) get_post_meta( $rpost->ID, '_tsr_distance_km', true );
+	$is_bonus    = false;
 	foreach ( $tsr_season_bonus as $tsr_br ) {
-		if ( $tsr_br['slug'] === $tsr_base_slug
+		$tsr_slug_match = $rpost->post_name === $tsr_br['slug']
+			|| str_starts_with( $rpost->post_name, $tsr_br['slug'] . '-' );
+		if ( $tsr_slug_match
 			&& '' !== $tsr_km_meta
 			&& abs( (float) $tsr_km_meta - (float) $tsr_br['km'] ) < 0.25 ) {
 			$is_bonus = true;
