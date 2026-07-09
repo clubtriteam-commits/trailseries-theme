@@ -1,4 +1,5 @@
-﻿<?php
+<?php
+declare( strict_types=1 );
 /**
  * Admin CSV upload for race results — no WP-CLI needed.
  *
@@ -24,8 +25,6 @@
  *
  * @package trailseries-results
  */
-
-declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
