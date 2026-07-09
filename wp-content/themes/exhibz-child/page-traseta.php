@@ -202,6 +202,9 @@ get_header();
 						<?php endif; ?>
 
 						<?php if ( ! empty( $tsr_legacy ) ) : ?>
+							<?php if ( ! empty( $tsr_current ) ) : ?>
+								<hr class="tsr-track-divider">
+							<?php endif; ?>
 							<details class="tsr-track-legacy-group">
 								<summary class="tsr-track-legacy-group__summary">
 									<?php

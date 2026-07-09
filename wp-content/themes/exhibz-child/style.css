@@ -1452,6 +1452,12 @@ Text Domain:  exhibz-child
 	color: var(--tsr-muted);
 }
 
+.tsr-track-divider {
+	border:     none;
+	border-top: 1px solid var(--tsr-border);
+	margin:     1rem 0 0;
+}
+
 .tsr-track-legacy-group {
 	margin-top: 0.6rem;
 }
