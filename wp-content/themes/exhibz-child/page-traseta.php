@@ -230,6 +230,7 @@ get_header();
 			<svg class="tsr-modal__chart" id="tsr-modal-chart"
 			     viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet"
 			     role="img" aria-label="Профил на изкачването"></svg>
+			<div class="tsr-chart-tooltip" id="tsr-modal-chart-tooltip" hidden></div>
 		</div>
 		<div class="tsr-modal__stats tsr-track__meta" id="tsr-modal-stats"></div>
 		<div class="tsr-modal__actions">

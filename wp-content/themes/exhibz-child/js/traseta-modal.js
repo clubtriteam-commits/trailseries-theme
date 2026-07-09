@@ -19,13 +19,22 @@
 	var statsEl   = document.getElementById( 'tsr-modal-stats' );
 	var chartWrap = document.getElementById( 'tsr-modal-chart-wrap' );
 	var chartEl   = document.getElementById( 'tsr-modal-chart' );
+	var tooltipEl = document.getElementById( 'tsr-modal-chart-tooltip' );
 	var gpxBtn    = document.getElementById( 'tsr-modal-gpx' );
 	var kmlBtn    = document.getElementById( 'tsr-modal-kml' );
 
-	var map        = null;
-	var trackLayer = null;
+	var map          = null;
+	var trackLayer   = null;
+	var hoverMarker  = null;
+	var hoverIcon    = L.divIcon( {
+		className: 'tsr-hover-marker-wrap',
+		html:      '<span class="tsr-hover-marker"></span>',
+		iconSize:  [ 16, 16 ],
+		iconAnchor: [ 8, 8 ]
+	} );
 	var gpxCache   = {}; // url → parsed points [{lat, lon, ele, dist}]
 	var lastFocus  = null;
+	var chartState = null; // geometry + points needed to map hover x → track point
 
 	// ── GPX parsing ─────────────────────────────────────────────────────────
 
@@ -74,6 +83,7 @@
 		var eles = points.filter( function ( p ) { return p.ele !== null; } );
 		if ( eles.length < 2 ) {
 			chartWrap.hidden = true;
+			chartState = null;
 			return;
 		}
 		chartWrap.hidden = false;
@@ -133,8 +143,114 @@
 		svg += '<path d="' + area + '" fill="url(#tsr-ele-grad)"/>';
 		svg += '<path d="' + line + '" fill="none" class="tsr-chart__line"/>';
 
+		// Hover guide (vertical line + dot on the profile), updated on
+		// mousemove without touching the rest of the markup.
+		svg += '<line class="tsr-chart__hover-line" x1="0" y1="' + padT + '" x2="0" y2="' + ( padT + ih ) + '"/>';
+		svg += '<circle class="tsr-chart__hover-dot" cx="0" cy="0" r="4"/>';
+
 		chartEl.innerHTML = svg;
+
+		chartState = {
+			points: eles, // full-resolution, not the downsampled path
+			totalM: totalM,
+			padL:   padL,
+			padR:   padR,
+			iw:     iw,
+			W:      W,
+			x:      x,
+			y:      y,
+			hoverLine: chartEl.querySelector( '.tsr-chart__hover-line' ),
+			hoverDot:  chartEl.querySelector( '.tsr-chart__hover-dot' )
+		};
 	}
+
+	/**
+	 * Interpolated point at a given cumulative distance (metres) along the
+	 * track, via binary search over the (dist-sorted) points array.
+	 *
+	 * @param {Array<{lat:number, lon:number, ele:number, dist:number}>} points
+	 * @param {number} targetDist
+	 */
+	function pointAtDistance( points, targetDist ) {
+		var lo = 0, hi = points.length - 1;
+		if ( targetDist <= points[ lo ].dist ) { return points[ lo ]; }
+		if ( targetDist >= points[ hi ].dist ) { return points[ hi ]; }
+		while ( hi - lo > 1 ) {
+			var mid = ( lo + hi ) >> 1;
+			if ( points[ mid ].dist < targetDist ) { lo = mid; } else { hi = mid; }
+		}
+		var a = points[ lo ], b = points[ hi ];
+		var span = b.dist - a.dist;
+		var t = span > 0 ? ( targetDist - a.dist ) / span : 0;
+		return {
+			lat:  a.lat + ( b.lat - a.lat ) * t,
+			lon:  a.lon + ( b.lon - a.lon ) * t,
+			ele:  a.ele + ( b.ele - a.ele ) * t,
+			dist: targetDist
+		};
+	}
+
+	function ensureHoverMarker() {
+		if ( ! hoverMarker ) {
+			hoverMarker = L.marker( [ 0, 0 ], { icon: hoverIcon, interactive: false, keyboard: false } );
+		}
+		if ( map && ! map.hasLayer( hoverMarker ) ) {
+			hoverMarker.addTo( map );
+		}
+		return hoverMarker;
+	}
+
+	function hideChartHover() {
+		if ( chartState ) {
+			chartState.hoverLine.style.opacity = '0';
+			chartState.hoverDot.style.opacity  = '0';
+		}
+		tooltipEl.hidden = true;
+		if ( hoverMarker && map && map.hasLayer( hoverMarker ) ) {
+			map.removeLayer( hoverMarker );
+		}
+	}
+
+	function handleChartMove( ev ) {
+		if ( ! chartState ) {
+			return;
+		}
+		var rect = chartEl.getBoundingClientRect();
+		if ( ! rect.width ) {
+			return;
+		}
+		var scale = rect.width / chartState.W;
+		var svgX  = ( ev.clientX - rect.left ) / scale;
+		svgX = Math.max( chartState.padL, Math.min( chartState.W - chartState.padR, svgX ) );
+
+		var frac = ( svgX - chartState.padL ) / chartState.iw;
+		var targetDist = frac * chartState.totalM;
+		var pt = pointAtDistance( chartState.points, targetDist );
+
+		var px = chartState.x( pt.dist ).toFixed( 1 );
+		var py = chartState.y( pt.ele ).toFixed( 1 );
+		chartState.hoverLine.setAttribute( 'x1', px );
+		chartState.hoverLine.setAttribute( 'x2', px );
+		chartState.hoverLine.style.opacity = '1';
+		chartState.hoverDot.setAttribute( 'cx', px );
+		chartState.hoverDot.setAttribute( 'cy', py );
+		chartState.hoverDot.style.opacity = '1';
+
+		var wrapRect = chartWrap.getBoundingClientRect();
+		tooltipEl.hidden = false;
+		tooltipEl.style.left = ( ev.clientX - wrapRect.left ) + 'px';
+		tooltipEl.style.top  = ( ev.clientY - wrapRect.top ) + 'px';
+		tooltipEl.innerHTML =
+			'<span class="tsr-chart-tooltip__row">Дистанция: ' + ( pt.dist / 1000 ).toFixed( 2 ) + ' км</span>' +
+			'<span class="tsr-chart-tooltip__row">Височина: ' + Math.round( pt.ele ) + ' м</span>';
+
+		if ( map ) {
+			ensureHoverMarker().setLatLng( [ pt.lat, pt.lon ] );
+		}
+	}
+
+	chartEl.addEventListener( 'mousemove', handleChartMove );
+	chartEl.addEventListener( 'mouseleave', hideChartHover );
 
 	// ── Map ─────────────────────────────────────────────────────────────────
 
@@ -178,6 +294,9 @@
 	function openModal( row ) {
 		var d = row.dataset;
 		lastFocus = row;
+
+		hideChartHover();
+		chartState = null;
 
 		titleEl.textContent = d.title || '';
 		fillStats( d );
@@ -225,6 +344,7 @@
 	}
 
 	function closeModal() {
+		hideChartHover();
 		modal.hidden = true;
 		document.body.classList.remove( 'tsr-modal-open' );
 		if ( lastFocus ) {
