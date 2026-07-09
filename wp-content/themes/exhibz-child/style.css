@@ -826,6 +826,40 @@ Text Domain:  exhibz-child
 	font-weight: 600;
 }
 
+/* ── Klasiraniya — two-column gender split ──────────────────────────────────── */
+.tsr-standings-cols {
+	display: flex;
+	gap: 2rem;
+	align-items: flex-start;
+}
+
+.tsr-standings-col {
+	flex: 1;
+	min-width: 0;
+}
+
+.tsr-standings-col__heading {
+	font-size: 1rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--tsr-blue);
+	margin-bottom: 0.75rem;
+}
+
+.tsr-standings-note {
+	font-size: 0.82rem;
+	color: var(--tsr-muted);
+	margin-bottom: 1.25rem;
+}
+
+@media (max-width: 640px) {
+	.tsr-standings-cols {
+		flex-direction: column;
+		gap: 2.5rem;
+	}
+}
+
 /* ── Notice / alert boxes ───────────────────────────────────────────────────── */
 .tsr-notice {
 	padding: 1rem 1.25rem;

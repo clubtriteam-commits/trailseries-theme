@@ -1,24 +1,26 @@
-<?php
+﻿<?php
 /**
  * Template Name: Класирания
  *
  * Template for the Класирания page (slug: klasiraniya).
  *
- * Season standings — accumulated points per athlete across all races in a
- * season, using the scoring rules from Правила.
+ * Season standings split into Мъже / Жени columns, accumulated points per
+ * athlete across all races in a season using the scoring rules from Правила.
  *
  * Points per race:
- *   short  (<8 km)      → top 5 score,  1st = 5  (6 - place)
- *   medium (8-13.9 km)  → top 10 score, 1st = 10 (11 - place)
- *   long   (14+ km)     → top 15 score, 1st = 15 (16 - place)
- *   BONUS races         → top 20 score, 1st = 20 (21 - place)
+ *   short  (<8 km)      -> top 5 score,  1st = 5  (6 - place)
+ *   medium (8-13.9 km)  -> top 10 score, 1st = 10 (11 - place)
+ *   long   (14+ km)     -> top 15 score, 1st = 15 (16 - place)
+ *   BONUS races         -> top 20 score, 1st = 20 (21 - place)
  *
- * Bonus is NOT a distance category — each season designates exactly two
+ * Bonus is NOT a distance category -- each season designates exactly two
  * specific races (event + distance) as bonus; see $tsr_bonus_races below.
  * Note the legacy `_tsr_distance_cat` meta value 'bonus' (backfill assigned
  * it to all 21+ km races) is treated as 'long' here unless the race is in
  * the season's designated bonus list. Verified against the live Season 13
- * (2025) standings: Vincent Sliman 88, Leo Sliman 82, Иван Венков 60.
+ * (2025) standings: Vincent Sliman 88, Leo Sliman 82, Ivan Venkov 60.
+ *
+ * Tiebreaker: equal points -> podium count (top-3 finishes) DESC.
  *
  * Distance category comes from `_tsr_distance_cat` post meta; the distance
  * itself from `_tsr_distance_km`. When meta is absent the race earns 0
@@ -31,9 +33,8 @@ declare( strict_types=1 );
 
 get_header();
 
-// ── Season selection ──────────────────────────────────────────────────────────
+// -- Season selection ---------------------------------------------------------
 
-// Available seasons: derive from published ts_result posts grouped by year.
 $season_years = array();
 $all_ids      = get_posts(
 	array(
@@ -55,7 +56,7 @@ $available_seasons = array_keys( $season_years );
 
 $current_season = isset( $_GET['sezon'] ) ? (int) $_GET['sezon'] : ( $available_seasons[0] ?? (int) gmdate( 'Y' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
-// ── Season display labels ─────────────────────────────────────────────────────
+// -- Season display labels ----------------------------------------------------
 $season_labels = array(
 	2012 => 'Сезон 1 (2012–2013)',
 	2013 => 'Сезон 2 (2013–2014)',
@@ -75,11 +76,11 @@ $season_labels = array(
 );
 $current_season_label = $season_labels[ $current_season ] ?? "Сезон $current_season";
 
-// ── Bonus race designation ────────────────────────────────────────────────────
+// -- Bonus race designation ---------------------------------------------------
 //
 // Exactly two races per season score as bonus (top 20, 21 - place). They are
 // identified by legacy page slug + distance, because the designation changes
-// per season and a distance category alone can't express it (e.g. in 2025
+// per season and a distance category alone cannot express it (e.g. in 2025
 // The Cactus Run 21km is a regular long race while Buhovo HM 21km is bonus).
 //
 // 'slug' is the base post_name of the imported result posts (the part before
@@ -92,6 +93,41 @@ $tsr_bonus_defaults = array(
 	),
 );
 $tsr_bonus_races = (array) get_option( 'tsr_bonus_races', array() ) + $tsr_bonus_defaults;
+
+/**
+ * Detect race gender from post_name slug or post_title category suffix.
+ *
+ * Detection order:
+ *   1. Latin -m / -f at the very end of the slug ("19km-m", "6km-f").
+ *   2. Cyrillic мъже / жени anywhere in the slug (Unicode-slug sites).
+ *   3. Cyrillic МЪЖЕ / ЖЕНИ anywhere in the post title (always reliable,
+ *      including bare-slug first sections whose slug has no gender marker).
+ *
+ * @return string 'M', 'F', or '' when undetermined.
+ */
+function tsr_race_gender( WP_Post $post ): string {
+	if ( preg_match( '/-m$/i', $post->post_name ) ) {
+		return 'M';
+	}
+	if ( preg_match( '/-f$/i', $post->post_name ) ) {
+		return 'F';
+	}
+	$slug = mb_strtolower( $post->post_name, 'UTF-8' );
+	if ( str_contains( $slug, 'мъже' ) ) {
+		return 'M';
+	}
+	if ( str_contains( $slug, 'жени' ) ) {
+		return 'F';
+	}
+	$title = mb_strtoupper( $post->post_title, 'UTF-8' );
+	if ( str_contains( $title, 'МЪЖЕ' ) ) {
+		return 'M';
+	}
+	if ( str_contains( $title, 'ЖЕНИ' ) ) {
+		return 'F';
+	}
+	return '';
+}
 
 /**
  * Return points earned for a given place, distance category and bonus flag.
@@ -120,12 +156,13 @@ function tsr_points( int $place, string $cat, bool $is_bonus = false ): int {
 	return $max + 1 - $place;
 }
 
-// ── Compute standings for the selected season ─────────────────────────────────
+// -- Compute standings for the selected season ---------------------------------
 
 /**
- * @var array<string, array{points:int, finishes:int, name:string}> $standings
+ * @var array<'m'|'f', array<string, array{points:int, finishes:int, podiums:int, name:string}>> $standings
  */
-$standings  = array();
+$standings = array( 'm' => array(), 'f' => array() );
+
 $race_posts = get_posts(
 	array(
 		'post_type'   => 'ts_result',
@@ -141,11 +178,17 @@ $race_posts = get_posts(
 	)
 );
 
-$has_cat_meta = false; // Flip to true once we find any distance category meta.
+$has_cat_meta = false;
 
 $tsr_season_bonus = $tsr_bonus_races[ $current_season ] ?? array();
 
 foreach ( $race_posts as $rpost ) {
+	$gender = tsr_race_gender( $rpost );
+	if ( '' === $gender ) {
+		continue; // skip categories with undetermined gender (kids, mixed, etc.)
+	}
+	$gender_key = 'M' === $gender ? 'm' : 'f';
+
 	$cat = (string) ( get_post_meta( $rpost->ID, '_tsr_distance_cat', true ) ?: '' );
 	if ( '' !== $cat ) {
 		$has_cat_meta = true;
@@ -174,9 +217,8 @@ foreach ( $race_posts as $rpost ) {
 	}
 
 	foreach ( $data['rows'] as $row ) {
-		// Only confirmed finishers score. DNF rows can legally carry a place number
-		// (e.g. golyam-sechko-run25 15km-m DNF at place 39) so we filter by status,
-		// never by place != null. TSR_Result_Row always serialises a status string.
+		// Only confirmed finishers score. DNF rows can legally carry a place
+		// number so we filter by status, never by place != null.
 		if ( ( $row['status'] ?? '' ) !== 'FIN' ) {
 			continue;
 		}
@@ -190,29 +232,77 @@ foreach ( $race_posts as $rpost ) {
 		$name = trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) );
 		$key  = mb_strtolower( $name );
 
-		if ( ! isset( $standings[ $key ] ) ) {
-			$standings[ $key ] = array(
+		if ( ! isset( $standings[ $gender_key ][ $key ] ) ) {
+			$standings[ $gender_key ][ $key ] = array(
 				'name'     => $name,
 				'points'   => 0,
 				'finishes' => 0,
+				'podiums'  => 0,
 			);
 		}
-		$standings[ $key ]['points']   += $pts;
-		$standings[ $key ]['finishes'] += 1;
+		$standings[ $gender_key ][ $key ]['points']   += $pts;
+		$standings[ $gender_key ][ $key ]['finishes'] += 1;
+		if ( $place <= 3 ) {
+			$standings[ $gender_key ][ $key ]['podiums'] += 1;
+		}
 	}
 }
 
-// Sort: points DESC, then finishes DESC.
-uasort(
-	$standings,
-	static function ( array $a, array $b ): int {
-		if ( $a['points'] !== $b['points'] ) {
-			return $b['points'] <=> $a['points'];
-		}
-		return $b['finishes'] <=> $a['finishes'];
+// Sort: points DESC, podiums DESC, finishes DESC.
+$tsr_sort_fn = static function ( array $a, array $b ): int {
+	if ( $a['points'] !== $b['points'] ) {
+		return $b['points'] <=> $a['points'];
 	}
-);
-$standings = array_values( $standings );
+	if ( $a['podiums'] !== $b['podiums'] ) {
+		return $b['podiums'] <=> $a['podiums'];
+	}
+	return $b['finishes'] <=> $a['finishes'];
+};
+uasort( $standings['m'], $tsr_sort_fn );
+uasort( $standings['f'], $tsr_sort_fn );
+$standings['m'] = array_values( $standings['m'] );
+$standings['f'] = array_values( $standings['f'] );
+
+/**
+ * Render one gender column of the standings table.
+ *
+ * @param array  $rows    Sorted athlete rows.
+ * @param string $heading Column heading (e.g. "Мъже").
+ */
+function tsr_render_standings_col( array $rows, string $heading ): void {
+	if ( empty( $rows ) ) {
+		return;
+	}
+	?>
+	<div class="tsr-standings-col">
+		<h3 class="tsr-standings-col__heading">
+			<?php echo esc_html( $heading ); ?>
+		</h3>
+		<div class="tsr-results-wrap">
+			<table class="tsr-results">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Атлет</th>
+						<th>Точки</th>
+						<th>Подиуми</th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $rows as $tsr_rank => $tsr_athlete ) : ?>
+						<tr<?php echo 0 === $tsr_rank ? ' class="tsr-rank-first"' : ''; ?>>
+							<td><?php echo esc_html( $tsr_rank + 1 ); ?></td>
+							<td><strong><?php echo esc_html( $tsr_athlete['name'] ); ?></strong></td>
+							<td><?php echo esc_html( $tsr_athlete['points'] ); ?></td>
+							<td><?php echo esc_html( $tsr_athlete['podiums'] ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<?php
+}
 ?>
 
 <div class="tsr-page-hero">
@@ -220,7 +310,7 @@ $standings = array_values( $standings );
 		<p class="tsr-page-hero__kicker">TrailSeries.bg</p>
 		<h1 class="tsr-page-hero__title">Класирания</h1>
 		<p class="tsr-page-hero__subtitle">
-			Сезонно класиране по точки — мъже и жени заедно
+			Сезонно класиране по точки
 		</p>
 	</div>
 </div>
@@ -228,7 +318,7 @@ $standings = array_values( $standings );
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
-		<!-- ─── Season picker ──────────────────────────────────────────────── -->
+		<!-- Season picker -->
 		<?php if ( count( $available_seasons ) > 1 ) : ?>
 			<nav class="tsr-season-nav" aria-label="Избор на сезон">
 				<?php foreach ( $available_seasons as $yr ) : ?>
@@ -241,7 +331,6 @@ $standings = array_values( $standings );
 		<?php endif; ?>
 
 		<?php if ( ! $has_cat_meta ) : ?>
-			<!-- Admin notice: metadata missing — standings show 0 pts -->
 			<div class="tsr-notice tsr-notice--info">
 				<strong>Забележка:</strong> На резултатите от сезон
 				<?php echo esc_html( $current_season ); ?> липсва метаданни за
@@ -251,31 +340,16 @@ $standings = array_values( $standings );
 			</div>
 		<?php endif; ?>
 
-		<!-- ─── Standings table ────────────────────────────────────────────── -->
-		<?php if ( ! empty( $standings ) ) : ?>
+		<!-- Standings -->
+		<?php if ( ! empty( $standings['m'] ) || ! empty( $standings['f'] ) ) : ?>
 			<section class="tsr-prose-section">
 				<h2><?php echo esc_html( $current_season_label ); ?></h2>
-				<div class="tsr-results-wrap">
-					<table class="tsr-results">
-						<thead>
-							<tr>
-								<th>#</th>
-								<th>Атлет</th>
-								<th>Точки</th>
-								<th>Финиши</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php foreach ( $standings as $rank => $athlete ) : ?>
-								<tr<?php echo 0 === $rank ? ' class="tsr-rank-first"' : ''; ?>>
-									<td><?php echo esc_html( $rank + 1 ); ?></td>
-									<td><strong><?php echo esc_html( $athlete['name'] ); ?></strong></td>
-									<td><?php echo esc_html( $athlete['points'] ); ?></td>
-									<td><?php echo esc_html( $athlete['finishes'] ); ?></td>
-								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
+				<p class="tsr-standings-note">
+					За класиране при равен брой точки предимство има броят подиуми.
+				</p>
+				<div class="tsr-standings-cols">
+					<?php tsr_render_standings_col( $standings['m'], 'Мъже' ); ?>
+					<?php tsr_render_standings_col( $standings['f'], 'Жени' ); ?>
 				</div>
 			</section>
 		<?php else : ?>
