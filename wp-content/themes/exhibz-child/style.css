@@ -1433,6 +1433,16 @@ Text Domain:  exhibz-child
 	color:      var(--tsr-muted);
 }
 
+.tsr-track__badge--laps {
+	background:     transparent;
+	color:          var(--tsr-orange);
+	border:         1px solid var(--tsr-orange);
+	text-transform: none;
+	letter-spacing: normal;
+	font-size:      0.72rem;
+	padding:        0.1rem 0.55rem;
+}
+
 .tsr-track--legacy {
 	border-left-color: var(--tsr-border);
 	opacity:           0.85;
@@ -1601,13 +1611,14 @@ body.tsr-modal-open {
 }
 
 /* Elevation-hover marker on the Leaflet map: white circle, green dot.
-   Leaflet's default .leaflet-div-icon adds its own background/border —
-   strip that so only our custom circle shows. */
-.tsr-hover-marker-wrap.leaflet-div-icon {
-	background: transparent;
-	border:     none;
-}
-
+   Passing our own `className` to L.divIcon() replaces Leaflet's default
+   'leaflet-div-icon' class entirely (Leaflet does a plain options
+   overwrite, not a class merge) — the marker never carries that class, so
+   there is no default background/border to strip here. Critical box-model
+   properties are also inlined in the marker's HTML (see hoverIcon in
+   traseta-modal.js) so the marker renders correctly even before/without
+   this stylesheet — these rules are the belt to that inline-style
+   suspenders, keeping the two in sync when either is edited. */
 .tsr-hover-marker {
 	display:       block;
 	width:         16px;
@@ -1617,10 +1628,10 @@ body.tsr-modal-open {
 	border:        2px solid #2ecc71;
 	box-shadow:    0 1px 4px rgba(0, 0, 0, 0.45);
 	position:      relative;
+	box-sizing:    border-box;
 }
 
-.tsr-hover-marker::after {
-	content:       '';
+.tsr-hover-marker__dot {
 	position:      absolute;
 	top:           50%;
 	left:          50%;

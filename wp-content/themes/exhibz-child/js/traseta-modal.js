@@ -26,10 +26,19 @@
 	var map          = null;
 	var trackLayer   = null;
 	var hoverMarker  = null;
-	var hoverIcon    = L.divIcon( {
+	// Critical visual properties are inlined (not left to style.css alone) so
+	// the marker renders correctly even if the stylesheet hasn't deployed —
+	// Leaflet only guarantees position:absolute/left/top via its own CSS.
+	var hoverIcon = L.divIcon( {
 		className: 'tsr-hover-marker-wrap',
-		html:      '<span class="tsr-hover-marker"></span>',
-		iconSize:  [ 16, 16 ],
+		html:
+			'<span class="tsr-hover-marker" style="display:block;position:relative;width:16px;height:16px;' +
+			'border-radius:50%;background:#fff;border:2px solid #2ecc71;' +
+			'box-shadow:0 1px 4px rgba(0,0,0,.45);box-sizing:border-box;">' +
+			'<span class="tsr-hover-marker__dot" style="position:absolute;top:50%;left:50%;' +
+			'width:6px;height:6px;border-radius:50%;background:#2ecc71;' +
+			'transform:translate(-50%,-50%);"></span></span>',
+		iconSize:   [ 16, 16 ],
 		iconAnchor: [ 8, 8 ]
 	} );
 	var gpxCache   = {}; // url → parsed points [{lat, lon, ele, dist}]
@@ -192,7 +201,14 @@
 
 	function ensureHoverMarker() {
 		if ( ! hoverMarker ) {
-			hoverMarker = L.marker( [ 0, 0 ], { icon: hoverIcon, interactive: false, keyboard: false } );
+			hoverMarker = L.marker( [ 0, 0 ], {
+				icon:         hoverIcon,
+				interactive:  false,
+				keyboard:     false,
+				// Above the polyline (which has no explicit zIndexOffset) and
+				// above the tile/shadow panes regardless of add order.
+				zIndexOffset: 1000
+			} );
 		}
 		if ( map && ! map.hasLayer( hoverMarker ) ) {
 			hoverMarker.addTo( map );
@@ -245,7 +261,13 @@
 			'<span class="tsr-chart-tooltip__row">Височина: ' + Math.round( pt.ele ) + ' м</span>';
 
 		if ( map ) {
-			ensureHoverMarker().setLatLng( [ pt.lat, pt.lon ] );
+			try {
+				ensureHoverMarker().setLatLng( [ pt.lat, pt.lon ] );
+			} catch ( err ) {
+				// Surface it instead of failing silently — a broken marker
+				// update should never take the tooltip/chart down with it.
+				window.console && console.error( 'tsr-traseta: hover marker update failed', err );
+			}
 		}
 	}
 

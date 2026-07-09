@@ -106,6 +106,13 @@ function tsr_track_row( array $tr, string $gpx_base ): void {
 				</span>
 			<?php endif; ?>
 
+			<?php $tsr_laps = tsr_track_laps( $tr ); ?>
+			<?php if ( $tsr_laps > 1 ) : ?>
+				<span class="tsr-track__badge tsr-track__badge--laps">
+					<?php echo esc_html( $tsr_laps ); ?> обиколки
+				</span>
+			<?php endif; ?>
+
 			<?php if ( isset( $tr['ascent_m'] ) && null !== $tr['ascent_m'] ) : ?>
 				<span class="tsr-track__stat">
 					<span class="tsr-track__stat-label">Изкачване</span>
