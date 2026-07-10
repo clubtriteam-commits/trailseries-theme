@@ -124,6 +124,9 @@ while ( have_posts() ) :
 
 	<main class="tsr-page-content">
 		<div class="tsr-container">
+			<?php if ( function_exists( 'tsr_render_breadcrumbs' ) ) {
+					tsr_render_breadcrumbs( get_post() );
+				} ?>
 			<article <?php post_class( 'tsr-prose-section' ); ?>>
 
 				<?php if ( trim( (string) get_the_content() ) !== '' ) : ?>

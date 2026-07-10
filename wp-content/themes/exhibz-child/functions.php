@@ -265,3 +265,539 @@ function tsr_homepage_total_finishers(): int {
 	set_transient( 'tsr_total_finishers', $total, 12 * HOUR_IN_SECONDS );
 	return $total;
 }
+
+// ── SEO fundamentals ─────────────────────────────────────────────────────────
+//
+// No SEO plugin is installed; meta description, Open Graph, Twitter Card,
+// JSON-LD (SportsEvent + BreadcrumbList) and the XML sitemap are all hand-
+// rolled here via hooks rather than per-template edits, per project
+// convention (results tables belong to the plugin, everything else to the
+// theme — ADR-002). The one unavoidable template edit is the visible
+// breadcrumb trail on single-ts_result.php: many imported result posts have
+// empty post_content, so a the_content filter would never fire for them.
+
+/**
+ * Clean event name for a ts_result post: prefers the _tsr_event_base meta
+ * (set by backfill-meta or the admin uploader) and falls back to stripping
+ * the " — {category}" suffix bulk-import appends to post_title.
+ */
+function tsr_result_event_title( WP_Post $post ): string {
+	$base = get_post_meta( $post->ID, '_tsr_event_base', true );
+	if ( is_string( $base ) && '' !== $base ) {
+		return $base;
+	}
+	$pos = mb_strrpos( $post->post_title, ' — ' );
+	return false !== $pos ? trim( mb_substr( $post->post_title, 0, $pos ) ) : $post->post_title;
+}
+
+/**
+ * Find the hub post a ts_result post belongs to, or null when the post IS a
+ * hub (or a standalone post with no siblings at all).
+ *
+ * Sibling slugs are "{hub_slug}-{cat_part}" — sanitize_title() collapses the
+ * importer's "--" separator to a single dash (see single-ts_result.php for
+ * the full explanation). Because hub_slug itself can contain dashes, the
+ * only reliable way to recover it is to ask which OTHER published ts_result
+ * post's slug, plus a trailing dash, is a prefix of this post's slug.
+ */
+function tsr_hub_head_for( WP_Post $post ): ?WP_Post {
+	if ( 'ts_result' !== $post->post_type ) {
+		return null;
+	}
+	static $cache = array();
+	if ( array_key_exists( $post->ID, $cache ) ) {
+		return $cache[ $post->ID ];
+	}
+
+	global $wpdb;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQLPlaceholders
+	$hub_id = $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT ID FROM {$wpdb->posts}
+			 WHERE post_type = %s AND post_status = 'publish' AND ID != %d
+			   AND LOCATE( CONCAT( post_name, '-' ), %s ) = 1
+			 ORDER BY LENGTH( post_name ) DESC
+			 LIMIT 1",
+			'ts_result',
+			$post->ID,
+			$post->post_name
+		)
+	);
+
+	$hub                 = $hub_id ? get_post( (int) $hub_id ) : null;
+	$cache[ $post->ID ]  = $hub;
+	return $hub;
+}
+
+/**
+ * Site logo URL from the Customizer "Main Logo" (custom_logo theme mod),
+ * used as the Open Graph image fallback when a page has no featured image.
+ */
+function tsr_site_logo_url(): string {
+	$id = (int) get_theme_mod( 'custom_logo' );
+	if ( $id <= 0 ) {
+		return '';
+	}
+	$url = wp_get_attachment_image_url( $id, 'full' );
+	return is_string( $url ) ? $url : '';
+}
+
+/**
+ * Finisher count for a ts_result post, or null when the result data is
+ * missing/invalid (mirrors tsr_render_results()'s own tolerance for bad data
+ * — SEO metadata must never fatal a page).
+ */
+function tsr_result_finisher_count( int $post_id ): ?int {
+	try {
+		$set = TSR_Repository::load( $post_id );
+	} catch ( Exception $e ) {
+		return null;
+	}
+	return null !== $set ? count( $set->rows() ) : null;
+}
+
+/**
+ * Most recent season with any _tsr_season data — the same default
+ * page-klasiraniya.php falls back to when no ?sezon= is in the URL, without
+ * duplicating its full $season_labels map (only the year is needed here).
+ */
+function tsr_latest_season(): int {
+	global $wpdb;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+	$year = $wpdb->get_var(
+		"SELECT MAX( CAST( meta_value AS UNSIGNED ) )
+		 FROM {$wpdb->postmeta}
+		 WHERE meta_key = '_tsr_season'"
+	);
+	return $year ? (int) $year : 0;
+}
+
+/**
+ * Best-effort race date from the post slug's legacy "DD-month" pattern
+ * ("vladaya-21-april" → 21 April), combined with the _tsr_season year.
+ * Exact month-token match only (no fuzzy prefixing) — a wrong date is worse
+ * than an absent one for a SportsEvent's startDate, so this never guesses.
+ * Returns an ISO 8601 date, or null when the slug carries no day/month.
+ */
+function tsr_result_event_date( WP_Post $post, string $season ): ?string {
+	static $months = array(
+		'yanuari'   => 1,
+		'януари'    => 1,
+		'fevruari'  => 2,
+		'февруари'  => 2,
+		'mart'      => 3,
+		'март'      => 3,
+		'april'     => 4,
+		'април'     => 4,
+		'may'       => 5,
+		'май'       => 5,
+		'yuni'      => 6,
+		'юни'       => 6,
+		'yuli'      => 7,
+		'юли'       => 7,
+		'avgust'    => 8,
+		'август'    => 8,
+		'septemvri' => 9,
+		'септември' => 9,
+		'oktomvri'  => 10,
+		'октомври'  => 10,
+		'noemvri'   => 11,
+		'ноември'   => 11,
+		'dekemvri'  => 12,
+		'декември'  => 12,
+	);
+
+	$slug    = mb_strtolower( urldecode( $post->post_name ), 'UTF-8' );
+	$pattern = '/(?:^|-)(\d{1,2})-(' . implode( '|', array_keys( $months ) ) . ')(?:-|$)/u';
+	if ( ! preg_match( $pattern, $slug, $m ) ) {
+		return null;
+	}
+	$day = (int) $m[1];
+	if ( $day < 1 || $day > 31 || '' === $season ) {
+		return null;
+	}
+	return sprintf( '%s-%02d-%02d', $season, $months[ $m[2] ], $day );
+}
+
+/**
+ * Best-effort race location from slug keywords — the series runs almost
+ * exclusively in the mountains ringing Sofia plus a handful of named
+ * villages; falls back to the generic "София, България" when nothing
+ * matches. Heuristic, not authoritative.
+ */
+function tsr_result_event_location( WP_Post $post ): string {
+	$slug = mb_strtolower( urldecode( $post->post_name ), 'UTF-8' );
+	$map  = array(
+		'lyulin'      => 'Люлин планина, София, България',
+		'buhovo'      => 'Бухово, София, България',
+		'vladaya'     => 'Владая, София, България',
+		'bankya'      => 'Банкя, София, България',
+		'bankia'      => 'Банкя, София, България',
+		'zheleznitsa' => 'Железница, София, България',
+		'lokorsko'    => 'Локорско, София, България',
+		'pancharevo'  => 'Панчарево, София, България',
+		'simeonovo'   => 'Симеоново, София, България',
+		'maliovitsa'  => 'Малиовица, Рила, България',
+		'palakaria'   => 'Палакария, България',
+	);
+	foreach ( $map as $needle => $location ) {
+		if ( str_contains( $slug, $needle ) ) {
+			return $location;
+		}
+	}
+	return 'София, България';
+}
+
+/**
+ * Resolve the meta description for the current request. Also reused
+ * verbatim as the JSON-LD SportsEvent 'description' and the og/twitter
+ * description tags, so it is computed once per request via a static cache.
+ */
+function tsr_meta_description(): string {
+	static $cached = null;
+	if ( null !== $cached ) {
+		return $cached;
+	}
+
+	if ( is_front_page() ) {
+		return $cached = 'TrailSeries.bg — 14 сезона планинско бягане около София. '
+			. 'Golyam Sechko Run, Baba Marta Run, 7 Hills Run и още 5 събития годишно '
+			. 'в 5-те планини около столицата.';
+	}
+
+	if ( is_singular( 'ts_result' ) ) {
+		$post = get_queried_object();
+		if ( $post instanceof WP_Post ) {
+			$title = tsr_result_event_title( $post );
+			$count = tsr_result_finisher_count( $post->ID );
+			return $cached = ( null !== $count )
+				? sprintf( '%s — пълни резултати, класиране и времена. %d финиширали.', $title, $count )
+				: sprintf( '%s — пълни резултати, класиране и времена.', $title );
+		}
+	}
+
+	if ( is_page_template( 'page-klasiraniya.php' ) ) {
+		$season = isset( $_GET['sezon'] ) ? absint( $_GET['sezon'] ) : tsr_latest_season(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return $cached = ( $season > 0 )
+			? sprintf( 'Генерално класиране Сезон %d — точки по сезон, мъже и жени.', $season )
+			: 'Генерално класиране по сезони — точки, мъже и жени.';
+	}
+
+	if ( is_page_template( 'page-rezultati.php' ) ) {
+		return $cached = sprintf(
+			'Всички резултати от TrailSeries — 14 сезона, %d състезания от 2012 до днес.',
+			tsr_homepage_total_races()
+		);
+	}
+
+	if ( is_page_template( 'page-calendar.php' ) ) {
+		return $cached = 'Календар на предстоящи планински бягания от TrailSeries.bg';
+	}
+
+	if ( is_page_template( 'page-traseta.php' ) ) {
+		return $cached = 'GPX трасета и профили за всички маршрути на TrailSeries';
+	}
+
+	if ( is_singular() ) {
+		$excerpt = get_the_excerpt();
+		if ( '' !== trim( (string) $excerpt ) ) {
+			return $cached = wp_strip_all_tags( $excerpt );
+		}
+	}
+
+	return $cached = 'TrailSeries.bg — трейл сериите на София. Резултати, класирания '
+		. 'и календар на планинските бягания.';
+}
+
+/**
+ * Meta description + Open Graph + Twitter Card tags. Runs before other
+ * wp_head output (priority 1) so these land near the top of <head>.
+ */
+add_action( 'wp_head', static function (): void {
+	$description = tsr_meta_description();
+	echo '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
+
+	if ( is_front_page() ) {
+		$og_url = home_url( '/' );
+	} elseif ( is_singular() ) {
+		$og_url = (string) get_permalink();
+	} else {
+		$og_url = home_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ?? '/' ) ) );
+	}
+
+	$og_title = wp_strip_all_tags( wp_get_document_title() );
+
+	$og_image = '';
+	if ( is_singular() && has_post_thumbnail() ) {
+		$thumb    = get_the_post_thumbnail_url( null, 'large' );
+		$og_image = is_string( $thumb ) ? $thumb : '';
+	}
+	if ( '' === $og_image ) {
+		$og_image = tsr_site_logo_url();
+	}
+
+	$og_type = ( is_singular( 'ts_result' ) || is_singular( 'post' ) ) ? 'article' : 'website';
+
+	echo '<meta property="og:type" content="' . esc_attr( $og_type ) . '">' . "\n";
+	echo '<meta property="og:title" content="' . esc_attr( $og_title ) . '">' . "\n";
+	echo '<meta property="og:description" content="' . esc_attr( $description ) . '">' . "\n";
+	echo '<meta property="og:url" content="' . esc_url( $og_url ) . '">' . "\n";
+	echo '<meta property="og:site_name" content="' . esc_attr( get_bloginfo( 'name' ) ) . '">' . "\n";
+	if ( '' !== $og_image ) {
+		echo '<meta property="og:image" content="' . esc_url( $og_image ) . '">' . "\n";
+	}
+
+	echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+	echo '<meta name="twitter:title" content="' . esc_attr( $og_title ) . '">' . "\n";
+	echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '">' . "\n";
+	if ( '' !== $og_image ) {
+		echo '<meta name="twitter:image" content="' . esc_url( $og_image ) . '">' . "\n";
+	}
+}, 1 );
+
+/**
+ * JSON-LD SportsEvent + BreadcrumbList for single ts_result pages.
+ *
+ * JSON is deliberately encoded WITHOUT JSON_UNESCAPED_SLASHES: event/category
+ * names can originate from admin-uploaded CSV/XLSX files (class-admin-
+ * upload.php), so a literal "</script>" inside a name must not be able to
+ * break out of the <script> block — escaped slashes ("\/") neutralise that.
+ */
+add_action( 'wp_head', static function (): void {
+	if ( ! is_singular( 'ts_result' ) ) {
+		return;
+	}
+	$post = get_queried_object();
+	if ( ! $post instanceof WP_Post ) {
+		return;
+	}
+
+	$season = (string) get_post_meta( $post->ID, '_tsr_season', true );
+	$name   = tsr_result_event_title( $post );
+	$count  = tsr_result_finisher_count( $post->ID );
+
+	$event_schema = array(
+		'@context'    => 'https://schema.org',
+		'@type'       => 'SportsEvent',
+		'name'        => $name,
+		'description' => tsr_meta_description(),
+		'sport'       => 'Trail running',
+		'location'    => array(
+			'@type'   => 'Place',
+			'name'    => tsr_result_event_location( $post ),
+			'address' => array(
+				'@type'          => 'PostalAddress',
+				'addressCountry' => 'BG',
+			),
+		),
+	);
+	if ( '' !== $season ) {
+		$date = tsr_result_event_date( $post, $season );
+		if ( null !== $date ) {
+			$event_schema['startDate'] = $date;
+		}
+	}
+	if ( null !== $count && $count > 0 ) {
+		// No first-class schema.org property maps cleanly to "finisher count"
+		// on a SportsEvent (maximumAttendeeCapacity means venue capacity, not
+		// actual attendance) — additionalProperty is the generic, honest fit.
+		$event_schema['additionalProperty'] = array(
+			'@type' => 'PropertyValue',
+			'name'  => 'CompetitorCount',
+			'value' => $count,
+		);
+	}
+
+	$crumbs   = array();
+	$crumbs[] = array( 'name' => 'Начало', 'url' => home_url( '/' ) );
+	$crumbs[] = array( 'name' => 'Резултати', 'url' => home_url( '/rezultati/' ) );
+	if ( '' !== $season ) {
+		$crumbs[] = array( 'name' => 'Сезон ' . $season, 'url' => home_url( '/klasiraniya/?sezon=' . rawurlencode( $season ) ) );
+	}
+	$crumbs[] = array( 'name' => $name, 'url' => (string) get_permalink( $post ) );
+
+	$breadcrumb_schema = array(
+		'@context'        => 'https://schema.org',
+		'@type'           => 'BreadcrumbList',
+		'itemListElement' => array(),
+	);
+	foreach ( $crumbs as $i => $crumb ) {
+		$breadcrumb_schema['itemListElement'][] = array(
+			'@type'    => 'ListItem',
+			'position' => $i + 1,
+			'name'     => $crumb['name'],
+			'item'     => $crumb['url'],
+		);
+	}
+
+	echo '<script type="application/ld+json">' . wp_json_encode( $event_schema, JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+	echo '<script type="application/ld+json">' . wp_json_encode( $breadcrumb_schema, JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+}, 2 );
+
+/**
+ * Canonical URL for ts_result category sub-pages: point at their hub post
+ * instead of self. The hub's accordion view (single-ts_result.php) renders
+ * every category's full result table in the DOM, so a sub-page's own URL is
+ * near-duplicate content of a section already indexed under the hub — and
+ * the hub is the URL every old-site backlink and the redirect map actually
+ * point to (iron rule 3). Hub posts and genuinely standalone posts (no
+ * siblings at all) keep WordPress's default self-canonical.
+ */
+add_filter( 'get_canonical_url', static function ( string $canonical_url, WP_Post $post ): string {
+	if ( 'ts_result' !== $post->post_type ) {
+		return $canonical_url;
+	}
+	$hub = tsr_hub_head_for( $post );
+	if ( null === $hub ) {
+		return $canonical_url;
+	}
+	$hub_url = get_permalink( $hub );
+	return ( is_string( $hub_url ) && '' !== $hub_url ) ? $hub_url : $canonical_url;
+}, 10, 2 );
+
+/**
+ * Visible breadcrumb trail for single-ts_result.php. A function (not a
+ * the_content filter) because most imported result posts have empty
+ * post_content — the_content never fires for them, so a filter-based
+ * approach would silently skip the majority of pages.
+ */
+function tsr_render_breadcrumbs( WP_Post $post ): void {
+	$season = (string) get_post_meta( $post->ID, '_tsr_season', true );
+	$name   = tsr_result_event_title( $post );
+
+	$crumbs   = array();
+	$crumbs[] = array( 'label' => 'Начало', 'url' => home_url( '/' ) );
+	$crumbs[] = array( 'label' => 'Резултати', 'url' => home_url( '/rezultati/' ) );
+	if ( '' !== $season ) {
+		$crumbs[] = array( 'label' => 'Сезон ' . $season, 'url' => home_url( '/klasiraniya/?sezon=' . rawurlencode( $season ) ) );
+	}
+	$crumbs[] = array( 'label' => $name, 'url' => null );
+
+	$last = count( $crumbs ) - 1;
+	echo '<nav class="tsr-breadcrumbs" aria-label="Трохички">';
+	foreach ( $crumbs as $i => $crumb ) {
+		if ( $i > 0 ) {
+			echo '<span class="tsr-breadcrumbs__sep" aria-hidden="true">/</span>';
+		}
+		if ( null !== $crumb['url'] && $i !== $last ) {
+			echo '<a class="tsr-breadcrumbs__link" href="' . esc_url( $crumb['url'] ) . '">' . esc_html( $crumb['label'] ) . '</a>';
+		} else {
+			echo '<span class="tsr-breadcrumbs__current" aria-current="page">' . esc_html( $crumb['label'] ) . '</span>';
+		}
+	}
+	echo '</nav>';
+}
+
+// ── XML sitemap (/sitemap.xml, no plugin) ────────────────────────────────────
+
+add_action( 'init', static function (): void {
+	add_rewrite_rule( '^sitemap\.xml$', 'index.php?tsr_sitemap=1', 'top' );
+} );
+
+add_filter( 'query_vars', static function ( array $vars ): array {
+	$vars[] = 'tsr_sitemap';
+	return $vars;
+} );
+
+/**
+ * One-time rewrite-rule flush when the sitemap rule changes, so the new
+ * /sitemap.xml route works immediately after deploy without a manual
+ * Settings → Permalinks visit. Bump the version string if the rule ever
+ * changes shape.
+ */
+add_action( 'init', static function (): void {
+	if ( '1' !== (string) get_option( 'tsr_sitemap_rule_version' ) ) {
+		flush_rewrite_rules( false );
+		update_option( 'tsr_sitemap_rule_version', '1', false );
+	}
+}, 20 );
+
+add_action( 'template_redirect', static function (): void {
+	if ( '1' !== (string) get_query_var( 'tsr_sitemap' ) ) {
+		return;
+	}
+
+	header( 'Content-Type: application/xml; charset=UTF-8' );
+
+	$xml = get_transient( 'tsr_sitemap_xml' );
+	if ( ! is_string( $xml ) || '' === $xml ) {
+		$xml = tsr_build_sitemap_xml();
+		set_transient( 'tsr_sitemap_xml', $xml, 12 * HOUR_IN_SECONDS );
+	}
+
+	echo $xml; // phpcs:ignore WordPress.Security.EscapeOutput -- pre-escaped in tsr_build_sitemap_xml().
+	exit;
+} );
+
+/**
+ * Build the sitemap XML: homepage, all published WP pages (calendar,
+ * klasiraniya, rekordi, pravila, istoriya, rezultati, traseta, ...), all
+ * "hub" ts_result posts (category sub-pages are skipped — they canonical to
+ * their hub via the get_canonical_url filter above, so listing them here
+ * would submit non-canonical URLs), and all published blog posts.
+ */
+function tsr_build_sitemap_xml(): string {
+	$urls   = array();
+	$urls[] = array( 'loc' => home_url( '/' ), 'priority' => '1.0', 'changefreq' => 'daily' );
+
+	foreach ( get_pages( array( 'post_status' => 'publish' ) ) as $page ) {
+		$urls[] = array(
+			'loc'        => get_permalink( $page ),
+			'lastmod'    => get_the_modified_date( 'c', $page ),
+			'priority'   => '0.8',
+			'changefreq' => 'weekly',
+		);
+	}
+
+	$result_ids = get_posts( array(
+		'post_type'   => 'ts_result',
+		'post_status' => 'publish',
+		'numberposts' => -1,
+		'fields'      => 'ids',
+		'orderby'     => 'ID',
+		'order'       => 'ASC',
+	) );
+	foreach ( $result_ids as $result_id ) {
+		$result_post = get_post( $result_id );
+		if ( ! $result_post instanceof WP_Post || null !== tsr_hub_head_for( $result_post ) ) {
+			continue; // category sub-page — skip, it canonicals to its hub.
+		}
+		$urls[] = array(
+			'loc'        => get_permalink( $result_post ),
+			'lastmod'    => get_the_modified_date( 'c', $result_post ),
+			'priority'   => '0.6',
+			'changefreq' => 'monthly',
+		);
+	}
+
+	$blog_ids = get_posts( array(
+		'post_type'   => 'post',
+		'post_status' => 'publish',
+		'numberposts' => -1,
+		'fields'      => 'ids',
+	) );
+	foreach ( $blog_ids as $blog_id ) {
+		$urls[] = array(
+			'loc'        => get_permalink( $blog_id ),
+			'lastmod'    => get_the_modified_date( 'c', $blog_id ),
+			'priority'   => '0.5',
+			'changefreq' => 'monthly',
+		);
+	}
+
+	ob_start();
+	echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+	echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+	foreach ( $urls as $u ) {
+		echo "\t<url>\n";
+		echo "\t\t<loc>" . esc_url( $u['loc'] ) . "</loc>\n";
+		if ( ! empty( $u['lastmod'] ) ) {
+			echo "\t\t<lastmod>" . esc_html( $u['lastmod'] ) . "</lastmod>\n";
+		}
+		echo "\t\t<changefreq>" . esc_html( $u['changefreq'] ) . "</changefreq>\n";
+		echo "\t\t<priority>" . esc_html( $u['priority'] ) . "</priority>\n";
+		echo "\t</url>\n";
+	}
+	echo '</urlset>';
+	return (string) ob_get_clean();
+}

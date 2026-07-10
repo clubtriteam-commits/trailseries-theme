@@ -2486,3 +2486,29 @@ body.tsr-modal-open {
 	background: var(--tsr-blue);
 	color:      var(--tsr-white);
 }
+
+/* ── Breadcrumbs (single-ts_result.php) ──────────────────────────────────── */
+.tsr-breadcrumbs {
+	font-size:     0.85rem;
+	color:         var(--tsr-muted);
+	margin-bottom: 1rem;
+}
+
+.tsr-breadcrumbs__link {
+	color:           var(--tsr-blue);
+	text-decoration: none;
+}
+
+.tsr-breadcrumbs__link:hover {
+	text-decoration: underline;
+}
+
+.tsr-breadcrumbs__sep {
+	margin: 0 0.4em;
+	color:  var(--tsr-border);
+}
+
+.tsr-breadcrumbs__current {
+	color:       var(--tsr-text);
+	font-weight: 600;
+}
