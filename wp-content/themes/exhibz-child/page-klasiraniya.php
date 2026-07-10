@@ -23,6 +23,10 @@ declare( strict_types=1 );
  *
  * Tiebreaker: equal points -> podium count (top-3 finishes) DESC.
  *
+ * Dedup: posts within the season sharing the same `_tsr_names_sha256`
+ * (byte-identical source tables published under two legacy URLs) score
+ * once; identical groups with conflicting gender markers are skipped.
+ *
  * Distance category comes from `_tsr_distance_cat` post meta; the distance
  * itself from `_tsr_distance_km`. When meta is absent the race earns 0
  * points. Run `wp tsr backfill-meta` to populate them.
@@ -185,7 +189,74 @@ $has_cat_meta = false;
 
 $tsr_season_bonus = $tsr_bonus_races[ $current_season ] ?? array();
 
+// -- Names-hash dedup -----------------------------------------------------------
+//
+// A handful of legacy source pages published byte-identical result tables
+// under two URLs (twin legacy pages, repeated sections). Those imported as
+// distinct posts sharing the same `_tsr_names_sha256`, and counting both
+// would double every athlete's points. Within the season, byte-identical
+// posts score exactly once. When an identical group carries CONFLICTING
+// gender markers (one slug says мъже, another жени) the data's true gender
+// is unknowable — the whole group is skipped rather than guessed, since a
+// wrong guess corrupts one column and a double count corrupts both.
+$tsr_hash_groups = array();
 foreach ( $race_posts as $rpost ) {
+	$tsr_hash = (string) get_post_meta( $rpost->ID, '_tsr_names_sha256', true );
+	if ( '' !== $tsr_hash ) {
+		$tsr_hash_groups[ $tsr_hash ][] = $rpost;
+	}
+}
+$tsr_dedup_skip = array(); // post ID => true when this post must not score.
+foreach ( $tsr_hash_groups as $tsr_group ) {
+	if ( count( $tsr_group ) < 2 ) {
+		continue;
+	}
+	$tsr_group_genders = array();
+	foreach ( $tsr_group as $tsr_gp ) {
+		$tsr_g = tsr_race_gender( $tsr_gp );
+		if ( '' !== $tsr_g ) {
+			$tsr_group_genders[ $tsr_g ] = true;
+		}
+	}
+	if ( count( $tsr_group_genders ) > 1 ) {
+		foreach ( $tsr_group as $tsr_gp ) {
+			$tsr_dedup_skip[ $tsr_gp->ID ] = true;
+		}
+		continue;
+	}
+	// Same data, same (or undetermined) gender: keep one representative.
+	// Prefer a post that can actually score correctly — detectable gender
+	// first, then populated distance-category meta — and break remaining
+	// ties on lowest ID so the choice is stable across page loads.
+	$tsr_rep = null;
+	foreach ( $tsr_group as $tsr_gp ) {
+		if ( null === $tsr_rep ) {
+			$tsr_rep = $tsr_gp;
+			continue;
+		}
+		$tsr_rank = static function ( WP_Post $p ): array {
+			return array(
+				'' !== tsr_race_gender( $p ) ? 0 : 1,
+				'' !== (string) get_post_meta( $p->ID, '_tsr_distance_cat', true ) ? 0 : 1,
+				$p->ID,
+			);
+		};
+		if ( $tsr_rank( $tsr_gp ) < $tsr_rank( $tsr_rep ) ) {
+			$tsr_rep = $tsr_gp;
+		}
+	}
+	foreach ( $tsr_group as $tsr_gp ) {
+		if ( $tsr_gp->ID !== $tsr_rep->ID ) {
+			$tsr_dedup_skip[ $tsr_gp->ID ] = true;
+		}
+	}
+}
+
+foreach ( $race_posts as $rpost ) {
+	if ( isset( $tsr_dedup_skip[ $rpost->ID ] ) ) {
+		continue; // byte-identical duplicate of a post that already scores (or gender-conflicted group).
+	}
+
 	$gender = tsr_race_gender( $rpost );
 	if ( '' === $gender ) {
 		continue; // skip categories with undetermined gender (kids, mixed, etc.)
