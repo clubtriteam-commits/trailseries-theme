@@ -59,10 +59,36 @@ function tsr_title_year( string $title ): ?int {
 }
 
 /**
- * Extract a 4-digit year from a ts_result post_name (slug).
+ * The legacy page's base slug for a ts_result post — itself if this post is
+ * a hub or a standalone post, or its hub's slug if this post is a category
+ * sub-page.
+ *
+ * Reuses tsr_hub_head_for() (functions.php) rather than string-splitting on
+ * "--": bulk-import derives sub-page slugs as "{page_slug}--{cat_part}" in
+ * code, but wp_insert_post()'s sanitize_title() collapses the double dash
+ * to a single one before it ever reaches the database, so a naive
+ * explode('--', $slug)[0] never finds a boundary and silently treats the
+ * WHOLE slug — category suffix included — as the base. See
+ * single-ts_result.php's docblock for the full explanation; this is the
+ * same bug class fixed there and in page-klasiraniya.php.
+ *
+ * @param WP_Post $post ts_result post.
+ * @return string The resolved legacy-page slug.
+ */
+if ( ! function_exists( 'tsr_slug_base' ) ) {
+function tsr_slug_base( WP_Post $post ): string {
+	$hub = tsr_hub_head_for( $post );
+	return null !== $hub ? $hub->post_name : $post->post_name;
+}
+}
+
+/**
+ * Extract a 4-digit year from a ts_result legacy-page base slug.
  *
  * Used as a fallback when the post_title has no year signal (old races whose
- * page titles were just "BuhovoRun класиране" without a year suffix).
+ * page titles were just "BuhovoRun класиране" without a year suffix). Takes
+ * the BASE slug (see tsr_slug_base()) — already stripped of any category
+ * suffix — not a raw post_name.
  *
  * Recognises:
  *   1. 4-digit year as a hyphen-delimited slug segment:
@@ -78,13 +104,11 @@ function tsr_title_year( string $title ): ?int {
  * ("vladaya-21-april", "buhovo-26-may", "lokorsko-23-fevruari", "pasarel-run-16-06")
  * because those are day-of-month numbers with a month word immediately after.
  *
- * @param string $slug post_name.
+ * @param string $base Legacy-page base slug (from tsr_slug_base()).
  * @return int|null 4-digit year, or null when none is found.
  */
 if ( ! function_exists( 'tsr_slug_year' ) ) {
-function tsr_slug_year( string $slug ): ?int {
-	$base = explode( '--', $slug )[0];
-
+function tsr_slug_year( string $base ): ?int {
 	// 1. 4-digit year as a hyphen segment.
 	if ( preg_match( '/(?:^|-)(20\d{2})(?:-|$)/', $base, $m ) ) {
 		return (int) $m[1];
@@ -154,20 +178,20 @@ function tsr_event_base_name( string $title ): string {
 }
 
 /**
- * Derive a human-readable event name from the post_name (slug).
+ * Derive a human-readable event name from a legacy-page base slug.
  *
  * Fallback used when tsr_event_base_name() returns '' (the WXR page had no
- * visible title — e.g. xmas-run-15-results → "Xmas Run").
+ * visible title — e.g. xmas-run-15-results → "Xmas Run"). Takes the BASE
+ * slug (see tsr_slug_base()) — already stripped of any category suffix —
+ * not a raw post_name.
  *
  * Returns '' for known-garbage slugs (pure digits, "untitled", "news", "page").
  *
- * @param string $slug post_name.
+ * @param string $base Legacy-page base slug (from tsr_slug_base()).
  * @return string Human-readable name, possibly empty.
  */
 if ( ! function_exists( 'tsr_slug_event_name' ) ) {
-function tsr_slug_event_name( string $slug ): string {
-	$base = explode( '--', $slug )[0];
-
+function tsr_slug_event_name( string $base ): string {
 	// Strip 4-digit year segment FIRST so that "ranking-2014" becomes "ranking"
 	// before the results/ranking label stripping runs.
 	$base = (string) preg_replace( '/(?:^|-)20\d{2}(?:-|$)/', '-', $base );
@@ -225,13 +249,13 @@ foreach ( $all_posts as $post ) {
 	$year_key    = ( '' !== (string) $season_meta )
 		? (int) $season_meta
 		: ( tsr_title_year( $post->post_title )
-			?? tsr_slug_year( $post->post_name )
+			?? tsr_slug_year( tsr_slug_base( $post ) )
 			?? 0 );
 
 	// Event name: title-derived first, slug-derived as fallback.
 	$event_name = tsr_event_base_name( $post->post_title );
 	if ( $event_name === '' ) {
-		$event_name = tsr_slug_event_name( $post->post_name );
+		$event_name = tsr_slug_event_name( tsr_slug_base( $post ) );
 	}
 	// Skip entries with no usable name — avoids empty bullets (issue 4).
 	if ( $event_name === '' ) {
@@ -315,18 +339,22 @@ $season_labels = array(
 							<?php foreach ( $events as $event_name => $event_posts ) : ?>
 
 								<?php
-								// Primary post: bare slug without "--" = the SEO-preserved legacy URL.
+								// Primary post: the hub (no other post's slug + '-' prefixes
+								// it) = the SEO-preserved legacy URL. tsr_hub_head_for()
+								// (functions.php) returns null for hubs/standalone posts —
+								// see tsr_slug_base() above for why a strpos('--') check
+								// never matches any real stored slug.
 								$primary = null;
 								$cats    = array();
 
 								foreach ( $event_posts as $p ) {
-									if ( false === strpos( $p->post_name, '--' ) ) {
+									if ( null === tsr_hub_head_for( $p ) ) {
 										$primary = $p;
 									} else {
 										$cats[] = $p;
 									}
 								}
-								// Fallback: all posts have "--" (shouldn't happen).
+								// Fallback: no post in this group resolved as a hub (shouldn't happen).
 								if ( null === $primary ) {
 									$primary = array_shift( $event_posts );
 								}
