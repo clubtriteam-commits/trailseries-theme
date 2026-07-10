@@ -271,8 +271,15 @@ final class TSR_CLI {
 			// re-encoding and a directory-scan fallback before returning null.
 			$json_file = $this->resolve_json_path( $json_dir, $row['file'] );
 
-			// Check for existing ts_result post with this slug.
-			$existing = get_page_by_path( $post_slug, OBJECT, TSR_Post_Types::POST_TYPE );
+			// Check for existing ts_result post with this slug. The database
+			// stores the sanitize_title()'d form — derive_post_slug()'s '--'
+			// separator collapses to a single dash and Cyrillic is percent-
+			// encoded — so the raw derived slug never matches a stored
+			// non-hub section. Looking up the raw form (the old
+			// get_page_by_path() call) made every re-run insert a colliding
+			// post that WordPress silently renamed with a '-2' suffix.
+			$expected_slug = sanitize_title( $post_slug );
+			$existing      = $this->find_existing_by_slug( $expected_slug );
 
 			if ( $dry_run ) {
 				if ( $existing ) {
@@ -353,13 +360,17 @@ final class TSR_CLI {
 				}
 				$post_id = $result;
 
-				// Warn if WordPress sanitized the slug to something different.
+				// The '--' → '-' collapse is expected; only warn when WordPress
+				// stored something OTHER than the sanitized form we looked up.
+				// That means a slug collision (WP appended '-2'): a post this
+				// run should have matched exists but find_existing_by_slug()
+				// missed it — never let that pass silently again.
 				$stored_slug = get_post_field( 'post_name', $post_id );
-				if ( $stored_slug !== $post_slug ) {
+				if ( $stored_slug !== $expected_slug ) {
 					WP_CLI::warning( sprintf(
-						'[%d] Slug was sanitized by WordPress: wanted %s, stored %s',
+						'[%d] Slug collision: expected stored form %s but WordPress stored %s — check for an unmatched existing post',
 						$post_id,
-						$post_slug,
+						$expected_slug,
 						$stored_slug
 					) );
 				}
@@ -694,6 +705,35 @@ final class TSR_CLI {
 		$cat_part = ( false !== $sep ) ? substr( $stem, $sep + 2 ) : $stem;
 
 		return $page_slug . '--' . $cat_part;
+	}
+
+	/**
+	 * Find an existing ts_result post by its STORED slug.
+	 *
+	 * Callers must pass the sanitize_title()'d form of the derived slug —
+	 * that is what wp_insert_post() wrote to post_name. get_page_by_path()
+	 * is unsuitable here because it matches the raw path string, which for
+	 * non-hub sections ('{page_slug}--{cat_part}') and Cyrillic slugs never
+	 * equals the stored form.
+	 *
+	 * post_status 'any' deliberately includes drafts and pending posts so a
+	 * half-finished import is matched rather than duplicated; trashed posts
+	 * are excluded by 'any' but carry a '__trashed' slug suffix anyway.
+	 *
+	 * @param string $stored_slug sanitize_title()'d slug to look up.
+	 * @return WP_Post|null Matching post, or null when none exists.
+	 */
+	private function find_existing_by_slug( string $stored_slug ): ?WP_Post {
+		$posts = get_posts(
+			array(
+				'post_type'   => TSR_Post_Types::POST_TYPE,
+				'name'        => $stored_slug,
+				'post_status' => 'any',
+				'numberposts' => 1,
+			)
+		);
+
+		return $posts[0] ?? null;
 	}
 
 	/**
