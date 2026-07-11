@@ -498,6 +498,10 @@ function tsr_meta_description(): string {
 		return $cached = 'GPX трасета и профили за всички маршрути на TrailSeries';
 	}
 
+	if ( is_page_template( 'page-partniori.php' ) ) {
+		return $cached = 'Партньорите на TrailSeries.bg — марките и хората, които подкрепят планинското бягане около София.';
+	}
+
 	if ( is_singular() ) {
 		$excerpt = get_the_excerpt();
 		if ( '' !== trim( (string) $excerpt ) ) {
@@ -801,3 +805,69 @@ function tsr_build_sitemap_xml(): string {
 	echo '</urlset>';
 	return (string) ob_get_clean();
 }
+
+// ── Партньори (ts_partner CPT) ───────────────────────────────────────────────
+//
+// Partner logos shown as a flat grid on the Партньори page template
+// (page-partniori.php). Registered in the theme, not the plugin: the plugin
+// owns results data only (ADR-002), and partners are pure presentation.
+// One post per partner: title = name, featured image = logo, website URL in
+// `_tsr_partner_url` meta. No front-end single pages — the CPT exists only
+// to give club admins a wp-admin UI, so it is not public and has no rewrite.
+// Display order = menu_order ("Order" box), then title.
+
+add_action( 'init', static function (): void {
+	register_post_type(
+		'ts_partner',
+		array(
+			'labels'          => array(
+				'name'                  => 'Партньори',
+				'singular_name'         => 'Партньор',
+				'add_new_item'          => 'Добави партньор',
+				'edit_item'             => 'Редактирай партньор',
+				'featured_image'        => 'Лого',
+				'set_featured_image'    => 'Задай лого',
+				'remove_featured_image' => 'Премахни логото',
+			),
+			'public'          => false,
+			'show_ui'         => true,
+			'show_in_rest'    => false, // classic edit screen — just title, logo, URL box.
+			'menu_icon'       => 'dashicons-groups',
+			'supports'        => array( 'title', 'thumbnail', 'page-attributes' ),
+			'rewrite'         => false,
+			'capability_type' => 'page',
+		)
+	);
+} );
+
+add_action( 'add_meta_boxes_ts_partner', static function (): void {
+	add_meta_box(
+		'tsr-partner-url',
+		'Уебсайт',
+		static function ( WP_Post $post ): void {
+			wp_nonce_field( 'tsr_partner_url', 'tsr_partner_url_nonce' );
+			$url = (string) get_post_meta( $post->ID, '_tsr_partner_url', true );
+			echo '<input type="url" name="tsr_partner_url" value="' . esc_attr( $url ) . '"'
+				. ' style="width:100%" placeholder="https://...">';
+			echo '<p class="description">Логото на страницата „Партньори“ води към този адрес. Празно = логото не е линк.</p>';
+		},
+		'ts_partner',
+		'normal',
+		'high'
+	);
+} );
+
+add_action( 'save_post_ts_partner', static function ( int $post_id ): void {
+	if ( ! isset( $_POST['tsr_partner_url_nonce'] )
+		|| ! wp_verify_nonce( sanitize_key( $_POST['tsr_partner_url_nonce'] ), 'tsr_partner_url' )
+		|| ! current_user_can( 'edit_post', $post_id )
+		|| ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
+		return;
+	}
+	$url = esc_url_raw( wp_unslash( $_POST['tsr_partner_url'] ?? '' ) );
+	if ( '' !== $url ) {
+		update_post_meta( $post_id, '_tsr_partner_url', $url );
+	} else {
+		delete_post_meta( $post_id, '_tsr_partner_url' );
+	}
+} );
