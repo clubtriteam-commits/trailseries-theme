@@ -46,7 +46,10 @@ $tsr_event_index = array(); // slug → display name
 
 if ( ! $tsr_searching ) {
 	foreach ( $tsr_all_posts as $tsr_p ) {
-		$tsr_name = tsr_event_base_name( $tsr_p->post_title );
+		// Meta first (canonical, set by backfill-meta), title heuristic as
+		// fallback — same precedence as page-rezultati.php.
+		$tsr_name = (string) get_post_meta( $tsr_p->ID, '_tsr_event_base', true )
+			?: tsr_event_base_name( $tsr_p->post_title );
 		if ( '' === $tsr_name ) {
 			continue;
 		}
@@ -66,7 +69,8 @@ $tsr_records       = array();     // [ dist_key => [time, name, url, year] ]
 
 if ( $tsr_searching ) {
 	foreach ( $tsr_all_posts as $tsr_p ) {
-		$tsr_name = tsr_event_base_name( $tsr_p->post_title );
+		$tsr_name = (string) get_post_meta( $tsr_p->ID, '_tsr_event_base', true )
+			?: tsr_event_base_name( $tsr_p->post_title );
 		if ( sanitize_title( $tsr_name ) !== $tsr_event_slug ) {
 			continue;
 		}
@@ -75,9 +79,12 @@ if ( $tsr_searching ) {
 			$tsr_event_display = $tsr_name;
 		}
 
-		$tsr_year = tsr_title_year( $tsr_p->post_title )
-			?? tsr_slug_year( tsr_slug_base( $tsr_p ) )
-			?? 0;
+		// _tsr_season is authoritative (race year, set by backfill-meta);
+		// title/slug parsing is the fallback for posts without it.
+		$tsr_year = (int) get_post_meta( $tsr_p->ID, '_tsr_season', true )
+			?: ( tsr_title_year( $tsr_p->post_title )
+				?? tsr_slug_year( tsr_slug_base( $tsr_p ) )
+				?? 0 );
 		$tsr_dist = tsr_dist_label_from_title( $tsr_p->post_title );
 		$tsr_dk   = '' !== $tsr_dist ? $tsr_dist : 'Всички';
 

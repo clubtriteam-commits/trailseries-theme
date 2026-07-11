@@ -54,10 +54,15 @@ if ( $tsr_searching ) {
 			continue;
 		}
 
-		$tsr_year  = tsr_title_year( $tsr_post->post_title )
-			?? tsr_slug_year( tsr_slug_base( $tsr_post ) )
-			?? 0;
-		$tsr_event = tsr_event_base_name( $tsr_post->post_title ) ?: $tsr_post->post_title;
+		// Meta first (canonical, set by backfill-meta), heuristics as
+		// fallback — same precedence as page-rezultati.php.
+		$tsr_year  = (int) get_post_meta( $tsr_post->ID, '_tsr_season', true )
+			?: ( tsr_title_year( $tsr_post->post_title )
+				?? tsr_slug_year( tsr_slug_base( $tsr_post ) )
+				?? 0 );
+		$tsr_event = (string) get_post_meta( $tsr_post->ID, '_tsr_event_base', true )
+			?: tsr_event_base_name( $tsr_post->post_title )
+			?: $tsr_post->post_title;
 		$tsr_dist  = tsr_dist_label_from_title( $tsr_post->post_title );
 
 		foreach ( $tsr_data['rows'] as $tsr_row ) {
