@@ -9,13 +9,18 @@ declare( strict_types=1 );
  *
  * The record search groups ts_result posts by the meta value
  * `_tsr_event_base` (canonical event name, e.g. "Иран Ран") and
- * `_tsr_distance_km`. When that meta is absent the post title is used
- * as a fallback grouping key, which is less reliable but still functional.
+ * `_tsr_distance_km` (populated by `wp tsr backfill-meta`). When that meta
+ * is absent the post title is used as a fallback grouping key, which is
+ * less reliable but still functional.
  *
- * To populate proper records:
- *   1. Add `_tsr_event_base` and `_tsr_distance_km` post meta during
- *      bulk-import (or via a separate back-fill command).
- *   2. Re-load this page — the query below picks them up automatically.
+ * Row access uses the STORAGE keys of `_tsr_result_set` rows — snake_case
+ * per TSR_Schema::CORE_COLUMNS ('status', 'finish_time', 'first_name',
+ * 'last_name'), status code 'FIN'. The display labels ("Status",
+ * "Finish Time", …) are NOT row keys; reading them silently matches
+ * nothing and leaves the page permanently empty.
+ *
+ * Record year comes from `_tsr_season` meta — NEVER from post_date, which
+ * is the import date, not the race year (see page-rezultati.php).
  *
  * @package exhibz-child
  */
@@ -68,7 +73,10 @@ function tsr_seconds_to_time( int $total ): string {
 $records = array();
 
 // Transient-cache the scan for 6 hours (records rarely change).
-$cached = get_transient( 'tsr_course_records' );
+// Key is versioned: v1 cached permanently-empty results computed with the
+// wrong row keys — a new key makes the fix visible immediately on deploy
+// instead of after the stale entry's 6-hour expiry.
+$cached = get_transient( 'tsr_course_records_v2' );
 if ( false !== $cached ) {
 	$records = $cached;
 } else {
@@ -86,7 +94,7 @@ if ( false !== $cached ) {
 		$event_base  = (string) ( get_post_meta( $pid, '_tsr_event_base', true ) ?: get_the_title( $pid ) );
 		$distance_km = (string) ( get_post_meta( $pid, '_tsr_distance_km', true ) ?: '' );
 		$dist_key    = '' !== $distance_km ? $distance_km . ' км' : 'н/д';
-		$year        = (int) get_the_date( 'Y', $pid );
+		$year        = (int) get_post_meta( $pid, '_tsr_season', true );
 
 		// Load stored result set JSON.
 		$json_raw = get_post_meta( $pid, '_tsr_result_set', true );
@@ -99,14 +107,14 @@ if ( false !== $cached ) {
 		}
 
 		foreach ( $data['rows'] as $row ) {
-			// Only finished runners (Status column empty or "Finish").
-			$status = isset( $row['Status'] ) ? strtolower( trim( $row['Status'] ) ) : '';
-			if ( '' !== $status && 'finish' !== $status ) {
+			// Only confirmed finishers hold records — DNF/DSQ rows can carry
+			// a time yet must never beat a finisher, so filter on status.
+			if ( ! is_array( $row ) || 'FIN' !== ( $row['status'] ?? '' ) ) {
 				continue;
 			}
 
-			$time_str = isset( $row['Finish Time'] ) ? trim( $row['Finish Time'] ) : '';
-			if ( '' === $time_str || '—' === $time_str || '-' === $time_str ) {
+			$time_str = trim( (string) ( $row['finish_time'] ?? '' ) );
+			if ( '' === $time_str ) {
 				continue;
 			}
 
@@ -115,7 +123,7 @@ if ( false !== $cached ) {
 				continue;
 			}
 
-			$name = trim( ( $row['First name'] ?? '' ) . ' ' . ( $row['Last name'] ?? '' ) );
+			$name = trim( (string) ( $row['first_name'] ?? '' ) . ' ' . (string) ( $row['last_name'] ?? '' ) );
 
 			if (
 				! isset( $records[ $event_base ][ $dist_key ] ) ||
@@ -133,7 +141,7 @@ if ( false !== $cached ) {
 	}
 
 	ksort( $records );
-	set_transient( 'tsr_course_records', $records, 6 * HOUR_IN_SECONDS );
+	set_transient( 'tsr_course_records_v2', $records, 6 * HOUR_IN_SECONDS );
 }
 ?>
 
@@ -191,7 +199,7 @@ if ( false !== $cached ) {
 										<td><?php echo esc_html( $dist_label ); ?></td>
 										<td><strong><?php echo esc_html( $rec['time_str'] ); ?></strong></td>
 										<td><?php echo esc_html( $rec['name'] ); ?></td>
-										<td><?php echo esc_html( $rec['year'] ); ?></td>
+										<td><?php echo $rec['year'] > 0 ? esc_html( (string) $rec['year'] ) : '—'; ?></td>
 										<td>
 											<a href="<?php echo esc_url( get_permalink( $rec['post_id'] ) ); ?>">
 												виж
