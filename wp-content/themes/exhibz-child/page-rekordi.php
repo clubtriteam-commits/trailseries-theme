@@ -50,11 +50,12 @@ get_header();
  */
 $records = array();
 
-// Transient-cache the scan for 6 hours (records rarely change).
-// Key is versioned: v1 cached permanently-empty results computed with the
-// wrong row keys — a new key makes the fix visible immediately on deploy
-// instead of after the stale entry's 6-hour expiry.
-$cached = get_transient( 'tsr_course_records_v2' );
+// Transient-cache the scan for 6 hours (records rarely change). The key
+// embeds the results cache generation (tsr_cache_gen(), functions.php),
+// so any results write — import, admin edit, post deletion — invalidates
+// it without waiting out the TTL.
+$tsr_records_key = 'tsr_course_records_g' . tsr_cache_gen();
+$cached          = get_transient( $tsr_records_key );
 if ( false !== $cached ) {
 	$records = $cached;
 } else {
@@ -119,7 +120,7 @@ if ( false !== $cached ) {
 	}
 
 	ksort( $records );
-	set_transient( 'tsr_course_records_v2', $records, 6 * HOUR_IN_SECONDS );
+	set_transient( $tsr_records_key, $records, 6 * HOUR_IN_SECONDS );
 }
 ?>
 

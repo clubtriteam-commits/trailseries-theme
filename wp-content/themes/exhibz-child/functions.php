@@ -291,6 +291,32 @@ function tsr_result_event_title( WP_Post $post ): string {
 }
 
 /**
+ * slug → ID index of every published ts_result post. One query per request,
+ * shared by all hub lookups — the previous per-post LOCATE() query made a
+ * page like /rezultati/ (which resolves the hub of every post) issue one
+ * SQL query per result post (~900 per view).
+ *
+ * @return array<string, int>
+ */
+function tsr_result_slug_index(): array {
+	static $index = null;
+	if ( null !== $index ) {
+		return $index;
+	}
+	global $wpdb;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+	$rows  = $wpdb->get_results(
+		"SELECT ID, post_name FROM {$wpdb->posts}
+		 WHERE post_type = 'ts_result' AND post_status = 'publish'"
+	);
+	$index = array();
+	foreach ( $rows as $row ) {
+		$index[ (string) $row->post_name ] = (int) $row->ID;
+	}
+	return $index;
+}
+
+/**
  * Find the hub post a ts_result post belongs to, or null when the post IS a
  * hub (or a standalone post with no siblings at all).
  *
@@ -299,34 +325,23 @@ function tsr_result_event_title( WP_Post $post ): string {
  * the full explanation). Because hub_slug itself can contain dashes, the
  * only reliable way to recover it is to ask which OTHER published ts_result
  * post's slug, plus a trailing dash, is a prefix of this post's slug.
+ * Trimming one dash-segment at a time enumerates exactly those candidate
+ * prefixes, longest first — same result as the old per-post SQL
+ * (LOCATE prefix + ORDER BY LENGTH DESC) without the per-post query.
  */
 function tsr_hub_head_for( WP_Post $post ): ?WP_Post {
 	if ( 'ts_result' !== $post->post_type ) {
 		return null;
 	}
-	static $cache = array();
-	if ( array_key_exists( $post->ID, $cache ) ) {
-		return $cache[ $post->ID ];
+	$index     = tsr_result_slug_index();
+	$candidate = $post->post_name;
+	while ( false !== ( $dash = strrpos( $candidate, '-' ) ) ) {
+		$candidate = substr( $candidate, 0, $dash );
+		if ( isset( $index[ $candidate ] ) && $index[ $candidate ] !== $post->ID ) {
+			return get_post( $index[ $candidate ] );
+		}
 	}
-
-	global $wpdb;
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQLPlaceholders
-	$hub_id = $wpdb->get_var(
-		$wpdb->prepare(
-			"SELECT ID FROM {$wpdb->posts}
-			 WHERE post_type = %s AND post_status = 'publish' AND ID != %d
-			   AND LOCATE( CONCAT( post_name, '-' ), %s ) = 1
-			 ORDER BY LENGTH( post_name ) DESC
-			 LIMIT 1",
-			'ts_result',
-			$post->ID,
-			$post->post_name
-		)
-	);
-
-	$hub                 = $hub_id ? get_post( (int) $hub_id ) : null;
-	$cache[ $post->ID ]  = $hub;
-	return $hub;
+	return null;
 }
 
 /**
@@ -821,6 +836,54 @@ function tsr_build_sitemap_xml(): string {
 	echo '</urlset>';
 	return (string) ob_get_clean();
 }
+
+// ── Results-derived cache invalidation ───────────────────────────────────────
+//
+// Every cache derived from ts_result data (season standings, course
+// records, event histories, finisher totals, sitemap) must die when
+// results change. Rather than tracking every transient key, derived
+// caches embed a GENERATION number in their key (tsr_cache_gen());
+// flushing = incrementing the generation, after which the old entries
+// are unreachable and expire on their own TTL. The two fixed-key
+// transients are deleted directly.
+//
+// Write paths that trigger a flush:
+//  - TSR_Repository::save() fires 'tsr_results_updated' (CLI bulk-import,
+//    admin XLSX upload — every validated data write).
+//  - save_post_ts_result covers title/slug/status edits in wp-admin.
+//  - trashed/untrashed/deleted hooks cover post removal (e.g. orphan
+//    cleanup via wp post delete), which save() never sees.
+
+/** Current cache generation for results-derived transients. */
+function tsr_cache_gen(): int {
+	return (int) get_option( 'tsr_results_cache_gen', 1 );
+}
+
+/** Invalidate every results-derived cache. Cheap; safe to over-fire. */
+function tsr_flush_result_caches(): void {
+	update_option( 'tsr_results_cache_gen', tsr_cache_gen() + 1, true );
+	delete_transient( 'tsr_total_finishers' );
+	delete_transient( 'tsr_sitemap_xml' );
+}
+
+add_action( 'tsr_results_updated', 'tsr_flush_result_caches' );
+add_action( 'save_post_ts_result', 'tsr_flush_result_caches' );
+
+add_action( 'trashed_post', static function ( int $post_id ): void {
+	if ( 'ts_result' === get_post_type( $post_id ) ) {
+		tsr_flush_result_caches();
+	}
+} );
+add_action( 'untrashed_post', static function ( int $post_id ): void {
+	if ( 'ts_result' === get_post_type( $post_id ) ) {
+		tsr_flush_result_caches();
+	}
+} );
+add_action( 'deleted_post', static function ( int $post_id, ?WP_Post $post = null ): void {
+	if ( $post instanceof WP_Post && 'ts_result' === $post->post_type ) {
+		tsr_flush_result_caches();
+	}
+}, 10, 2 );
 
 // ── Партньори (ts_partner CPT) ───────────────────────────────────────────────
 //

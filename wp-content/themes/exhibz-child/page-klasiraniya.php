@@ -164,13 +164,24 @@ function tsr_points( int $place, string $cat, bool $is_bonus = false ): int {
 }
 
 // -- Compute standings for the selected season ---------------------------------
+//
+// Results-derived transient: recomputing means a meta query plus a JSON
+// decode of every season post per page view. The key embeds the cache
+// generation (tsr_cache_gen(), functions.php), so any results write —
+// import, admin edit, post deletion — makes a fresh key and the stale
+// entry expires on its own TTL. On a cache hit the compute path below
+// runs over an empty post list and the cached standings are restored
+// after the (no-op) sort.
+$tsr_standings_key  = sprintf( 'tsr_standings_g%d_s%d', tsr_cache_gen(), $current_season );
+$tsr_standings_hit  = get_transient( $tsr_standings_key );
+$tsr_need_compute   = ! is_array( $tsr_standings_hit );
 
 /**
  * @var array<'m'|'f', array<string, array{points:int, finishes:int, podiums:int, name:string}>> $standings
  */
 $standings = array( 'm' => array(), 'f' => array() );
 
-$race_posts = get_posts(
+$race_posts = ! $tsr_need_compute ? array() : get_posts(
 	array(
 		'post_type'   => 'ts_result',
 		'numberposts' => -1,
@@ -341,6 +352,20 @@ uasort( $standings['m'], $tsr_sort_fn );
 uasort( $standings['f'], $tsr_sort_fn );
 $standings['m'] = array_values( $standings['m'] );
 $standings['f'] = array_values( $standings['f'] );
+
+if ( $tsr_need_compute ) {
+	set_transient(
+		$tsr_standings_key,
+		array(
+			'standings'    => $standings,
+			'has_cat_meta' => $has_cat_meta,
+		),
+		12 * HOUR_IN_SECONDS
+	);
+} else {
+	$standings    = $tsr_standings_hit['standings'];
+	$has_cat_meta = (bool) $tsr_standings_hit['has_cat_meta'];
+}
 
 /**
  * Render one gender column of the standings table.

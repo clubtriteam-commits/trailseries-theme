@@ -33,8 +33,22 @@ $tsr_event_slug = sanitize_title( trim( sanitize_text_field( wp_unslash( $_GET['
 $tsr_searching  = '' !== $tsr_event_slug;
 
 // ── Data: fetch all ts_result posts once ──────────────────────────────────────
+//
+// Both branches are cached in results-derived transients (key embeds
+// tsr_cache_gen(), functions.php — any results write mints a new key).
+// On a hit the compute loop below runs over an empty post list and the
+// cached value is restored after it; the full fetch + per-post JSON
+// decode only happens on a miss.
 
-$tsr_all_posts = get_posts( array(
+$tsr_index_key = 'tsr_event_index_g' . tsr_cache_gen();
+$tsr_index_hit = ! $tsr_searching ? get_transient( $tsr_index_key ) : false;
+
+$tsr_event_key = 'tsr_event_g' . tsr_cache_gen() . '_' . md5( $tsr_event_slug );
+$tsr_event_hit = $tsr_searching ? get_transient( $tsr_event_key ) : false;
+
+$tsr_need_posts = $tsr_searching ? ! is_array( $tsr_event_hit ) : ! is_array( $tsr_index_hit );
+
+$tsr_all_posts = ! $tsr_need_posts ? array() : get_posts( array(
 	'post_type'      => 'ts_result',
 	'posts_per_page' => -1,
 	'post_status'    => 'publish',
@@ -59,6 +73,12 @@ if ( ! $tsr_searching ) {
 		}
 	}
 	asort( $tsr_event_index );
+
+	if ( is_array( $tsr_index_hit ) ) {
+		$tsr_event_index = $tsr_index_hit;
+	} else {
+		set_transient( $tsr_index_key, $tsr_event_index, 12 * HOUR_IN_SECONDS );
+	}
 }
 
 // ── Branch B: single event history ───────────────────────────────────────────
@@ -88,8 +108,8 @@ if ( $tsr_searching ) {
 		$tsr_dist = tsr_dist_label_from_title( $tsr_p->post_title );
 		$tsr_dk   = '' !== $tsr_dist ? $tsr_dist : 'Всички';
 
+		// Scalars only — this array is transient-cached below.
 		$tsr_editions[ $tsr_year ][] = array(
-			'post' => $tsr_p,
 			'dist' => $tsr_dist,
 			'url'  => get_permalink( $tsr_p ),
 		);
@@ -131,6 +151,22 @@ if ( $tsr_searching ) {
 
 	krsort( $tsr_editions, SORT_NUMERIC );
 	ksort( $tsr_records );
+
+	if ( is_array( $tsr_event_hit ) ) {
+		$tsr_event_display = (string) $tsr_event_hit['display'];
+		$tsr_editions      = $tsr_event_hit['editions'];
+		$tsr_records       = $tsr_event_hit['records'];
+	} else {
+		set_transient(
+			$tsr_event_key,
+			array(
+				'display'  => $tsr_event_display,
+				'editions' => $tsr_editions,
+				'records'  => $tsr_records,
+			),
+			12 * HOUR_IN_SECONDS
+		);
+	}
 }
 
 get_header();

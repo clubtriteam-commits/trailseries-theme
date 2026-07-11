@@ -48,6 +48,18 @@ final class TSR_Repository {
 				sprintf( 'Round-trip verification failed for post %d — stored data does not match input.', $post_id )
 			);
 		}
+
+		/**
+		 * Fires after a result set has been saved and round-trip verified.
+		 *
+		 * This is the invalidation point for every derived-data cache
+		 * (standings, course records, event histories, finisher totals,
+		 * sitemap). Consumers hook this instead of the plugin knowing about
+		 * their transients — the theme's cache layer must not leak in here.
+		 *
+		 * @param int $post_id The ts_result post whose data changed.
+		 */
+		do_action( 'tsr_results_updated', $post_id );
 	}
 
 	public static function load( int $post_id ): ?TSR_Result_Set {
