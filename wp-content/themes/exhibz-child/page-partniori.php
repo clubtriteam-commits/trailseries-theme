@@ -30,19 +30,6 @@ $tsr_partners = get_posts(
 	)
 );
 
-/**
- * Initials for the placeholder logo box: first letter of the first two
- * words ("The Barbarian" → "TB", "SLS" → "S").
- */
-function tsr_partner_initials( string $name ): string {
-	$words    = preg_split( '/\s+/u', trim( $name ), -1, PREG_SPLIT_NO_EMPTY ) ?: array();
-	$initials = '';
-	foreach ( array_slice( $words, 0, 2 ) as $word ) {
-		$initials .= mb_substr( $word, 0, 1, 'UTF-8' );
-	}
-	return mb_strtoupper( $initials, 'UTF-8' );
-}
-
 /** Brand palette cycled across placeholder boxes. */
 $tsr_ph_colors = array( '#00aadd', '#0a1628', '#e05c1e', '#0088bb', '#0d2040' );
 ?>

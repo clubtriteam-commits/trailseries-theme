@@ -840,6 +840,21 @@ add_action( 'init', static function (): void {
 	);
 } );
 
+/**
+ * Initials for a partner's placeholder logo box: first letter of the first
+ * two words ("The Barbarian" → "TB", "SLS" → "S"). Used by both
+ * page-partniori.php and the homepage partners strip until a real logo is
+ * uploaded as the partner's featured image.
+ */
+function tsr_partner_initials( string $name ): string {
+	$words    = preg_split( '/\s+/u', trim( $name ), -1, PREG_SPLIT_NO_EMPTY ) ?: array();
+	$initials = '';
+	foreach ( array_slice( $words, 0, 2 ) as $word ) {
+		$initials .= mb_substr( $word, 0, 1, 'UTF-8' );
+	}
+	return mb_strtoupper( $initials, 'UTF-8' );
+}
+
 add_action( 'add_meta_boxes_ts_partner', static function (): void {
 	add_meta_box(
 		'tsr-partner-url',

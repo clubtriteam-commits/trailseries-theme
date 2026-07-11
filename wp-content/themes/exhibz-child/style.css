@@ -2605,3 +2605,24 @@ a.tsr-partner-card:hover {
 	background: #c94e15;
 	color:      var(--tsr-white);
 }
+
+/* ── Партньори strip (front-page.php) ────────────────────────────────────── */
+.tsr-partners-strip {
+	display:         flex;
+	flex-wrap:       wrap;
+	justify-content: center;
+	gap:             var(--tsr-gap);
+}
+
+.tsr-partners-strip .tsr-partner-card {
+	width:   180px;
+	padding: 1.25rem 1rem;
+}
+
+.tsr-partners-strip .tsr-partner-card__logo {
+	height: 90px;
+}
+
+.tsr-partners-strip .tsr-partner-card__logo--ph {
+	font-size: 1.6rem;
+}

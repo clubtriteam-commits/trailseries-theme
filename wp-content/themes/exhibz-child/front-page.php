@@ -8,7 +8,10 @@ declare( strict_types=1 );
  *   2. Upcoming events — next 3 from EventON plugin (post type ajde_events)
  *   3. Past events   — last 5 published ts_result posts with links
  *   4. Latest news   — last 3 standard WP posts
- *   5. Quick stats   — seasons (hardcoded 14), total finishers, total races
+ *   5. Zero to HERO  — story cards + CSS slideshow
+ *   6. Map           — Leaflet map of the tracks
+ *   7. Партньори     — partner logo strip linking to /partniori/
+ *   8. Quick stats   — seasons (hardcoded 14), total finishers, total races
  *
  * Everything here is display-only. No results logic lives in the theme.
  *
@@ -93,7 +96,20 @@ $tsr_zero = get_posts(
 	)
 );
 
-// 4. Stats.
+// 5. Partners — same source as page-partniori.php (ts_partner CPT).
+$tsr_partners = get_posts(
+	array(
+		'post_type'   => 'ts_partner',
+		'numberposts' => -1,
+		'post_status' => 'publish',
+		'orderby'     => array(
+			'menu_order' => 'ASC',
+			'title'      => 'ASC',
+		),
+	)
+);
+
+// 6. Stats.
 $tsr_total_races     = tsr_homepage_total_races();
 $tsr_total_finishers = tsr_homepage_total_finishers();
 
@@ -529,7 +545,54 @@ get_header();
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════════════════
-     SECTION 7 — QUICK STATS
+     SECTION 7 — ПАРТНЬОРИ
+     ════════════════════════════════════════════════════════════════════════ -->
+<?php if ( ! empty( $tsr_partners ) ) :
+	$tsr_ph_colors = array( '#00aadd', '#0a1628', '#e05c1e', '#0088bb', '#0d2040' );
+	?>
+<section class="tsr-section tsr-partners-home" aria-labelledby="tsr-partners-title">
+	<div class="tsr-container">
+		<h2 class="tsr-section__title" id="tsr-partners-title">Партньори</h2>
+
+		<div class="tsr-partners-strip">
+			<?php foreach ( $tsr_partners as $tsr_i => $tsr_partner ) : ?>
+				<?php
+				$tsr_url  = (string) get_post_meta( $tsr_partner->ID, '_tsr_partner_url', true );
+				$tsr_name = get_the_title( $tsr_partner );
+				$tsr_tag  = '' !== $tsr_url ? 'a' : 'div';
+				?>
+				<<?php echo $tsr_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- 'a' or 'div' literal. ?>
+					class="tsr-partner-card"
+					<?php if ( '' !== $tsr_url ) : ?>
+						href="<?php echo esc_url( $tsr_url ); ?>" target="_blank" rel="noopener sponsored"
+					<?php endif; ?>
+				>
+					<?php if ( has_post_thumbnail( $tsr_partner ) ) : ?>
+						<span class="tsr-partner-card__logo">
+							<?php echo get_the_post_thumbnail( $tsr_partner, 'medium', array( 'alt' => $tsr_name, 'loading' => 'lazy' ) ); ?>
+						</span>
+					<?php else : ?>
+						<span class="tsr-partner-card__logo tsr-partner-card__logo--ph"
+							style="background: <?php echo esc_attr( $tsr_ph_colors[ $tsr_i % count( $tsr_ph_colors ) ] ); ?>">
+							<?php echo esc_html( tsr_partner_initials( $tsr_name ) ); ?>
+						</span>
+					<?php endif; ?>
+					<span class="tsr-partner-card__name"><?php echo esc_html( $tsr_name ); ?></span>
+				</<?php echo $tsr_tag; // phpcs:ignore WordPress.Security.EscapeOutput ?>>
+			<?php endforeach; ?>
+		</div>
+
+		<p class="tsr-view-all">
+			<a class="tsr-card__link" href="<?php echo esc_url( home_url( '/partniori/' ) ); ?>">
+				Всички партньори
+			</a>
+		</p>
+	</div>
+</section>
+<?php endif; ?>
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     SECTION 8 — QUICK STATS
      ════════════════════════════════════════════════════════════════════════ -->
 <section class="tsr-stats" aria-label="Статистика на сезоните">
 	<div class="tsr-container">
