@@ -16,76 +16,15 @@ declare( strict_types=1 );
  * @package exhibz-child
  */
 
-// ── Shared helpers (guarded against redeclaration) ────────────────────────────
-
-if ( ! function_exists( 'tsr_title_year' ) ) {
-	function tsr_title_year( string $title ): ?int {
-		$pos = mb_strpos( $title, ' — ' );
-		$raw = false !== $pos ? mb_substr( $title, 0, $pos ) : $title;
-		if ( preg_match( "/['\x{2019}](\d{2})\b/u", $raw, $m ) ) {
-			return 2000 + (int) $m[1];
-		}
-		if ( preg_match( '/\b(20\d{2})\b/', $raw, $m ) ) {
-			return (int) $m[1];
-		}
-		return null;
-	}
-}
-
-if ( ! function_exists( 'tsr_slug_year' ) ) {
-	function tsr_slug_year( string $slug ): ?int {
-		$base = explode( '--', $slug )[0];
-		if ( preg_match( '/(?:^|-)(20\d{2})(?:-|$)/', $base, $m ) ) {
-			return (int) $m[1];
-		}
-		if ( preg_match( '/[\pL\d](1[3-9]|2[0-9])(?:-|$)/u', $base, $m ) ) {
-			return 2000 + (int) $m[1];
-		}
-		$stripped = (string) preg_replace(
-			'/(?:^|-)(?:results?|ranking|класиране|резултати)\d*$/iu', '', $base
-		);
-		if ( $stripped !== $base && preg_match( '/-(1[3-9]|2[0-9])$/', $stripped, $m ) ) {
-			return 2000 + (int) $m[1];
-		}
-		return null;
-	}
-}
-
-if ( ! function_exists( 'tsr_event_base_name' ) ) {
-	function tsr_event_base_name( string $title ): string {
-		$pos = mb_strpos( $title, ' — ' );
-		if ( false !== $pos ) {
-			$title = mb_substr( $title, 0, $pos );
-		}
-		$title = (string) preg_replace( "/['\x{2019}]\d{2}(?:\s*[-–—\s]\s*\S+.*)?\s*$/u", '', $title );
-		$title = (string) preg_replace( '/\s+20\d{2}(?:\s*[-–—]\s*\S+.*)?\s*$/u', '', $title );
-		$title = (string) preg_replace( '/\s*[-–—]\s*(?:results?|ranking|класиране|резултати)\b.*/iu', '', $title );
-		$title = (string) preg_replace( '/\s+(?:класиране|резултати|results?|ranking)\s*$/iu', '', $title );
-		$title = (string) preg_replace( '/[\s\-–—]+$/u', '', $title );
-		return trim( $title );
-	}
-}
-
-if ( ! function_exists( 'tsr_dist_label_from_title' ) ) {
-	function tsr_dist_label_from_title( string $title ): string {
-		if ( preg_match( '/ — (.+)$/', $title, $m ) ) {
-			return trim( $m[1] );
-		}
-		return '';
-	}
-}
-
-if ( ! function_exists( 'tsr_time_to_seconds' ) ) {
-	function tsr_time_to_seconds( string $time ): int {
-		if ( '' === $time ) {
-			return PHP_INT_MAX;
-		}
-		$p = explode( ':', $time );
-		return 3 === count( $p )
-			? (int) $p[0] * 3600 + (int) $p[1] * 60 + (int) $p[2]
-			: PHP_INT_MAX;
-	}
-}
+// ── Shared helpers ────────────────────────────────────────────────────────────
+//
+// tsr_title_year, tsr_slug_year, tsr_event_base_name,
+// tsr_dist_label_from_title and tsr_time_to_seconds come from the
+// trailseries-results plugin (includes/event-heuristics.php); the private
+// copies this template used to carry are gone — one of them still split
+// slugs on '--', a separator that never survives sanitize_title(), so its
+// year detection ran against the raw section slug, category suffix and all.
+// tsr_slug_base() (functions.php) resolves the hub base slug instead.
 
 // ── Input ─────────────────────────────────────────────────────────────────────
 
@@ -137,7 +76,7 @@ if ( $tsr_searching ) {
 		}
 
 		$tsr_year = tsr_title_year( $tsr_p->post_title )
-			?? tsr_slug_year( $tsr_p->post_name )
+			?? tsr_slug_year( tsr_slug_base( $tsr_p ) )
 			?? 0;
 		$tsr_dist = tsr_dist_label_from_title( $tsr_p->post_title );
 		$tsr_dk   = '' !== $tsr_dist ? $tsr_dist : 'Всички';

@@ -27,34 +27,12 @@ declare( strict_types=1 );
 
 get_header();
 
-/**
- * Convert a finish-time string to total seconds for comparison.
- * Accepts "H:MM:SS", "HH:MM:SS", "M:SS".
- *
- * @param string $time_str Raw finish time from the result set.
- * @return int Total seconds, or PHP_INT_MAX if unparseable.
- */
-function tsr_time_to_seconds( string $time_str ): int {
-	$parts = array_map( 'intval', explode( ':', trim( $time_str ) ) );
-	return match ( count( $parts ) ) {
-		3 => $parts[0] * 3600 + $parts[1] * 60 + $parts[2],
-		2 => $parts[0] * 60 + $parts[1],
-		default => PHP_INT_MAX,
-	};
-}
-
-/**
- * Format total seconds back to H:MM:SS.
- */
-function tsr_seconds_to_time( int $total ): string {
-	if ( PHP_INT_MAX === $total ) {
-		return '—';
-	}
-	$h = intdiv( $total, 3600 );
-	$m = intdiv( $total % 3600, 60 );
-	$s = $total % 60;
-	return sprintf( '%d:%02d:%02d', $h, $m, $s );
-}
+// tsr_time_to_seconds() comes from the trailseries-results plugin
+// (includes/event-heuristics.php) — the local copy that also accepted
+// "M:SS" is gone; TSR_Schema::TIME_PATTERN guarantees stored finish
+// times are H:MM:SS, so the laxer parse could only misread bad data.
+// (A tsr_seconds_to_time() formatter defined here was never called
+// anywhere and was removed outright.)
 
 // ── Scan all published ts_result posts for fastest finish times ───────────────
 

@@ -23,6 +23,7 @@ define( 'TSR_PLUGIN_FILE', __FILE__ );
 define( 'TSR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TSR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
+require TSR_PLUGIN_DIR . 'includes/event-heuristics.php';
 require TSR_PLUGIN_DIR . 'includes/class-status.php';
 require TSR_PLUGIN_DIR . 'includes/class-schema.php';
 require TSR_PLUGIN_DIR . 'includes/class-result-row.php';

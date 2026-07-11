@@ -330,6 +330,22 @@ function tsr_hub_head_for( WP_Post $post ): ?WP_Post {
 }
 
 /**
+ * The legacy page's base slug for a ts_result post — itself if this post is
+ * a hub or a standalone post, or its hub's slug if this post is a category
+ * sub-page. This is the ONLY correct input for the slug-based heuristics in
+ * the trailseries-results plugin (tsr_slug_year(), tsr_slug_event_name());
+ * a raw section post_name carries its category suffix and cannot be split
+ * on '--' because sanitize_title() collapsed that separator before insert.
+ *
+ * @param WP_Post $post ts_result post.
+ * @return string The resolved legacy-page slug.
+ */
+function tsr_slug_base( WP_Post $post ): string {
+	$hub = tsr_hub_head_for( $post );
+	return null !== $hub ? $hub->post_name : $post->post_name;
+}
+
+/**
  * Site logo URL from the Customizer "Main Logo" (custom_logo theme mod),
  * used as the Open Graph image fallback when a page has no featured image.
  */

@@ -953,94 +953,38 @@ final class TSR_CLI {
 
 	/**
 	 * Extract a 4-digit race year from a post_title.
-	 * Same logic as tsr_title_year() in the Резултати page template.
+	 * Delegates to the shared heuristics (includes/event-heuristics.php).
 	 */
 	private function title_year( string $title ): ?int {
-		$pos = mb_strpos( $title, ' — ' );
-		$raw = false !== $pos ? mb_substr( $title, 0, $pos ) : $title;
-
-		if ( preg_match( "/['\x{2019}](\d{2})\b/u", $raw, $m ) ) {
-			return 2000 + (int) $m[1];
-		}
-		if ( preg_match( '/\b(20\d{2})\b/', $raw, $m ) ) {
-			return (int) $m[1];
-		}
-		return null;
+		return tsr_title_year( $title );
 	}
 
 	/**
 	 * Extract a 4-digit race year from a post_name.
-	 * Same logic as tsr_slug_year() in the Резултати page template:
-	 * 4-digit segment, 2-digit year attached to a word char, or trailing
-	 * 2-digit segment once the results/ranking label is stripped. Day-of-month
-	 * numbers between hyphens are deliberately not matched.
+	 * Delegates to the shared heuristics. Stored post_names never contain
+	 * '--' (sanitize_title() collapses the importer's separator before
+	 * insert), so the whole slug IS the base slug here — the old private
+	 * copy's explode('--') was a provable no-op.
 	 */
 	private function slug_year( string $slug ): ?int {
-		$base = explode( '--', $slug )[0];
-
-		if ( preg_match( '/(?:^|-)(20\d{2})(?:-|$)/', $base, $m ) ) {
-			return (int) $m[1];
-		}
-		if ( preg_match( '/[\pL\d](1[3-9]|2[0-9])(?:-|$)/u', $base, $m ) ) {
-			return 2000 + (int) $m[1];
-		}
-
-		$stripped = (string) preg_replace(
-			'/(?:^|-)(?:results?|ranking|класиране|резултати)\d*$/iu',
-			'',
-			$base
-		);
-		if ( $stripped !== $base && preg_match( '/-(1[3-9]|2[0-9])$/', $stripped, $m ) ) {
-			return 2000 + (int) $m[1];
-		}
-
-		return null;
+		return tsr_slug_year( $slug );
 	}
 
 	/**
 	 * Derive a clean event base name from a post_title.
-	 * Same logic as tsr_event_base_name() in the Резултати page template.
-	 * Returns '' when the title yields no usable name.
+	 * Delegates to the shared heuristics (includes/event-heuristics.php).
 	 */
 	private function event_base_name( string $title ): string {
-		$pos = mb_strpos( $title, ' — ' );
-		if ( false !== $pos ) {
-			$title = mb_substr( $title, 0, $pos );
-		}
-		$title = (string) preg_replace( "/['\x{2019}]\d{2}(?:\s*[-–—\s]\s*\S+.*)?\s*$/u", '', $title );
-		$title = (string) preg_replace( '/\s+20\d{2}(?:\s*[-–—]\s*\S+.*)?\s*$/u', '', $title );
-		$title = (string) preg_replace( '/\s*[-–—]\s*(?:results?|ranking|класиране|резултати)\b.*/iu', '', $title );
-		$title = (string) preg_replace( '/\s+(?:класиране|резултати|results?|ranking)\s*$/iu', '', $title );
-		$title = (string) preg_replace( '/[\s\-–—]+$/u', '', $title );
-		$title = (string) preg_replace( '/\s{2,}/u', ' ', $title );
-		return trim( $title );
+		return tsr_event_base_name( $title );
 	}
 
 	/**
 	 * Derive a human-readable event name from a post_name.
-	 * Same logic as tsr_slug_event_name() in the Резултати page template.
-	 * Returns '' for known-garbage slugs (pure digits, "untitled", …).
+	 * Delegates to the shared heuristics; see slug_year() on why the slug
+	 * is passed through as the base slug unchanged.
 	 */
 	private function slug_event_name( string $slug ): string {
-		$base = explode( '--', $slug )[0];
-
-		$base = (string) preg_replace( '/(?:^|-)20\d{2}(?:-|$)/', '-', $base );
-		$base = trim( (string) preg_replace( '/-+/', '-', $base ), '-' );
-		$base = (string) preg_replace( '/(?:^|-)(?:results?|ranking|класиране|резултати)\d*$/iu', '', $base );
-		$base = (string) preg_replace( '/-(1[3-9]|2[0-9])$/', '', $base );
-		$base = (string) preg_replace( '/([\pL\d])(1[3-9]|2[0-9])(?:-|$)/u', '$1', $base );
-		$base = trim( (string) preg_replace( '/-+/', '-', $base ), '-' );
-
-		$lower = mb_strtolower( $base );
-		if ( '' === $base || ctype_digit( $base ) || in_array( $lower, array( 'untitled', 'news', 'page' ), true ) ) {
-			return '';
-		}
-
-		$words = array_map(
-			static fn( string $w ): string => mb_convert_case( $w, MB_CASE_TITLE, 'UTF-8' ),
-			explode( '-', $base )
-		);
-		return implode( ' ', $words );
+		return tsr_slug_event_name( $slug );
 	}
 
 	/**
