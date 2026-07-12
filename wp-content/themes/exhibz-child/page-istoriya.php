@@ -133,9 +133,9 @@ $tsr_timeline = array(
 					<li class="tsr-timeline__item<?php echo 2027 === $entry['year'] ? ' tsr-timeline__item--future' : ''; ?>">
 						<div class="tsr-timeline__year"><?php echo esc_html( $entry['year'] ); ?></div>
 						<div class="tsr-timeline__body">
-							<h3 class="tsr-timeline__label">
+							<h2 class="tsr-timeline__label">
 								<?php echo esc_html( $entry['label'] ); ?>
-							</h3>
+							</h2>
 							<?php if ( '' !== $entry['desc'] ) : ?>
 								<p class="tsr-timeline__desc">
 									<?php echo esc_html( $entry['desc'] ); ?>

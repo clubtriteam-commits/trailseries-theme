@@ -485,10 +485,12 @@ get_header();
 			}
 		).addTo( map );
 
-		var makePin = function ( cls ) {
+		var makePin = function ( cls, label ) {
+			var esc = document.createElement( 'div' );
+			esc.textContent = label;
 			return L.divIcon( {
 				className:   '',
-				html:        '<div class="tsr-map-pin ' + cls + '"></div>',
+				html:        '<div class="tsr-map-pin ' + cls + '" role="img" aria-label="' + esc.innerHTML.replace( /"/g, '&quot;' ) + '"></div>',
 				iconSize:    [ 20, 30 ],
 				iconAnchor:  [ 10, 30 ],
 				popupAnchor: [ 0, -32 ],
@@ -514,7 +516,7 @@ get_header();
 		];
 
 		active.forEach( function ( e ) {
-			L.marker( [ e.lat, e.lng ], { icon: makePin( 'tsr-map-pin--active' ) } )
+			L.marker( [ e.lat, e.lng ], { icon: makePin( 'tsr-map-pin--active', e.name ), title: e.name } )
 				.bindPopup(
 					'<strong>' + e.name + '</strong><br>' +
 					e.mountain + ' &middot; ' + e.month + '<br>' +
@@ -526,7 +528,7 @@ get_header();
 		} );
 
 		historical.forEach( function ( e ) {
-			L.marker( [ e.lat, e.lng ], { icon: makePin( 'tsr-map-pin--hist' ) } )
+			L.marker( [ e.lat, e.lng ], { icon: makePin( 'tsr-map-pin--hist', e.name ), title: e.name } )
 				.bindPopup(
 					'<strong>' + e.name + '</strong><br>' +
 					e.mountain + '<br>' +
