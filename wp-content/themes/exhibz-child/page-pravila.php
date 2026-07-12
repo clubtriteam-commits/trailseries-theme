@@ -27,6 +27,8 @@ get_header();
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'Правила' ); ?>
+
 		<!-- ─── Intro ──────────────────────────────────────────────────────── -->
 		<section class="tsr-prose-section">
 			<h2>Как работи класирането?</h2>

@@ -723,6 +723,46 @@ function tsr_render_breadcrumbs( WP_Post $post ): void {
 	echo '</nav>';
 }
 
+/**
+ * Visible breadcrumb trail + BreadcrumbList JSON-LD for the static page
+ * templates (Начало / <page>). single-ts_result.php keeps its own deeper
+ * trail via tsr_render_breadcrumbs() above. The JSON-LD is emitted inline
+ * next to the visible nav rather than from a wp_head hook: several of
+ * these templates are slug-matched (page-{slug}.php) with no assigned
+ * template, so wp_head can't reliably tell which page it serves — and
+ * JSON-LD is valid anywhere in the document.
+ */
+function tsr_page_breadcrumbs( string $label ): void {
+	$home = home_url( '/' );
+	$self = (string) get_permalink();
+
+	echo '<nav class="tsr-breadcrumbs" aria-label="Трохички">';
+	echo '<a class="tsr-breadcrumbs__link" href="' . esc_url( $home ) . '">Начало</a>';
+	echo '<span class="tsr-breadcrumbs__sep" aria-hidden="true">/</span>';
+	echo '<span class="tsr-breadcrumbs__current" aria-current="page">' . esc_html( $label ) . '</span>';
+	echo '</nav>';
+
+	$schema = array(
+		'@context'        => 'https://schema.org',
+		'@type'           => 'BreadcrumbList',
+		'itemListElement' => array(
+			array(
+				'@type'    => 'ListItem',
+				'position' => 1,
+				'name'     => 'Начало',
+				'item'     => $home,
+			),
+			array(
+				'@type'    => 'ListItem',
+				'position' => 2,
+				'name'     => $label,
+				'item'     => $self,
+			),
+		),
+	);
+	echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+}
+
 // ── XML sitemap (/sitemap.xml, no plugin) ────────────────────────────────────
 
 add_action( 'init', static function (): void {

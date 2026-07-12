@@ -225,6 +225,8 @@ get_header();
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'Профил на бегач' ); ?>
+
 		<form class="tsr-runner-search" method="get" action="">
 			<label class="screen-reader-text" for="tsr-runner-name">Имена на бегача</label>
 			<input

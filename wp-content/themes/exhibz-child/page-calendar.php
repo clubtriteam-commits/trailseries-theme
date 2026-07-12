@@ -115,6 +115,8 @@ get_header();
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'Календар' ); ?>
+
 		<!-- ─── Upcoming ───────────────────────────────────────────────────── -->
 		<section class="tsr-prose-section tsr-cal-upcoming" aria-labelledby="tsr-cal-upcoming-h">
 			<h2 class="tsr-cal-section__title" id="tsr-cal-upcoming-h">Предстоящи</h2>

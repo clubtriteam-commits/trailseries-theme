@@ -47,6 +47,8 @@ $tsr_ph_colors = array( '#00aadd', '#0a1628', '#e05c1e', '#0088bb', '#0d2040' );
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'Партньори' ); ?>
+
 		<?php if ( empty( $tsr_partners ) ) : ?>
 			<p class="tsr-empty">Няма добавени партньори.</p>
 		<?php else : ?>

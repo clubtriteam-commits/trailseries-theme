@@ -391,6 +391,8 @@ function tsr_render_standings_col( array $rows, string $heading ): void {
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'Класирания' ); ?>
+
 		<!-- Season picker -->
 		<?php if ( count( $available_seasons ) > 1 ) : ?>
 			<nav class="tsr-season-nav" aria-label="Избор на сезон">

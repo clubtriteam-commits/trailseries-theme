@@ -116,6 +116,8 @@ $tsr_timeline = array(
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'История' ); ?>
+
 		<section class="tsr-prose-section">
 			<p>
 				TrailSeries.bg е поредицата планински бягания, която обединява трейл

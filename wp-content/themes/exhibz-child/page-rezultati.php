@@ -117,6 +117,8 @@ $season_labels = array(
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'Резултати' ); ?>
+
 		<?php if ( empty( $grouped ) ) : ?>
 			<div class="tsr-notice">
 				<p>Все още няма публикувани резултати. Проверете отново след първото състезание.</p>

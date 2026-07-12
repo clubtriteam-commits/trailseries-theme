@@ -166,6 +166,8 @@ get_header();
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'Трасета' ); ?>
+
 		<?php if ( empty( $tsr_events ) ) : ?>
 			<p class="tsr-empty">Няма налични трасета в момента.</p>
 		<?php else : ?>

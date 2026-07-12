@@ -200,6 +200,8 @@ get_header();
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'История на събитие' ); ?>
+
 		<?php if ( ! $tsr_searching ) : ?>
 			<!-- ── Browse: A–Z list of all events ──────────────────────────── -->
 			<section class="tsr-prose-section">

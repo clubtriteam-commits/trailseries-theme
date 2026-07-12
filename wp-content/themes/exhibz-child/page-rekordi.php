@@ -137,6 +137,8 @@ if ( false !== $cached ) {
 <main class="tsr-page-content">
 	<div class="tsr-container">
 
+		<?php tsr_page_breadcrumbs( 'Рекорди' ); ?>
+
 		<?php if ( empty( $records ) ) : ?>
 			<section class="tsr-prose-section">
 				<p class="tsr-empty">
