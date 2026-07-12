@@ -198,6 +198,43 @@ function tsr_dist_label_from_title( string $title ): string {
 }
 
 /**
+ * Detect race gender from a ts_result post's slug or title category suffix.
+ *
+ * Detection order:
+ *   1. Latin -m / -f at the very end of the slug ("19km-m", "6km-f").
+ *   2. Cyrillic мъже / жени anywhere in the slug (Unicode-slug sites).
+ *   3. Cyrillic МЪЖЕ / ЖЕНИ anywhere in the post title (always reliable,
+ *      including bare-slug first sections whose slug has no gender marker).
+ *
+ * @param WP_Post $post ts_result post.
+ * @return string 'M', 'F', or '' when undetermined.
+ */
+function tsr_race_gender( WP_Post $post ): string {
+	if ( preg_match( '/-m$/i', $post->post_name ) ) {
+		return 'M';
+	}
+	if ( preg_match( '/-f$/i', $post->post_name ) ) {
+		return 'F';
+	}
+	// Cyrillic slug parts are stored URL-encoded in post_name — decode first.
+	$slug = mb_strtolower( urldecode( $post->post_name ), 'UTF-8' );
+	if ( str_contains( $slug, 'мъже' ) ) {
+		return 'M';
+	}
+	if ( str_contains( $slug, 'жени' ) ) {
+		return 'F';
+	}
+	$title = mb_strtoupper( $post->post_title, 'UTF-8' );
+	if ( str_contains( $title, 'МЪЖЕ' ) ) {
+		return 'M';
+	}
+	if ( str_contains( $title, 'ЖЕНИ' ) ) {
+		return 'F';
+	}
+	return '';
+}
+
+/**
  * Convert a finish-time string to total seconds for comparison.
  *
  * Accepts H:MM:SS only — TSR_Schema::TIME_PATTERN guarantees every stored

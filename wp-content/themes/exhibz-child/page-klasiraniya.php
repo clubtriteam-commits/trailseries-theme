@@ -100,41 +100,10 @@ $tsr_bonus_defaults = array(
 );
 $tsr_bonus_races = (array) get_option( 'tsr_bonus_races', array() ) + $tsr_bonus_defaults;
 
-/**
- * Detect race gender from post_name slug or post_title category suffix.
- *
- * Detection order:
- *   1. Latin -m / -f at the very end of the slug ("19km-m", "6km-f").
- *   2. Cyrillic мъже / жени anywhere in the slug (Unicode-slug sites).
- *   3. Cyrillic МЪЖЕ / ЖЕНИ anywhere in the post title (always reliable,
- *      including bare-slug first sections whose slug has no gender marker).
- *
- * @return string 'M', 'F', or '' when undetermined.
- */
-function tsr_race_gender( WP_Post $post ): string {
-	if ( preg_match( '/-m$/i', $post->post_name ) ) {
-		return 'M';
-	}
-	if ( preg_match( '/-f$/i', $post->post_name ) ) {
-		return 'F';
-	}
-	// Cyrillic slug parts are stored URL-encoded in post_name — decode first.
-	$slug = mb_strtolower( urldecode( $post->post_name ), 'UTF-8' );
-	if ( str_contains( $slug, 'мъже' ) ) {
-		return 'M';
-	}
-	if ( str_contains( $slug, 'жени' ) ) {
-		return 'F';
-	}
-	$title = mb_strtoupper( $post->post_title, 'UTF-8' );
-	if ( str_contains( $title, 'МЪЖЕ' ) ) {
-		return 'M';
-	}
-	if ( str_contains( $title, 'ЖЕНИ' ) ) {
-		return 'F';
-	}
-	return '';
-}
+// tsr_race_gender() comes from the trailseries-results plugin
+// (includes/event-heuristics.php) — page-runner.php's duplicate-post
+// dedup needs the same detector, so it is no longer private to this
+// template.
 
 /**
  * Return points earned for a given place, distance category and bonus flag.
