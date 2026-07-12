@@ -15,6 +15,8 @@
           "gpx_file": "7_hills_run_6km_.gpx",
           "kml_file": "7_hills_run_6km_.kml",
           "stars": 1,
+          "start_lat": 42.7519,
+          "start_lng": 23.60635,
           "status": "current"
         },
         {
@@ -29,6 +31,8 @@
           "gpx_file": "7_hills_run_13km_2.gpx",
           "kml_file": "7_hills_run_13km_2.kml",
           "stars": 2,
+          "start_lat": 42.75415,
+          "start_lng": 23.60837,
           "status": "current"
         },
         {
@@ -43,6 +47,8 @@
           "gpx_file": "7_hills_run_19km_.gpx",
           "kml_file": "7_hills_run_19km_.kml",
           "stars": 3,
+          "start_lat": 42.75415,
+          "start_lng": 23.60829,
           "status": "current"
         },
         {
@@ -57,6 +63,8 @@
           "gpx_file": "7_hills_run_hard_core_edition_26km_.gpx",
           "kml_file": "7_hills_run_hard_core_edition_26km_.kml",
           "stars": 4,
+          "start_lat": 42.75417,
+          "start_lng": 23.60824,
           "status": "current"
         }
       ]
@@ -76,6 +84,8 @@
           "gpx_file": "baba_marta_run_6km_.gpx",
           "kml_file": "baba_marta_run_6km_.kml",
           "stars": 1,
+          "start_lat": 42.583,
+          "start_lng": 23.42598,
           "status": "current"
         },
         {
@@ -90,6 +100,8 @@
           "gpx_file": null,
           "kml_file": null,
           "stars": 2,
+          "start_lat": null,
+          "start_lng": null,
           "status": "current"
         },
         {
@@ -104,6 +116,8 @@
           "gpx_file": "baba_marta_run_16km_0.gpx",
           "kml_file": "baba_marta_run_16km_0.kml",
           "stars": 3,
+          "start_lat": 42.5828,
+          "start_lng": 23.42615,
           "status": "current"
         }
       ]
@@ -123,6 +137,8 @@
           "gpx_file": "birthday_run_5_5km.gpx",
           "kml_file": "birthday_run_5_5km.kml",
           "stars": 1,
+          "start_lat": 42.54094,
+          "start_lng": 23.3638,
           "status": "current"
         },
         {
@@ -137,6 +153,8 @@
           "gpx_file": "birthday_run_11km.gpx",
           "kml_file": "birthday_run_11km.kml",
           "stars": 2,
+          "start_lat": 42.54147,
+          "start_lng": 23.36435,
           "status": "current"
         },
         {
@@ -151,6 +169,8 @@
           "gpx_file": "birthday_run_.gpx",
           "kml_file": "birthday_run_.kml",
           "stars": 3,
+          "start_lat": 42.54141,
+          "start_lng": 23.36432,
           "status": "current"
         },
         {
@@ -165,6 +185,8 @@
           "gpx_file": "birthday_run_20_6_6km.gpx",
           "kml_file": "birthday_run_20_6_6km.kml",
           "stars": 2,
+          "start_lat": 42.54825,
+          "start_lng": 23.35989,
           "status": "legacy"
         },
         {
@@ -179,6 +201,8 @@
           "gpx_file": "birthday_run_12km.gpx",
           "kml_file": "birthday_run_12km.kml",
           "stars": 2,
+          "start_lat": 42.54852,
+          "start_lng": 23.35981,
           "status": "legacy"
         }
       ]
@@ -198,6 +222,8 @@
           "gpx_file": "boyana_x_trail_10km.gpx",
           "kml_file": "boyana_x_trail_10km.kml",
           "stars": 2,
+          "start_lat": 42.64655,
+          "start_lng": 23.2667,
           "status": "current"
         },
         {
@@ -212,6 +238,8 @@
           "gpx_file": "boyana_x_trails_long.gpx",
           "kml_file": "boyana_x_trails_long.kml",
           "stars": 3,
+          "start_lat": 42.64648,
+          "start_lng": 23.26667,
           "status": "current"
         }
       ]
@@ -231,6 +259,8 @@
           "gpx_file": "buhovo_half_marathon.gpx",
           "kml_file": "buhovo_half_marathon.kml",
           "stars": 3,
+          "start_lat": 42.76802,
+          "start_lng": 23.57497,
           "status": "current"
         }
       ]
@@ -250,6 +280,8 @@
           "gpx_file": "buhovo_trail_run.gpx",
           "kml_file": "buhovo_trail_run.kml",
           "stars": 2,
+          "start_lat": 42.76799,
+          "start_lng": 23.5749,
           "status": "current"
         }
       ]
@@ -269,6 +301,8 @@
           "gpx_file": "golyam_sechko_6_2km.gpx",
           "kml_file": "golyam_sechko_6_2km.kml",
           "stars": 1,
+          "start_lat": 42.76652,
+          "start_lng": 23.57288,
           "status": "current"
         },
         {
@@ -283,6 +317,8 @@
           "gpx_file": "golyam_sechko_run_6_5km_0.gpx",
           "kml_file": "golyam_sechko_run_6_5km_0.kml",
           "stars": 1,
+          "start_lat": 42.76626,
+          "start_lng": 23.57229,
           "status": "current"
         },
         {
@@ -297,6 +333,8 @@
           "gpx_file": "golyam_sechko_run_middle_9km.gpx",
           "kml_file": "golyam_sechko_run_middle_9km.kml",
           "stars": 2,
+          "start_lat": 42.76782,
+          "start_lng": 23.57555,
           "status": "current"
         },
         {
@@ -311,6 +349,8 @@
           "gpx_file": "golyam_sechko_run_12_4km_0.gpx",
           "kml_file": "golyam_sechko_run_12_4km_0.kml",
           "stars": 2,
+          "start_lat": 42.76626,
+          "start_lng": 23.57239,
           "status": "current"
         },
         {
@@ -325,6 +365,8 @@
           "gpx_file": "golyam_sechko_run_15km_long_0.gpx",
           "kml_file": "golyam_sechko_run_15km_long_0.kml",
           "stars": 3,
+          "start_lat": 42.76791,
+          "start_lng": 23.57476,
           "status": "current"
         },
         {
@@ -339,6 +381,8 @@
           "gpx_file": "golyam_sechko_run_16k_0.gpx",
           "kml_file": "golyam_sechko_run_16k_0.kml",
           "stars": 3,
+          "start_lat": 42.76794,
+          "start_lng": 23.57494,
           "status": "current"
         },
         {
@@ -353,6 +397,8 @@
           "gpx_file": null,
           "kml_file": null,
           "stars": null,
+          "start_lat": null,
+          "start_lng": null,
           "status": "legacy"
         }
       ]
@@ -372,6 +418,8 @@
           "gpx_file": "iran_run_5_5km.gpx",
           "kml_file": "iran_run_5_5km.kml",
           "stars": 1,
+          "start_lat": 42.68402,
+          "start_lng": 23.16429,
           "status": "current"
         },
         {
@@ -386,6 +434,8 @@
           "gpx_file": "11_5km_0.gpx",
           "kml_file": "11_5km_0.kml",
           "stars": 2,
+          "start_lat": 42.68401,
+          "start_lng": 23.16443,
           "status": "current"
         },
         {
@@ -400,6 +450,8 @@
           "gpx_file": "iran_run_16_7km.gpx",
           "kml_file": "iran_run_16_7km.kml",
           "stars": 3,
+          "start_lat": 42.68393,
+          "start_lng": 23.16453,
           "status": "current"
         }
       ]
@@ -419,6 +471,8 @@
           "gpx_file": "lyulin_trail_run_6km.gpx",
           "kml_file": "lyulin_trail_run_6km.kml",
           "stars": 1,
+          "start_lat": 42.68892,
+          "start_lng": 23.11609,
           "status": "current"
         },
         {
@@ -433,6 +487,8 @@
           "gpx_file": "lyulin_trail_run_12km_2019_update.gpx",
           "kml_file": "lyulin_trail_run_12km_2019_update.kml",
           "stars": 2,
+          "start_lat": 42.68904,
+          "start_lng": 23.11581,
           "status": "current"
         },
         {
@@ -447,6 +503,8 @@
           "gpx_file": "lyulin_trail_run_16km.gpx",
           "kml_file": "lyulin_trail_run_16km.kml",
           "stars": 3,
+          "start_lat": 42.68894,
+          "start_lng": 23.1161,
           "status": "current"
         },
         {
@@ -461,6 +519,8 @@
           "gpx_file": "lyulin_trail_run_18km_2019_update_0.gpx",
           "kml_file": "lyulin_trail_run_18km_2019_update_0.kml",
           "stars": 3,
+          "start_lat": 42.68904,
+          "start_lng": 23.11581,
           "status": "current"
         },
         {
@@ -475,6 +535,8 @@
           "gpx_file": "lyulin_trail_run_18km_2_obikolki_.gpx",
           "kml_file": "lyulin_trail_run_18km_2_obikolki_.kml",
           "stars": 3,
+          "start_lat": 42.68889,
+          "start_lng": 23.11621,
           "status": "legacy"
         }
       ]
@@ -494,6 +556,8 @@
           "gpx_file": "6km.gpx",
           "kml_file": "6km.kml",
           "stars": 1,
+          "start_lat": 42.79536,
+          "start_lng": 23.44761,
           "status": "current"
         },
         {
@@ -508,6 +572,8 @@
           "gpx_file": null,
           "kml_file": null,
           "stars": 2,
+          "start_lat": null,
+          "start_lng": null,
           "status": "current"
         },
         {
@@ -522,6 +588,8 @@
           "gpx_file": "malak_sechko_run_19km.gpx",
           "kml_file": "malak_sechko_run_19km.kml",
           "stars": 3,
+          "start_lat": 42.79536,
+          "start_lng": 23.4476,
           "status": "current"
         }
       ]
@@ -541,6 +609,8 @@
           "gpx_file": "palakaria_5km.gpx",
           "kml_file": "palakaria_5km.kml",
           "stars": 1,
+          "start_lat": 42.47903,
+          "start_lng": 23.27227,
           "status": "current"
         },
         {
@@ -555,6 +625,8 @@
           "gpx_file": "palakaria_10_7km.gpx",
           "kml_file": "palakaria_10_7km.kml",
           "stars": 2,
+          "start_lat": 42.47873,
+          "start_lng": 23.27234,
           "status": "current"
         },
         {
@@ -569,6 +641,8 @@
           "gpx_file": "palakaria_21_5km.gpx",
           "kml_file": "palakaria_21_5km.kml",
           "stars": 3,
+          "start_lat": 42.47875,
+          "start_lng": 23.27236,
           "status": "current"
         }
       ]
@@ -588,6 +662,8 @@
           "gpx_file": "pancharevo_night_run_6_3km.gpx",
           "kml_file": "pancharevo_night_run_6_3km.kml",
           "stars": 1,
+          "start_lat": 42.60526,
+          "start_lng": 23.40656,
           "status": "current"
         },
         {
@@ -602,6 +678,8 @@
           "gpx_file": "pancharevo_night_run_13_6km.gpx",
           "kml_file": "pancharevo_night_run_13_6km.kml",
           "stars": 3,
+          "start_lat": 42.60533,
+          "start_lng": 23.40657,
           "status": "current"
         },
         {
@@ -616,6 +694,8 @@
           "gpx_file": "pancharevo_night_run_19km_0.gpx",
           "kml_file": "pancharevo_night_run_19km_0.kml",
           "stars": 3,
+          "start_lat": 42.75415,
+          "start_lng": 23.60829,
           "status": "current"
         }
       ]
@@ -635,6 +715,8 @@
           "gpx_file": "pirin_skyrun_10km.gpx",
           "kml_file": "pirin_skyrun_10km.kml",
           "stars": 3,
+          "start_lat": 41.7793,
+          "start_lng": 23.43634,
           "status": "current"
         },
         {
@@ -649,6 +731,8 @@
           "gpx_file": "pirin_skyrun_34km__0.gpx",
           "kml_file": "pirin_skyrun_34km__0.kml",
           "stars": 4,
+          "start_lat": 41.77949,
+          "start_lng": 23.43646,
           "status": "current"
         },
         {
@@ -663,6 +747,8 @@
           "gpx_file": "pirin_skyrun_14km_2018_0.gpx",
           "kml_file": "pirin_skyrun_14km_2018_0.kml",
           "stars": 3,
+          "start_lat": 41.7797,
+          "start_lng": 23.43692,
           "status": "legacy"
         },
         {
@@ -677,6 +763,8 @@
           "gpx_file": null,
           "kml_file": null,
           "stars": 4,
+          "start_lat": null,
+          "start_lng": null,
           "status": "legacy"
         }
       ]
@@ -696,6 +784,8 @@
           "gpx_file": "pirin_vertical_.gpx",
           "kml_file": "pirin_vertical_.kml",
           "stars": 2,
+          "start_lat": 41.76864,
+          "start_lng": 23.42668,
           "status": "current"
         },
         {
@@ -710,6 +800,8 @@
           "gpx_file": "pirin_vertical_2016_0.gpx",
           "kml_file": "pirin_vertical_2016_0.kml",
           "stars": 2,
+          "start_lat": 41.78116,
+          "start_lng": 23.43899,
           "status": "legacy"
         }
       ]
@@ -729,6 +821,8 @@
           "gpx_file": null,
           "kml_file": null,
           "stars": 1,
+          "start_lat": null,
+          "start_lng": null,
           "status": "current"
         },
         {
@@ -743,6 +837,8 @@
           "gpx_file": "simeonovo_run_11km_0.gpx",
           "kml_file": "simeonovo_run_11km_0.kml",
           "stars": 2,
+          "start_lat": 42.6094,
+          "start_lng": 23.33087,
           "status": "current"
         },
         {
@@ -757,6 +853,8 @@
           "gpx_file": null,
           "kml_file": null,
           "stars": 3,
+          "start_lat": null,
+          "start_lng": null,
           "status": "current"
         }
       ]
@@ -776,6 +874,8 @@
           "gpx_file": "the_cactus_run_7km_2025.gpx",
           "kml_file": "the_cactus_run_7km_2025.kml",
           "stars": 1,
+          "start_lat": 42.58296,
+          "start_lng": 23.42596,
           "status": "current"
         },
         {
@@ -790,6 +890,8 @@
           "gpx_file": "the_cactus_run_15km_2025.gpx",
           "kml_file": "the_cactus_run_15km_2025.kml",
           "stars": 3,
+          "start_lat": 42.58294,
+          "start_lng": 23.42595,
           "status": "current"
         },
         {
@@ -804,6 +906,8 @@
           "gpx_file": null,
           "kml_file": null,
           "stars": 3,
+          "start_lat": null,
+          "start_lng": null,
           "status": "current"
         },
         {
@@ -818,6 +922,8 @@
           "gpx_file": "the_cactus_run_6_6km.gpx",
           "kml_file": "the_cactus_run_6_6km.kml",
           "stars": 1,
+          "start_lat": 42.60533,
+          "start_lng": 23.40653,
           "status": "legacy"
         },
         {
@@ -832,6 +938,8 @@
           "gpx_file": "the_cactus_run_20km.gpx",
           "kml_file": "the_cactus_run_20km.kml",
           "stars": 3,
+          "start_lat": 42.60527,
+          "start_lng": 23.40655,
           "status": "legacy"
         },
         {
@@ -846,6 +954,8 @@
           "gpx_file": "the_cactus_run_20km_0.gpx",
           "kml_file": "the_cactus_run_20km_0.kml",
           "stars": 3,
+          "start_lat": 42.60535,
+          "start_lng": 23.40658,
           "status": "legacy"
         }
       ]
@@ -865,6 +975,8 @@
           "gpx_file": "the_christmas_run_5_5km.gpx",
           "kml_file": "the_christmas_run_5_5km.kml",
           "stars": 1,
+          "start_lat": 42.70153,
+          "start_lng": 23.14524,
           "status": "current"
         },
         {
@@ -879,6 +991,8 @@
           "gpx_file": "the_christmas_run_11km.gpx",
           "kml_file": "the_christmas_run_11km.kml",
           "stars": 2,
+          "start_lat": 42.70148,
+          "start_lng": 23.14549,
           "status": "current"
         },
         {
@@ -893,6 +1007,8 @@
           "gpx_file": "the_christmas_run_15km.gpx",
           "kml_file": "the_christmas_run_15km.kml",
           "stars": 3,
+          "start_lat": 42.70155,
+          "start_lng": 23.14528,
           "status": "current"
         },
         {
@@ -907,6 +1023,8 @@
           "gpx_file": "the_christmas_run_15_5km.gpx",
           "kml_file": "the_christmas_run_15_5km.kml",
           "stars": 2,
+          "start_lat": 42.70155,
+          "start_lng": 23.14517,
           "status": "current"
         }
       ]

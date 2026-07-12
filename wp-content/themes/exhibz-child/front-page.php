@@ -113,6 +113,80 @@ $tsr_partners = get_posts(
 $tsr_total_races     = tsr_homepage_total_races();
 $tsr_total_finishers = tsr_homepage_total_finishers();
 
+// 7. Map pins — one per event from data/tracks.json, positioned at the
+// MEDIAN of the event's current tracks' GPX start points. Median, not
+// first-file: one mislabeled GPX (pancharevo_night_run_19km starts at the
+// 7 Hills trailhead, 23 km away) must not drag the pin. The previous pins
+// were hand-guessed mountain coordinates, off by 3.5-43 km. Events whose
+// tracks have no GPX start data get no pin — no guessed coordinates.
+// Months / "последно издание" notes are curated display metadata that
+// tracks.json does not carry; events absent from this array simply render
+// without that popup line.
+$tsr_map_meta = array(
+	'Golyam Sechko Run'    => array( 'month' => 'Януари' ),
+	'Malak Sechko Run'     => array( 'month' => 'Февруари' ),
+	'Baba Marta Run'       => array( 'month' => 'Март' ),
+	'Lyulin Trail Run'     => array( 'month' => 'Май' ),
+	'7 Hills Run'          => array( 'month' => 'Септември' ),
+	'Buhovo Half Marathon' => array( 'month' => 'Октомври' ),
+	'The Cactus Run'       => array( 'month' => 'Ноември' ),
+	'The Christmas Run'    => array( 'month' => 'Декември' ),
+	'Simeonovo Run'        => array( 'note' => 'последно издание 2023' ),
+	'Birthday Run'         => array( 'note' => 'последно издание 2024' ),
+	'Pancharevo Night Run' => array( 'note' => 'последно издание 2021' ),
+	'iRan Run'             => array( 'note' => 'последно издание 2019' ),
+);
+
+$tsr_median = static function ( array $values ): float {
+	sort( $values );
+	$n   = count( $values );
+	$mid = intdiv( $n, 2 );
+	return 1 === $n % 2 ? $values[ $mid ] : ( $values[ $mid - 1 ] + $values[ $mid ] ) / 2;
+};
+
+$tsr_map_pins = array();
+foreach ( tsr_tracks_events() as $tsr_map_ev ) {
+	// Pin position/distances follow the CURRENT course versions (admin can
+	// re-label via Tools → Трасета — етикети); an all-legacy event still
+	// gets a pin from its legacy tracks.
+	$tsr_map_tracks = array_filter(
+		$tsr_map_ev['tracks'],
+		static fn( array $t ): bool => 'current' === tsr_track_status( $t )
+	);
+	if ( empty( $tsr_map_tracks ) ) {
+		$tsr_map_tracks = $tsr_map_ev['tracks'];
+	}
+
+	$tsr_map_lats  = array();
+	$tsr_map_lngs  = array();
+	$tsr_map_dists = array();
+	foreach ( $tsr_map_tracks as $tsr_map_t ) {
+		if ( isset( $tsr_map_t['start_lat'], $tsr_map_t['start_lng'] ) ) {
+			$tsr_map_lats[] = (float) $tsr_map_t['start_lat'];
+			$tsr_map_lngs[] = (float) $tsr_map_t['start_lng'];
+		}
+		if ( ! empty( $tsr_map_t['distance_km'] ) ) {
+			$tsr_map_dists[] = (int) round( (float) $tsr_map_t['distance_km'] );
+		}
+	}
+	if ( empty( $tsr_map_lats ) ) {
+		continue;
+	}
+
+	$tsr_map_dists = array_values( array_unique( $tsr_map_dists ) );
+	sort( $tsr_map_dists );
+	$tsr_map_pin_meta = $tsr_map_meta[ $tsr_map_ev['name'] ] ?? array();
+
+	$tsr_map_pins[] = array(
+		'lat'   => round( $tsr_median( $tsr_map_lats ), 5 ),
+		'lng'   => round( $tsr_median( $tsr_map_lngs ), 5 ),
+		'name'  => $tsr_map_ev['name'],
+		'dist'  => implode( ' / ', $tsr_map_dists ) . ' км',
+		'month' => $tsr_map_pin_meta['month'] ?? '',
+		'note'  => $tsr_map_pin_meta['note'] ?? '',
+	);
+}
+
 get_header();
 ?>
 
@@ -497,47 +571,36 @@ get_header();
 			} );
 		};
 
-		var active = [
-			{ lat: 42.3800, lng: 23.5200, name: 'Golyam Sechko Run',    mountain: 'Плана',  month: 'Януари',    dist: '6 / 9 / 15 км' },
-			{ lat: 42.4000, lng: 23.5000, name: 'Malak Sechko Run',     mountain: 'Плана',  month: 'Февруари',  dist: '6 / 13 / 19 км' },
-			{ lat: 42.5500, lng: 23.4800, name: 'Baba Marta Run',       mountain: 'Лозен',  month: 'Март',      dist: '6 / 10 / 16 км' },
-			{ lat: 42.6800, lng: 23.1900, name: 'Lyulin Trail Run',     mountain: 'Люлин',  month: 'Май',       dist: '5.5 / 11.5 / 17 км' },
-			{ lat: 42.5700, lng: 23.2800, name: '7 Hills Run',          mountain: 'Витоша', month: 'Септември', dist: '6 / 13 / 19 / 26 км' },
-			{ lat: 42.8300, lng: 23.5800, name: 'Buhovo Half Marathon', mountain: 'Мургаш', month: 'Октомври',  dist: '10.7 / 21 км' },
-			{ lat: 42.6100, lng: 23.4500, name: 'The Cactus Run',       mountain: 'Лозен',  month: 'Ноември',   dist: '7 / 14 / 21 км' },
-			{ lat: 42.6600, lng: 23.1800, name: 'The Christmas Run',    mountain: 'Люлин',  month: 'Декември',  dist: '5.5 / 11 / 15 км' },
-		];
+		// Pins are built server-side from data/tracks.json (real GPX start
+		// points, median per event) — see the data-collection block at the
+		// top of this template. An empty 'note' means an active event.
+		var events = <?php echo wp_json_encode( $tsr_map_pins ); ?>;
 
-		var historical = [
-			{ lat: 42.6400, lng: 23.3200, name: 'Simeonovo Run',        mountain: 'Витоша', note: 'последно издание 2023' },
-			{ lat: 42.6200, lng: 23.3000, name: 'Birthday Run',         mountain: 'Витоша', note: 'последно издание 2024' },
-			{ lat: 42.6000, lng: 23.4700, name: 'Pancharevo Night Run', mountain: 'Лозен',  note: 'последно издание 2021' },
-			{ lat: 42.6900, lng: 23.2100, name: 'iRan Run',             mountain: 'Люлин',  note: 'последно издание 2019' },
-		];
-
-		active.forEach( function ( e ) {
-			L.marker( [ e.lat, e.lng ], { icon: makePin( 'tsr-map-pin--active', e.name ), title: e.name } )
-				.bindPopup(
-					'<strong>' + e.name + '</strong><br>' +
-					e.mountain + ' &middot; ' + e.month + '<br>' +
-					'<span class="tsr-popup-dist">' + e.dist + '</span>'
-				)
+		events.forEach( function ( e ) {
+			var hist  = '' !== e.note;
+			var lines = [ '<strong>' + e.name + '</strong>' ];
+			if ( e.month ) {
+				lines.push( e.month );
+			}
+			lines.push( '<span class="tsr-popup-dist">' + e.dist + '</span>' );
+			if ( hist ) {
+				lines.push( '<em>' + e.note + '</em>' );
+			}
+			L.marker( [ e.lat, e.lng ], { icon: makePin( hist ? 'tsr-map-pin--hist' : 'tsr-map-pin--active', e.name ), title: e.name } )
+				.bindPopup( lines.join( '<br>' ) )
 				.on( 'mouseover', function () { this.openPopup(); } )
 				.on( 'mouseout',  function () { this.closePopup(); } )
 				.addTo( map );
 		} );
 
-		historical.forEach( function ( e ) {
-			L.marker( [ e.lat, e.lng ], { icon: makePin( 'tsr-map-pin--hist', e.name ), title: e.name } )
-				.bindPopup(
-					'<strong>' + e.name + '</strong><br>' +
-					e.mountain + '<br>' +
-					'<em>' + e.note + '</em>'
-				)
-				.on( 'mouseover', function () { this.openPopup(); } )
-				.on( 'mouseout',  function () { this.closePopup(); } )
-				.addTo( map );
-		} );
+		// Show every event, including the Pirin races ~90 km south of the
+		// Sofia cluster the old fixed center/zoom cropped out.
+		if ( events.length > 0 ) {
+			map.fitBounds(
+				events.map( function ( e ) { return [ e.lat, e.lng ]; } ),
+				{ padding: [ 30, 30 ], maxZoom: 11 }
+			);
+		}
 
 		var legend = L.control( { position: 'bottomright' } );
 		legend.onAdd = function () {

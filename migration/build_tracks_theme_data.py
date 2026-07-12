@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import html
 import json
+import math
 import re
 import shutil
 import sys
@@ -99,6 +100,42 @@ def event_name(title: str) -> str:
     return EVENT_ALIASES.get(name, name)
 
 
+# First <trkpt> of a GPX file = the track's real-world start point. Used by
+# the front-page map to place event pins (the previous pins were hand-guessed
+# mountain coordinates, off by 3.5-43 km from the actual trailheads).
+RE_TRKPT = re.compile(r'<trkpt[^>]*\blat="(-?[0-9.]+)"[^>]*\blon="(-?[0-9.]+)"')
+
+
+def gpx_start(gpx_file: str | None) -> tuple[float, float] | None:
+    """(lat, lng) of the first trackpoint, None when unavailable."""
+    if not gpx_file:
+        return None
+    path = GPX_SRC / gpx_file
+    if not path.exists():
+        return None
+    m = RE_TRKPT.search(path.read_text(encoding="utf-8", errors="replace"))
+    if not m:
+        return None
+    return round(float(m.group(1)), 5), round(float(m.group(2)), 5)
+
+
+def haversine_km(a: tuple[float, float], b: tuple[float, float]) -> float:
+    dlat = math.radians(b[0] - a[0])
+    dlng = math.radians(b[1] - a[1])
+    x = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(a[0])) * math.cos(math.radians(b[0])) * math.sin(dlng / 2) ** 2
+    )
+    return 2 * 6371 * math.asin(math.sqrt(x))
+
+
+def median(values: list[float]) -> float:
+    ordered = sorted(values)
+    n = len(ordered)
+    mid = n // 2
+    return ordered[mid] if n % 2 else (ordered[mid - 1] + ordered[mid]) / 2
+
+
 def stars(distance_km: float | None, ascent_m: float | None) -> int | None:
     if distance_km is None:
         return None
@@ -137,6 +174,9 @@ def main() -> int:
             "kml_file":    t.get("kml_file"),
             "stars":       stars(t.get("distance_km"), t.get("ascent_m")),
         }
+        start = gpx_start(t.get("gpx_file"))
+        entry["start_lat"] = start[0] if start else None
+        entry["start_lng"] = start[1] if start else None
         events.setdefault(ev, []).append(entry)
 
         for key in ("gpx_file", "kml_file"):
@@ -178,8 +218,36 @@ def main() -> int:
     }
     OUT_FILE.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    # Data-quality check: a track starting far from its event's median start
+    # is either a mislabeled GPX or a relocated edition (e.g. the Pancharevo
+    # Night Run 19km file starts at the 7 Hills trailhead). The front-page
+    # map uses the per-event MEDIAN start, so one outlier cannot skew the
+    # pin — but it should be visible at build time.
+    for name, tracks in events.items():
+        starts = [
+            (t["start_lat"], t["start_lng"])
+            for t in tracks
+            if t["start_lat"] is not None
+        ]
+        if len(starts) < 2:
+            continue
+        med = (median([s[0] for s in starts]), median([s[1] for s in starts]))
+        for t in tracks:
+            if t["start_lat"] is None:
+                continue
+            dist = haversine_km((t["start_lat"], t["start_lng"]), med)
+            if dist > 5:
+                print(
+                    f"  WARNING: {name}: {t['gpx_file']} starts {dist:.1f} km "
+                    f"from the event's median start — check the GPX labelling"
+                )
+
     n_tracks = sum(len(e["tracks"]) for e in out["events"])
+    n_starts = sum(
+        1 for e in out["events"] for t in e["tracks"] if t["start_lat"] is not None
+    )
     print(f"Wrote {n_tracks} tracks in {len(out['events'])} events to {OUT_FILE}")
+    print(f"GPX start points resolved for {n_starts}/{n_tracks} tracks")
     print(f"Copied {copied} GPX files to {GPX_DST}")
     for e in out["events"]:
         print(f"  {e['name']}: {len(e['tracks'])} tracks")
