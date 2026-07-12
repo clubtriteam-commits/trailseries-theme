@@ -433,23 +433,6 @@ get_header();
 	<div class="tsr-container">
 		<h2 class="tsr-section__title" id="tsr-zero-title">Zero to HERO</h2>
 
-		<?php if ( ! empty( $tsr_zero_slides ) ) :
-			$tsr_n   = count( $tsr_zero_slides );
-			$tsr_dur = $tsr_n * 5;
-			$tsr_vis = round( 100 / $tsr_n, 3 );
-			$tsr_fd  = round( min( 3, $tsr_vis * 0.15 ), 3 );
-			?>
-			<style>
-			@keyframes tsrZeroSlide {
-				0%                              { opacity: 0; visibility: hidden; }
-				<?php echo $tsr_fd; ?>%         { opacity: 1; visibility: visible; }
-				<?php echo $tsr_vis - $tsr_fd; ?>% { opacity: 1; visibility: visible; }
-				<?php echo $tsr_vis; ?>%        { opacity: 0; visibility: hidden; }
-				100%                            { opacity: 0; visibility: hidden; }
-			}
-			</style>
-		<?php endif; ?>
-
 		<!-- First 3 posts (always visible) + slideshow cycling the rest, all as
 		     equal-sized cells of the same 3-column grid. -->
 		<div class="tsr-zero-grid">
@@ -477,8 +460,10 @@ get_header();
 			<?php endforeach; ?>
 
 			<?php if ( ! empty( $tsr_zero_slides ) ) : ?>
-				<!-- Remaining posts — CSS slideshow, 5 s per slide, one grid cell -->
-				<div class="tsr-zero-slider" aria-label="Допълнителни истории">
+				<!-- Remaining posts — JS slideshow (auto every 5 s until the user
+				     interacts), one grid cell. Slides stack absolutely; .is-active
+				     controls visibility, script id tsr-zero-slider-js below. -->
+				<div class="tsr-zero-slider" id="tsr-zero-slider" aria-label="Допълнителни истории" aria-roledescription="слайдшоу">
 					<?php foreach ( $tsr_zero_slides as $tsr_si => $tsr_zp ) :
 						// See the visible-cards loop above for why both lines below
 						// need the fallback/strip treatment.
@@ -486,10 +471,9 @@ get_header();
 							?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
 						$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
 						$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( tsr_strip_shortcode_syntax( strip_shortcodes( $tsr_z_source ) ) ), 18, '…' );
-						$tsr_delay     = $tsr_si * 5;
 						?>
-						<article class="tsr-zero-slide"
-						         style="animation-duration:<?php echo esc_attr( $tsr_dur ); ?>s;animation-delay:<?php echo esc_attr( $tsr_delay ); ?>s<?php echo $tsr_z_thumb ? ';background-image:url(' . esc_url( $tsr_z_thumb ) . ')' : ''; ?>">
+						<article class="tsr-zero-slide<?php echo 0 === $tsr_si ? ' is-active' : ''; ?>"
+						         <?php echo $tsr_z_thumb ? 'style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
 							<div class="tsr-zero-card__body">
 								<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
 								<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
@@ -497,12 +481,106 @@ get_header();
 							</div>
 						</article>
 					<?php endforeach; ?>
+
+					<?php if ( count( $tsr_zero_slides ) > 1 ) : ?>
+						<button class="tsr-zero-nav tsr-zero-nav--prev" type="button"
+						        aria-label="Предишна история" aria-controls="tsr-zero-slider">&lsaquo;</button>
+						<button class="tsr-zero-nav tsr-zero-nav--next" type="button"
+						        aria-label="Следваща история" aria-controls="tsr-zero-slider">&rsaquo;</button>
+
+						<div class="tsr-zero-dots">
+							<?php foreach ( $tsr_zero_slides as $tsr_si => $tsr_zp ) : ?>
+								<button class="tsr-zero-dot<?php echo 0 === $tsr_si ? ' is-active' : ''; ?>" type="button"
+								        aria-label="<?php echo esc_attr( sprintf( 'История %d: %s', $tsr_si + 1, get_the_title( $tsr_zp ) ) ); ?>"
+								        aria-controls="tsr-zero-slider"
+								        aria-current="<?php echo 0 === $tsr_si ? 'true' : 'false'; ?>"
+								        data-slide="<?php echo esc_attr( (string) $tsr_si ); ?>"></button>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
 				</div>
 			<?php endif; ?>
 		</div>
 
 	</div>
 </section>
+
+<?php if ( count( $tsr_zero_slides ) > 1 ) : ?>
+<script>
+(function () {
+	'use strict';
+
+	var slider = document.getElementById( 'tsr-zero-slider' );
+	if ( ! slider ) { return; }
+	var slides = slider.querySelectorAll( '.tsr-zero-slide' );
+	var dots   = slider.querySelectorAll( '.tsr-zero-dot' );
+	if ( slides.length < 2 ) { return; }
+
+	var index   = 0;
+	var timer   = null;
+	var stopped = false; // set forever on first manual interaction
+
+	function show( n ) {
+		index = ( n + slides.length ) % slides.length;
+		for ( var i = 0; i < slides.length; i++ ) {
+			slides[ i ].classList.toggle( 'is-active', i === index );
+			dots[ i ].classList.toggle( 'is-active', i === index );
+			dots[ i ].setAttribute( 'aria-current', i === index ? 'true' : 'false' );
+		}
+	}
+
+	function stopAuto() {
+		stopped = true;
+		if ( timer ) { clearInterval( timer ); timer = null; }
+	}
+
+	// ── Manual controls: any use pauses auto-rotation for good ────────────
+	slider.querySelector( '.tsr-zero-nav--prev' ).addEventListener( 'click', function () {
+		stopAuto();
+		show( index - 1 );
+	} );
+	slider.querySelector( '.tsr-zero-nav--next' ).addEventListener( 'click', function () {
+		stopAuto();
+		show( index + 1 );
+	} );
+	for ( var d = 0; d < dots.length; d++ ) {
+		dots[ d ].addEventListener( 'click', function () {
+			stopAuto();
+			show( parseInt( this.getAttribute( 'data-slide' ), 10 ) );
+		} );
+	}
+
+	// ── Touch swipe (mobile) ───────────────────────────────────────────────
+	var touchX = null;
+	slider.addEventListener( 'touchstart', function ( ev ) {
+		touchX = ev.changedTouches[0].clientX;
+	}, { passive: true } );
+	slider.addEventListener( 'touchend', function ( ev ) {
+		if ( null === touchX ) { return; }
+		var dx = ev.changedTouches[0].clientX - touchX;
+		touchX = null;
+		if ( Math.abs( dx ) < 40 ) { return; } // tap, not a swipe
+		stopAuto();
+		show( dx < 0 ? index + 1 : index - 1 );
+	}, { passive: true } );
+
+	// ── Auto-rotation: 5 s cadence, paused while hovered, none for
+	//    prefers-reduced-motion users ─────────────────────────────────────
+	if ( window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) {
+		return;
+	}
+	function startAuto() {
+		if ( stopped || timer ) { return; }
+		timer = setInterval( function () { show( index + 1 ); }, 5000 );
+	}
+	slider.addEventListener( 'mouseenter', function () {
+		if ( timer ) { clearInterval( timer ); timer = null; }
+	} );
+	slider.addEventListener( 'mouseleave', startAuto );
+	startAuto();
+}());
+</script>
+<?php endif; ?>
 <?php endif; ?>
 
 <!-- ════════════════════════════════════════════════════════════════════════════
