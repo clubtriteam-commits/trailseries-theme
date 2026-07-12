@@ -28,7 +28,7 @@ Text Domain:  exhibz-child
 	--tsr-navy-2:  #0d2040;   /* slightly lighter navy for gradient depth   */
 	--tsr-orange:  #e05c1e;   /* accent / CTA — use sparingly               */
 	--tsr-text:    #111827;   /* near-black body text                        */
-	--tsr-muted:   #6b7280;   /* secondary / meta text                       */
+	--tsr-muted:   #5b6472;   /* secondary / meta text — ≥4.5:1 on #f2f4f7 (the old #6b7280 was ~4.4:1) */
 	--tsr-bg:      #f2f4f7;   /* light neutral page background               */
 	--tsr-white:   #ffffff;
 	--tsr-border:  #e2e6ea;
@@ -198,7 +198,8 @@ Text Domain:  exhibz-child
 
 .tsr-hero__anniversary {
 	font-size: 0.78rem;
-	color: rgba(255, 255, 255, 0.38);
+	/* 0.55 alpha ≈ 6.2:1 on --tsr-navy; the old 0.38 measured ~3.6:1 (AA fail) */
+	color: rgba(255, 255, 255, 0.55);
 	margin-top: 0.25rem;
 }
 
@@ -1247,14 +1248,14 @@ Text Domain:  exhibz-child
 }
 
 .tsr-map .leaflet-popup-content strong  { color: var(--tsr-white); font-size: 0.95rem; }
-.tsr-map .leaflet-popup-content em      { color: rgba(255, 255, 255, 0.5); font-style: normal; }
+.tsr-map .leaflet-popup-content em      { color: rgba(255, 255, 255, 0.62); font-style: normal; }
 
 .tsr-popup-dist {
 	color:       var(--tsr-blue);
 	font-weight: 600;
 }
 
-.tsr-map .leaflet-popup-close-button       { color: rgba(255, 255, 255, 0.45) !important; }
+.tsr-map .leaflet-popup-close-button       { color: rgba(255, 255, 255, 0.7) !important; }
 .tsr-map .leaflet-popup-close-button:hover { color: var(--tsr-white) !important; }
 
 /* Legend */
@@ -2661,4 +2662,40 @@ a.tsr-partner-card:hover {
 
 .tsr-partners-strip .tsr-partner-card__logo--ph {
 	font-size: 1.6rem;
+}
+
+/* ── Accessibility: 44×44 touch targets on touch devices ─────────────────────
+   Lighthouse flags interactive elements under 44px tall on mobile. Scoped to
+   coarse pointers / small viewports so desktop density is unchanged. Inline
+   links grow via min-height (inline-flex keeps them on the text baseline
+   row); block-level items use flex so they keep their full width. */
+@media (pointer: coarse), (max-width: 768px) {
+	.tsr-card__link,
+	.tsr-zero-card__link,
+	.tsr-edition-item__link,
+	.tsr-compact-table__link,
+	.tsr-breadcrumbs__link,
+	.tsr-season-nav__item,
+	.tsr-cat-pill {
+		display:     inline-flex;
+		align-items: center;
+		min-height:  44px;
+	}
+
+	.tsr-event-index__link,
+	.tsr-event-item__name {
+		display:     flex;
+		align-items: center;
+		min-height:  44px;
+	}
+
+	#masthead .tsr-nav-list > li > a {
+		display:     flex;
+		align-items: center;
+		min-height:  44px;
+	}
+
+	.tsr-runner-search__btn {
+		min-height: 44px;
+	}
 }
