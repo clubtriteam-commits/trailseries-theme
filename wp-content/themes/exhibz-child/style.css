@@ -4,7 +4,7 @@ Theme URI:    https://trailseries.bg
 Description:  Child theme of Exhibz for trailseries.bg — Bulgarian trail running series.
               Results data and rendering belong to the trailseries-results plugin (ADR-002).
 Author:       TrailSeries.bg
-Version:      0.2.0
+Version:      0.3.0
 Template:     exhibz
 Requires at least: 6.4
 Requires PHP: 8.3
@@ -35,6 +35,25 @@ Text Domain:  exhibz-child
 	--tsr-radius:  6px;
 	--tsr-max-w:   1160px;
 	--tsr-gap:     2rem;
+}
+
+/* ── Base typography ───────────────────────────────────────────────────────
+   The child theme owns its fonts: the parent's master.css + fontfaceobserver
+   pipeline (html.fonts-loaded gating) is dequeued for performance in
+   functions.php, so these rules must not depend on it. The families match
+   what the parent applied (Roboto body / Raleway headings) — loaded via a
+   single trimmed Google Fonts css2 request with display=swap. */
+body {
+	font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+	font-size:   16px;
+	line-height: 1.6;
+	color:       var(--tsr-text);
+	background:  var(--tsr-white);
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Raleway", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+	line-height: 1.25;
 }
 
 /* ── Layout utilities ──────────────────────────────────────────────────────── */

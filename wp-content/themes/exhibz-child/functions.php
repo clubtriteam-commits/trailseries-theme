@@ -44,6 +44,17 @@ add_action( 'after_setup_theme', static function (): void {
 // ── Stylesheets ───────────────────────────────────────────────────────────────
 
 add_action( 'wp_enqueue_scripts', static function (): void {
+	// Child-owned fonts: Roboto (body) + Raleway (headings), same families the
+	// parent used, but one trimmed css2 request with display=swap instead of
+	// the parent's exhibz-fonts + fontfaceobserver pipeline (dequeued below).
+	// css2 serves Cyrillic subsets automatically via unicode-range.
+	wp_enqueue_style(
+		'tsr-fonts',
+		'https://fonts.googleapis.com/css2?family=Raleway:wght@700;800&family=Roboto:ital,wght@0,400;0,700;1,400&display=swap',
+		array(),
+		null // Google versions the URL itself; a ver param only busts its cache.
+	);
+
 	// Enqueue parent theme stylesheet first.
 	wp_enqueue_style(
 		'exhibz-parent',
@@ -61,6 +72,21 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	);
 }, 20 );
 
+// Preconnect for the font origins — the css2 response points at
+// fonts.gstatic.com, so warming both saves a DNS+TLS round trip on mobile.
+add_filter( 'wp_resource_hints', static function ( array $urls, string $relation ): array {
+	if ( 'preconnect' === $relation ) {
+		$urls[] = array(
+			'href' => 'https://fonts.googleapis.com',
+		);
+		$urls[] = array(
+			'href'        => 'https://fonts.gstatic.com',
+			'crossorigin' => 'anonymous',
+		);
+	}
+	return $urls;
+}, 10, 2 );
+
 // ── Leaflet map (front page + Трасета template) ─────────────────────────────
 
 add_action( 'wp_enqueue_scripts', static function (): void {
@@ -74,26 +100,112 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 		array(),
 		'1.9.4'
 	);
-	// Load in <head> (false) so the L global exists when the inline init
-	// script in front-page.php executes during body rendering.
+	// Deferred: 147 KB off the render-blocking path. Safe because the inline
+	// init in front-page.php goes through initTsrMap(), which falls back to
+	// DOMContentLoaded/load listeners when L is not yet defined — and deferred
+	// scripts always execute before DOMContentLoaded fires.
 	wp_enqueue_script(
 		'leaflet',
 		'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
 		array(),
 		'1.9.4',
-		false
+		array(
+			'in_footer' => false,
+			'strategy'  => 'defer',
+		)
 	);
 
 	if ( $is_traseta ) {
+		// Must also be deferred: it checks `typeof L` at parse time, so a
+		// non-deferred footer script would run before deferred Leaflet and
+		// bail. WP keeps execution order for deferred dependency chains.
 		wp_enqueue_script(
 			'tsr-traseta-modal',
 			get_stylesheet_directory_uri() . '/js/traseta-modal.js',
 			array( 'leaflet' ),
 			wp_get_theme()->get( 'Version' ),
-			true
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
 		);
 	}
 }, 25 );
+
+// ── Performance: strip unused third-party assets ─────────────────────────────
+//
+// Diagnosed 2026-07 (mobile LCP 13.6 s): EventON enqueues its full stack —
+// ~407 KB CSS + ~925 KB JS including the Google Maps API and the Jitsi meet
+// SDK — on every URL, and the Exhibz parent enqueues ~641 KB of bundle/master
+// CSS+JS sitewide. Every template on this site is fully custom tsr-* markup,
+// so the parent bundles are dead code everywhere; EventON is only rendered on
+// the calendar page and its own event pages. Handles verified against the
+// live staging HTML (link/script id attributes).
+add_action( 'wp_enqueue_scripts', static function (): void {
+
+	// True on the only pages that render EventON output.
+	$is_event_page = is_page( 'calendar' )
+		|| is_singular( 'ajde_events' )
+		|| is_post_type_archive( 'ajde_events' )
+		|| is_tax( 'event_type' )
+		|| is_tax( 'event_location' );
+
+	// Dead on ALL pages, event pages included: the Maps API is enqueued
+	// without an API key (maps.googleapis.com/maps/api/js?ver=1.0 — 311 KB
+	// that can only error), and nothing on the site uses Jitsi video events.
+	foreach ( array( 'evcal_gmaps', 'eventon_gmaps', 'evo_jitsi' ) as $tsr_handle ) {
+		wp_dequeue_script( $tsr_handle );
+	}
+
+	if ( ! $is_event_page ) {
+		foreach ( array(
+			'evcal_functions',
+			'evcal_easing',
+			'evo_handlebars',
+			'evo_mobile',
+			'evo_moment',
+			'evo_moment_tz',
+			'evo_mouse',
+			'evcal_ajax_handle',
+			'evo-inlinescripts-header',
+		) as $tsr_handle ) {
+			wp_dequeue_script( $tsr_handle );
+		}
+		foreach ( array(
+			'evcal_google_fonts',
+			'evcal_cal_default',
+			'evo_font_icons',
+			'eventon_dynamic_styles',
+		) as $tsr_handle ) {
+			wp_dequeue_style( $tsr_handle );
+		}
+
+		// With EventON gone nothing left on these pages depends on jQuery —
+		// the theme's own JS (header nav, countdown, maps, charts) is all
+		// vanilla. Saves 101 KB of render-blocking <head> JS. Logged-in
+		// users keep it: admin-bar-adjacent plugin scripts may expect $.
+		if ( ! is_user_logged_in() ) {
+			wp_dequeue_script( 'jquery' );
+		}
+	}
+
+	// Exhibz parent bundles — unused under the fully custom child templates.
+	// The 426-byte exhibz-parent stub stays: exhibz-child declares it as a
+	// dependency. Dropping exhibz-style also drops its attached inline CSS
+	// (body/heading fonts), which style.css's own base typography replaces.
+	foreach ( array(
+		'exhibz-fonts',
+		'bundle',
+		'icofont',
+		'exhibz-gutenberg-custom',
+		'exhibz-style',
+	) as $tsr_handle ) {
+		wp_dequeue_style( $tsr_handle );
+	}
+	foreach ( array( 'bundle', 'fontfaceobserver', 'exhibz-script' ) as $tsr_handle ) {
+		wp_dequeue_script( $tsr_handle );
+	}
+}, 100 );
 
 // ── Трасета: admin-controlled current/legacy labels ─────────────────────────
 
