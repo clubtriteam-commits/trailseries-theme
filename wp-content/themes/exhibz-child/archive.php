@@ -1,11 +1,13 @@
 <?php
 declare( strict_types=1 );
 /**
- * Archive template — used for the Новини posts archive.
+ * Archive template — category / tag / date / author archives.
  *
- * WordPress uses this file for standard post archives when no more
- * specific template (e.g. category.php) exists. Set the "Posts page"
- * in Settings → Reading to a page with slug "novini" to activate it.
+ * WordPress uses this file for genuine archive queries (e.g.
+ * /category/новини/) when no more specific template exists. NOTE:
+ * /novini/ is NOT an archive — it is a static page (slug "novini")
+ * rendered by page-novini.php; and a "Posts page" (Settings → Reading)
+ * would resolve to home.php → index.php, never to this file.
  *
  * @package exhibz-child
  */
