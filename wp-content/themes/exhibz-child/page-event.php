@@ -6,12 +6,17 @@ declare( strict_types=1 );
  * Shows the full history of one named event across all seasons:
  * course records per distance, every past edition linked to results.
  *
- * URL: /event/?name=7-hills-run
- * The "name" param is the sanitize_title() of the base event name, e.g.
+ * URL: /event/?sabitie=7-hills-run
+ * The "sabitie" param is the sanitize_title() of the base event name, e.g.
  *   "7 Hills Run" → 7-hills-run
  *   "Buhovo Half Marathon" → buhovo-half-marathon
  *
- * Without a name param a browseable A–Z list of all events is shown.
+ * The param is deliberately NOT "name": that is a reserved WordPress public
+ * query var (post slug) — WP_Query::parse_query() checks it before
+ * pagename, so /event/?name=X hijacks the main query into a single-post
+ * lookup for slug "x" and 404s before this template ever runs.
+ *
+ * Without a sabitie param a browseable A–Z list of all events is shown.
  *
  * @package exhibz-child
  */
@@ -29,7 +34,7 @@ declare( strict_types=1 );
 // ── Input ─────────────────────────────────────────────────────────────────────
 
 // phpcs:ignore WordPress.Security.NonceVerification
-$tsr_event_slug = sanitize_title( trim( sanitize_text_field( wp_unslash( $_GET['name'] ?? '' ) ) ) );
+$tsr_event_slug = sanitize_title( trim( sanitize_text_field( wp_unslash( $_GET['sabitie'] ?? '' ) ) ) );
 $tsr_searching  = '' !== $tsr_event_slug;
 
 // ── Data: fetch all ts_result posts once ──────────────────────────────────────
@@ -209,7 +214,7 @@ get_header();
 						<?php foreach ( $tsr_event_index as $tsr_sl => $tsr_nm ) : ?>
 							<li>
 								<a class="tsr-event-index__link"
-								   href="<?php echo esc_url( add_query_arg( 'name', rawurlencode( $tsr_sl ), get_permalink() ) ); ?>">
+								   href="<?php echo esc_url( add_query_arg( 'sabitie', rawurlencode( $tsr_sl ), get_permalink() ) ); ?>">
 									<?php echo esc_html( $tsr_nm ); ?>
 								</a>
 							</li>
@@ -246,7 +251,7 @@ get_header();
 										<td><?php echo esc_html( $tsr_dk ); ?></td>
 										<td>
 											<a class="tsr-compact-table__link"
-											   href="<?php echo esc_url( add_query_arg( 'name', rawurlencode( $tsr_rec['name'] ), home_url( '/runner/' ) ) ); ?>">
+											   href="<?php echo esc_url( add_query_arg( 'runner', rawurlencode( $tsr_rec['name'] ), home_url( '/runner/' ) ) ); ?>">
 												<?php echo esc_html( $tsr_rec['name'] ); ?>
 											</a>
 										</td>

@@ -4,7 +4,12 @@ declare( strict_types=1 );
  * Template Name: Профил на бегач
  *
  * Shows a runner's full history across all TrailSeries races.
- * URL: /runner/?name=Ivan+Ivanov
+ * URL: /runner/?runner=Ivan+Ivanov
+ *
+ * The query param is deliberately NOT "name": that is a reserved WordPress
+ * public query var (post slug) — WP_Query::parse_query() checks it before
+ * pagename, so /runner/?name=X hijacks the main query into a single-post
+ * lookup for slug "x" and 404s before this template ever runs.
  *
  * Query: searches every _tsr_result_set JSON for rows whose concatenated
  * first_name + last_name (or reversed) contains the query string.
@@ -24,7 +29,7 @@ declare( strict_types=1 );
 // ── Input ─────────────────────────────────────────────────────────────────────
 
 // phpcs:ignore WordPress.Security.NonceVerification
-$tsr_runner_query = trim( sanitize_text_field( wp_unslash( $_GET['name'] ?? '' ) ) );
+$tsr_runner_query = trim( sanitize_text_field( wp_unslash( $_GET['runner'] ?? '' ) ) );
 $tsr_searching    = '' !== $tsr_runner_query;
 
 // ── Data collection ───────────────────────────────────────────────────────────
@@ -140,7 +145,7 @@ get_header();
 				id="tsr-runner-name"
 				class="tsr-runner-search__input"
 				type="search"
-				name="name"
+				name="runner"
 				placeholder="Например: Иван Иванов"
 				value="<?php echo esc_attr( $tsr_runner_query ); ?>"
 				autocomplete="off"
