@@ -1093,7 +1093,6 @@ Text Domain:  exhibz-child
 	height:        280px;
 	border-radius: var(--tsr-radius);
 	overflow:      hidden;
-	margin-top:    var(--tsr-gap);
 }
 
 .tsr-zero-slide {

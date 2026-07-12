@@ -920,6 +920,18 @@ add_action( 'init', static function (): void {
 } );
 
 /**
+ * Strip bracket-shortcode-looking syntax by pattern rather than registry
+ * lookup. strip_shortcodes() only removes tags present in the global
+ * $shortcode_tags list — leftover markup from a disabled page-builder
+ * shortcode (e.g. "[quote author=\"\" source=\"\"]…[/quote]") was never
+ * registered on the front end and survives it untouched. Shortcode tags are
+ * always ASCII, so this can't accidentally eat Cyrillic "[…]" prose.
+ */
+function tsr_strip_shortcode_syntax( string $text ): string {
+	return (string) preg_replace( '/\[\/?[a-zA-Z][a-zA-Z0-9_-]*(?:\s+[^\]]*)?\]/u', '', $text );
+}
+
+/**
  * Initials for a partner's placeholder logo box: first letter of the first
  * two words ("The Barbarian" → "TB", "SLS" → "S"). Used by both
  * page-partniori.php and the homepage partners strip until a real logo is

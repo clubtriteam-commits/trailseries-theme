@@ -357,32 +357,6 @@ get_header();
 	<div class="tsr-container">
 		<h2 class="tsr-section__title" id="tsr-zero-title">Zero to HERO</h2>
 
-		<!-- First 3 posts — always visible -->
-		<div class="tsr-zero-grid">
-			<?php foreach ( $tsr_zero_visible as $tsr_zp ) :
-				// 'large' returns false when the source image is smaller than the
-				// 'large' threshold (WordPress never upscales) — 'full' always
-				// resolves, so it's the fallback rather than a second guess.
-				$tsr_z_thumb  = get_the_post_thumbnail_url( $tsr_zp, 'large' )
-					?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
-				// A manual post_excerpt is used as-is by get_the_excerpt() — any
-				// literal shortcode markup in it (e.g. a leftover [quote] tag) is
-				// never stripped automatically, only auto-generated excerpts get
-				// that treatment. Strip shortcodes/tags from whichever source we
-				// use before trimming.
-				$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
-				$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( strip_shortcodes( $tsr_z_source ) ), 18, '…' );
-				?>
-				<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
-					<div class="tsr-zero-card__body">
-						<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
-						<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
-						<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
-					</div>
-				</article>
-			<?php endforeach; ?>
-		</div>
-
 		<?php if ( ! empty( $tsr_zero_slides ) ) :
 			$tsr_n   = count( $tsr_zero_slides );
 			$tsr_dur = $tsr_n * 5;
@@ -398,29 +372,58 @@ get_header();
 				100%                            { opacity: 0; visibility: hidden; }
 			}
 			</style>
-
-			<!-- Remaining posts — CSS slideshow, 5 s per slide -->
-			<div class="tsr-zero-slider" aria-label="Допълнителни истории">
-				<?php foreach ( $tsr_zero_slides as $tsr_si => $tsr_zp ) :
-					// See the visible-cards loop above for why both lines below
-					// need the fallback/strip treatment.
-					$tsr_z_thumb   = get_the_post_thumbnail_url( $tsr_zp, 'large' )
-						?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
-					$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
-					$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( strip_shortcodes( $tsr_z_source ) ), 18, '…' );
-					$tsr_delay     = $tsr_si * 5;
-					?>
-					<article class="tsr-zero-slide"
-					         style="animation-duration:<?php echo esc_attr( $tsr_dur ); ?>s;animation-delay:<?php echo esc_attr( $tsr_delay ); ?>s<?php echo $tsr_z_thumb ? ';background-image:url(' . esc_url( $tsr_z_thumb ) . ')' : ''; ?>">
-						<div class="tsr-zero-card__body">
-							<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
-							<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
-							<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
-						</div>
-					</article>
-				<?php endforeach; ?>
-			</div>
 		<?php endif; ?>
+
+		<!-- First 3 posts (always visible) + slideshow cycling the rest, all as
+		     equal-sized cells of the same 3-column grid. -->
+		<div class="tsr-zero-grid">
+			<?php foreach ( $tsr_zero_visible as $tsr_zp ) :
+				// 'large' returns false when the source image is smaller than the
+				// 'large' threshold (WordPress never upscales) — 'full' always
+				// resolves, so it's the fallback rather than a second guess.
+				$tsr_z_thumb  = get_the_post_thumbnail_url( $tsr_zp, 'large' )
+					?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
+				// A manual post_excerpt is used as-is by get_the_excerpt() — any
+				// literal shortcode markup in it (e.g. a leftover [quote] tag) is
+				// never stripped automatically, only auto-generated excerpts get
+				// that treatment. Strip shortcodes/tags from whichever source we
+				// use before trimming.
+				$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
+				$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( tsr_strip_shortcode_syntax( strip_shortcodes( $tsr_z_source ) ) ), 18, '…' );
+				?>
+				<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
+					<div class="tsr-zero-card__body">
+						<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
+						<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
+						<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
+					</div>
+				</article>
+			<?php endforeach; ?>
+
+			<?php if ( ! empty( $tsr_zero_slides ) ) : ?>
+				<!-- Remaining posts — CSS slideshow, 5 s per slide, one grid cell -->
+				<div class="tsr-zero-slider" aria-label="Допълнителни истории">
+					<?php foreach ( $tsr_zero_slides as $tsr_si => $tsr_zp ) :
+						// See the visible-cards loop above for why both lines below
+						// need the fallback/strip treatment.
+						$tsr_z_thumb   = get_the_post_thumbnail_url( $tsr_zp, 'large' )
+							?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
+						$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
+						$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( tsr_strip_shortcode_syntax( strip_shortcodes( $tsr_z_source ) ) ), 18, '…' );
+						$tsr_delay     = $tsr_si * 5;
+						?>
+						<article class="tsr-zero-slide"
+						         style="animation-duration:<?php echo esc_attr( $tsr_dur ); ?>s;animation-delay:<?php echo esc_attr( $tsr_delay ); ?>s<?php echo $tsr_z_thumb ? ';background-image:url(' . esc_url( $tsr_z_thumb ) . ')' : ''; ?>">
+							<div class="tsr-zero-card__body">
+								<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
+								<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
+								<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
+							</div>
+						</article>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+		</div>
 
 	</div>
 </section>
