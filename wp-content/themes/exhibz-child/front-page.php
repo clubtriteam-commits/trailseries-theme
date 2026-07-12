@@ -360,9 +360,18 @@ get_header();
 		<!-- First 3 posts — always visible -->
 		<div class="tsr-zero-grid">
 			<?php foreach ( $tsr_zero_visible as $tsr_zp ) :
-				$tsr_z_thumb   = get_the_post_thumbnail_url( $tsr_zp, 'large' );
-				$tsr_z_excerpt = $tsr_zp->post_excerpt
-					?: wp_trim_words( strip_shortcodes( $tsr_zp->post_content ), 18, '…' );
+				// 'large' returns false when the source image is smaller than the
+				// 'large' threshold (WordPress never upscales) — 'full' always
+				// resolves, so it's the fallback rather than a second guess.
+				$tsr_z_thumb  = get_the_post_thumbnail_url( $tsr_zp, 'large' )
+					?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
+				// A manual post_excerpt is used as-is by get_the_excerpt() — any
+				// literal shortcode markup in it (e.g. a leftover [quote] tag) is
+				// never stripped automatically, only auto-generated excerpts get
+				// that treatment. Strip shortcodes/tags from whichever source we
+				// use before trimming.
+				$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
+				$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( strip_shortcodes( $tsr_z_source ) ), 18, '…' );
 				?>
 				<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
 					<div class="tsr-zero-card__body">
@@ -393,9 +402,12 @@ get_header();
 			<!-- Remaining posts — CSS slideshow, 5 s per slide -->
 			<div class="tsr-zero-slider" aria-label="Допълнителни истории">
 				<?php foreach ( $tsr_zero_slides as $tsr_si => $tsr_zp ) :
-					$tsr_z_thumb   = get_the_post_thumbnail_url( $tsr_zp, 'large' );
-					$tsr_z_excerpt = $tsr_zp->post_excerpt
-						?: wp_trim_words( strip_shortcodes( $tsr_zp->post_content ), 18, '…' );
+					// See the visible-cards loop above for why both lines below
+					// need the fallback/strip treatment.
+					$tsr_z_thumb   = get_the_post_thumbnail_url( $tsr_zp, 'large' )
+						?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
+					$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
+					$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( strip_shortcodes( $tsr_z_source ) ), 18, '…' );
 					$tsr_delay     = $tsr_si * 5;
 					?>
 					<article class="tsr-zero-slide"
