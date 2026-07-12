@@ -122,7 +122,7 @@ while ( have_posts() ) :
 		</div>
 	</div>
 
-	<main class="tsr-page-content">
+	<main id="main" class="tsr-page-content">
 		<div class="tsr-container">
 			<?php if ( function_exists( 'tsr_render_breadcrumbs' ) ) {
 					tsr_render_breadcrumbs( get_post() );

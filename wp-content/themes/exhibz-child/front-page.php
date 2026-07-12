@@ -116,6 +116,8 @@ $tsr_total_finishers = tsr_homepage_total_finishers();
 get_header();
 ?>
 
+<main id="main">
+
 <!-- ════════════════════════════════════════════════════════════════════════════
      SECTION 1 — HERO + COUNTDOWN
      ════════════════════════════════════════════════════════════════════════ -->
@@ -641,5 +643,7 @@ get_header();
 		</div>
 	</div>
 </section>
+
+</main>
 
 <?php get_footer(); ?>

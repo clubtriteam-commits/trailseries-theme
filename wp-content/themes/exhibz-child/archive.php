@@ -30,7 +30,7 @@ $tsr_archive_desc  = get_the_archive_description();
 	</div>
 </div>
 
-<main class="tsr-page-content">
+<main id="main" class="tsr-page-content">
 	<div class="tsr-container">
 
 		<?php if ( have_posts() ) : ?>

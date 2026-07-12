@@ -202,6 +202,43 @@ Text Domain:  exhibz-child
 	margin-top: 0.25rem;
 }
 
+/* ── Accessibility: skip link ──────────────────────────────────────────────
+   The child theme fully replaces header.php, so it must carry its own
+   .screen-reader-text rules — the parent's may not load in every context.
+   The :focus state deliberately reverses the hiding so the link is
+   keyboard-reachable (Lighthouse: "skip link is not focusable"). */
+.screen-reader-text {
+	position:  absolute;
+	width:     1px;
+	height:    1px;
+	margin:    -1px;
+	padding:   0;
+	overflow:  hidden;
+	clip-path: inset(50%);
+	border:    0;
+}
+
+.skip-link:focus {
+	position:        fixed;
+	top:             8px;
+	left:            8px;
+	z-index:         100000;
+	width:           auto;
+	height:          auto;
+	margin:          0;
+	padding:         0.75rem 1.25rem;
+	overflow:        visible;
+	clip-path:       none;
+	background:      var(--tsr-navy);
+	color:           #fff;
+	font-weight:     700;
+	border-radius:   var(--tsr-radius);
+	box-shadow:      0 2px 12px rgba(0, 0, 0, 0.4);
+	text-decoration: none;
+	outline:         2px solid var(--tsr-blue);
+	outline-offset:  2px;
+}
+
 /* ── Generic card grid ─────────────────────────────────────────────────────── */
 .tsr-grid {
 	display: grid;

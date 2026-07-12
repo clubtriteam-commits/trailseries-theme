@@ -134,7 +134,7 @@ if ( false !== $cached ) {
 	</div>
 </div>
 
-<main class="tsr-page-content">
+<main id="main" class="tsr-page-content">
 	<div class="tsr-container">
 
 		<?php tsr_page_breadcrumbs( 'Рекорди' ); ?>
