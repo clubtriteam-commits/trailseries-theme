@@ -837,40 +837,58 @@ function tsr_render_breadcrumbs( WP_Post $post ): void {
 
 /**
  * Visible breadcrumb trail + BreadcrumbList JSON-LD for the static page
- * templates (Начало / <page>). single-ts_result.php keeps its own deeper
- * trail via tsr_render_breadcrumbs() above. The JSON-LD is emitted inline
- * next to the visible nav rather than from a wp_head hook: several of
- * these templates are slug-matched (page-{slug}.php) with no assigned
+ * templates (Начало / [trail /] <page>). single-ts_result.php keeps its own
+ * deeper trail via tsr_render_breadcrumbs() above. The JSON-LD is emitted
+ * inline next to the visible nav rather than from a wp_head hook: several
+ * of these templates are slug-matched (page-{slug}.php) with no assigned
  * template, so wp_head can't reliably tell which page it serves — and
  * JSON-LD is valid anywhere in the document.
+ *
+ * @param string $label Current-page label (unlinked, aria-current).
+ * @param array  $trail Optional middle crumbs between Начало and the label:
+ *                      array of array{label: string, url: string}.
  */
-function tsr_page_breadcrumbs( string $label ): void {
+function tsr_page_breadcrumbs( string $label, array $trail = array() ): void {
 	$home = home_url( '/' );
 	$self = (string) get_permalink();
 
 	echo '<nav class="tsr-breadcrumbs" aria-label="Трохички">';
 	echo '<a class="tsr-breadcrumbs__link" href="' . esc_url( $home ) . '">Начало</a>';
+	foreach ( $trail as $crumb ) {
+		echo '<span class="tsr-breadcrumbs__sep" aria-hidden="true">/</span>';
+		echo '<a class="tsr-breadcrumbs__link" href="' . esc_url( $crumb['url'] ) . '">' . esc_html( $crumb['label'] ) . '</a>';
+	}
 	echo '<span class="tsr-breadcrumbs__sep" aria-hidden="true">/</span>';
 	echo '<span class="tsr-breadcrumbs__current" aria-current="page">' . esc_html( $label ) . '</span>';
 	echo '</nav>';
 
+	$items = array(
+		array(
+			'@type'    => 'ListItem',
+			'position' => 1,
+			'name'     => 'Начало',
+			'item'     => $home,
+		),
+	);
+	foreach ( $trail as $crumb ) {
+		$items[] = array(
+			'@type'    => 'ListItem',
+			'position' => count( $items ) + 1,
+			'name'     => $crumb['label'],
+			'item'     => $crumb['url'],
+		);
+	}
+	$items[] = array(
+		'@type'    => 'ListItem',
+		'position' => count( $items ) + 1,
+		'name'     => $label,
+		'item'     => $self,
+	);
+
 	$schema = array(
 		'@context'        => 'https://schema.org',
 		'@type'           => 'BreadcrumbList',
-		'itemListElement' => array(
-			array(
-				'@type'    => 'ListItem',
-				'position' => 1,
-				'name'     => 'Начало',
-				'item'     => $home,
-			),
-			array(
-				'@type'    => 'ListItem',
-				'position' => 2,
-				'name'     => $label,
-				'item'     => $self,
-			),
-		),
+		'itemListElement' => $items,
 	);
 	echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
 }

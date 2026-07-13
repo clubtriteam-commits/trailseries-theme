@@ -672,6 +672,32 @@ h1, h2, h3, h4, h5, h6 {
 	margin-bottom: 3rem;
 }
 
+/* Generic page fallback (page.php) — the migrated event landing pages carry
+   arbitrary legacy markup (2012-era images with fixed sizes, registration
+   iframes, tables), so contain anything that could overflow the column. */
+.tsr-page-generic img {
+	max-width: 100%;
+	height:    auto;
+}
+
+.tsr-page-generic iframe,
+.tsr-page-generic embed,
+.tsr-page-generic object,
+.tsr-page-generic video {
+	max-width: 100%;
+}
+
+.tsr-page-generic table {
+	display:    block;
+	max-width:  100%;
+	overflow-x: auto;
+}
+
+.tsr-page-generic p {
+	margin-bottom: 1rem;
+	line-height:   1.7;
+}
+
 .tsr-prose-section h2 {
 	font-size: clamp(1.2rem, 2.5vw, 1.6rem);
 	font-weight: 800;
