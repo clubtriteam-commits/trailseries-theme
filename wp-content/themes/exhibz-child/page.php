@@ -56,7 +56,15 @@ while ( have_posts() ) :
 			?>
 
 			<section class="tsr-prose-section tsr-page-generic">
-				<?php the_content(); ?>
+				<?php
+				// Legacy 2012-era markup often has unclosed tags; an unbalanced
+				// <div> swallows everything after it — including the footer,
+				// which is why migrated pages appeared to render without one
+				// (get_footer() below always ran). Balance AFTER the_content
+				// filters so shortcodes/embeds expand first and their output
+				// is balanced too.
+				echo force_balance_tags( (string) apply_filters( 'the_content', get_the_content() ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- the_content output, filtered + balanced.
+				?>
 			</section>
 
 		</div>

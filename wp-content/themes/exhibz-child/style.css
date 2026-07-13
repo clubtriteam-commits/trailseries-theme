@@ -674,7 +674,15 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Generic page fallback (page.php) — the migrated event landing pages carry
    arbitrary legacy markup (2012-era images with fixed sizes, registration
-   iframes, tables), so contain anything that could overflow the column. */
+   iframes, tables), so contain anything that could overflow the column.
+   The 72ch cap sits on the SECTION, not just its <p> children like the
+   base .tsr-prose-section rule: legacy text lives inside divs/tables/bare
+   nodes that the p-only rule never touched, so the content stretched to
+   the full 1160px container. Matches .tsr-single-content. */
+.tsr-page-generic {
+	max-width: 72ch;
+}
+
 .tsr-page-generic img {
 	max-width: 100%;
 	height:    auto;
