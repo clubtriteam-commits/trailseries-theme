@@ -24,6 +24,12 @@ declare( strict_types=1 );
  * only touch previously failed pages. Every failure logs a warning and
  * CONTINUES with the next page — one broken page never aborts the batch.
  *
+ * Source-dead images degrade gracefully: when an image is unrecoverable
+ * from live (404 there too, e.g. comborides-e1403015691793.jpg or the
+ * SIMEONOVO-RUN-MAP.png variants), the <img> keeps its original live URL
+ * and the page still counts as imported — only staging-side failures
+ * (insert/rewrite errors) leave a page unmarked for retry.
+ *
  * @package trailseries-migration
  */
 
@@ -260,7 +266,10 @@ foreach ( $rows as $i => $row ) {
 				$attachment_id = tsr_sideload_dedup( $largest_variant, $page_id, $postarr['post_title'], $images );
 			}
 			if ( 0 === $attachment_id ) {
-				$page_failed = true;
+				// Unrecoverable from live (dead there too). Leave this <img>
+				// pointing at the original URL — the page text still imports,
+				// and the page is NOT held back from being marked done.
+				WP_CLI::warning( sprintf( '      image unrecoverable — left pointing at live URL: %s', $original ) );
 				continue;
 			}
 
@@ -298,19 +307,26 @@ foreach ( $rows as $i => $row ) {
 		}
 	}
 
-	// 3b. Featured image.
+	// 3b. Featured image. A source-dead featured image (media record or file
+	// gone on live) is logged but does not block the page — same graceful
+	// degradation as inline images.
 	if ( ! has_post_thumbnail( $page_id ) && ! empty( $live['featured_media'] ) ) {
 		$media = tsr_live_api_get( TSR_LIVE_API . '/media/' . (int) $live['featured_media'] . '?_fields=source_url' );
 		if ( null !== $media && ! empty( $media['source_url'] ) ) {
 			$thumb_id = tsr_sideload_dedup( (string) $media['source_url'], $page_id, $postarr['post_title'], $images );
-			if ( $thumb_id > 0 && set_post_thumbnail( $page_id, $thumb_id ) ) {
-				WP_CLI::log( sprintf( '      featured image set (attachment %d)', $thumb_id ) );
+			if ( $thumb_id > 0 ) {
+				if ( set_post_thumbnail( $page_id, $thumb_id ) ) {
+					WP_CLI::log( sprintf( '      featured image set (attachment %d)', $thumb_id ) );
+				} else {
+					// Staging-side failure — retryable, keep the page unmarked.
+					WP_CLI::warning( sprintf( '      set_post_thumbnail failed (attachment %d)', $thumb_id ) );
+					$page_failed = true;
+				}
 			} else {
-				WP_CLI::warning( '      featured image could not be set' );
-				$page_failed = true;
+				WP_CLI::warning( '      featured image unrecoverable — page imported without thumbnail' );
 			}
 		} else {
-			$page_failed = true;
+			WP_CLI::warning( '      featured media record unavailable on live — page imported without thumbnail' );
 		}
 	}
 
