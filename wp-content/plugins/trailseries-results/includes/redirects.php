@@ -6,7 +6,7 @@
  * Regenerate: python migration/generate_redirects.py
  *
  * 301 redirects: 92 rules
- * 410 gone:      51 rules
+ * 410 gone:      50 rules
  *
  * @package trailseries-results
  */
@@ -145,7 +145,6 @@ add_action(
 			'/registration' => 1,
 			'/registration/notsuccessful' => 1,
 			'/registration/successful' => 1,
-			'/sabitia' => 1,
 			'/sabitia/zheleznitsa-2-0/jordan-petrov' => 1,
 			'/snimki' => 1,
 			'/snimki/baba-marta-run' => 1,
