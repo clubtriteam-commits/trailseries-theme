@@ -2087,6 +2087,14 @@ body.tsr-modal-open {
 	text-decoration: underline;
 }
 
+/* Event date next to a landing-page link on /sabitia/ (page-sabitia.php) */
+.tsr-sabitia-date {
+	margin-left: 0.6rem;
+	font-size:   0.8rem;
+	color:       var(--tsr-muted);
+	white-space: nowrap;
+}
+
 /* ── Category pill links ── */
 .tsr-cat-list {
 	display:    flex;
