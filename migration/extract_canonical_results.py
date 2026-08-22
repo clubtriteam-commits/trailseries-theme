@@ -36,6 +36,7 @@ import re
 import sys
 import urllib.parse
 import xml.etree.ElementTree as ET
+from collections import Counter, defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -262,6 +263,18 @@ class RowStream(HTMLParser):
         elif tag == "tr" and self._table_depth:
             self._flush_row()
             self._row = []
+        elif tag in ("td", "th") and self._table_depth and self._row is None:
+            # Malformed source markup: a <td>/<th> run with no preceding <tr>
+            # (malak-sechko-run26-results' "19КМ МЪЖЕ" header row does this —
+            # <tbody><td>19КМ МЪЖЕ</td>...). Silently dropping these cells
+            # loses the header (and with it, every row in the section, since
+            # the parser can never map columns for it). Treat a cell opening
+            # with no active row as an implicit row start instead.
+            self._row = []
+            self._flush_cell()
+            colspan = attr.get("colspan") or "1"
+            self._cell = []
+            self._cell_colspan = int(colspan) if colspan.isdigit() else 1
         elif tag in ("td", "th") and self._row is not None:
             self._flush_cell()
             colspan = attr.get("colspan") or "1"
@@ -520,6 +533,18 @@ class PageExtractor:
             section.columns.append(field if field != "__split__" else None)
         section.headers = list(headers)
 
+        # Two split columns can carry the identical header text (a table with
+        # two undifferentiated "Lap" columns — the-cactus-run17-ranking's
+        # 20km tables). TSR_Result_Set requires unique split_labels, so
+        # disambiguate with a positional suffix; single-occurrence labels are
+        # left untouched.
+        counts = Counter(section.split_labels)
+        seen: dict[str, int] = {}
+        for i, label in enumerate(section.split_labels):
+            if counts[label] > 1:
+                seen[label] = seen.get(label, 0) + 1
+                section.split_labels[i] = f"{label} {seen[label]}"
+
     def _infer_finish_column(self, section: Section, texts: list[str]) -> None:
         """Recover a finish-time column the header row failed to label.
 
@@ -669,9 +694,18 @@ class PageExtractor:
 
         first_name, last_name = field("first_name"), field("last_name")
         if not first_name and not last_name:
-            if any(t for t in texts):
+            # Relay/team tables have no runner name column at all — the
+            # team name IS the row's identity (Pancharevo Night Run relay
+            # editions). Same treatment as a combined-name column: store the
+            # whole identity in first_name, never split it.
+            team_name = field("team")
+            if team_name and "first_name" not in section.columns and "last_name" not in section.columns:
+                first_name = team_name
+            elif any(t for t in texts):
                 section.issues.append(f"row without a name excluded: {texts[:5]}...")
-            return
+                return
+            else:
+                return
 
         # Skip placeholder / template rows left by race organisers in tables,
         # and header rows that slipped past header detection.
@@ -696,14 +730,27 @@ class PageExtractor:
                     # No place column or empty cell — assign from row order.
                     # Row order is 1-based and counted from already-committed rows.
                     place = len(section.rows) + 1
+            elif section.mapping_inferred and not field("finish_time").strip():
+                # Inherited mapping (a bare category heading with no header
+                # row of its own — e.g. a kids sub-category tucked under an
+                # otherwise fully-timed page) AND the finish_time cell at the
+                # inherited position is genuinely BLANK, not garbled. A
+                # layout shift would leave some unparseable text there, not
+                # nothing — so this is a real untimed finishers list
+                # (simeonovo-run-ranking's "1км МОМИЧЕТА", etc.), not a
+                # guess gone wrong. DNF would falsely claim non-completion.
+                status = "FNT"
+                if place is None:
+                    place = len(section.rows) + 1
+            elif section.mapping_inferred:
+                # Under a guessed/inherited mapping, a NON-blank-but-
+                # unparseable time more likely means a layout shift than a
+                # DNF — never fabricate.
+                section.issues.append(
+                    f"row without finish time under inferred mapping excluded: {texts[:4]}..."
+                )
+                return
             else:
-                if section.mapping_inferred:
-                    # Under a guessed/inherited mapping a missing time more
-                    # likely means a layout shift than a DNF — never fabricate.
-                    section.issues.append(
-                        f"row without finish time under inferred mapping excluded: {texts[:4]}..."
-                    )
-                    return
                 # Named runner with no time and no explicit status: treat as DNF.
                 # DNS runners are rarely listed; listed runners with no time are almost
                 # always non-finishers (DNF).
@@ -744,11 +791,48 @@ def load_category_map(path: str) -> dict[str, tuple[str, str]]:
     return mapping
 
 
+# Sentinel: an override that says "this occurrence is a redundant/duplicate
+# extraction of a section already captured elsewhere — write nothing."
+DROP_SENTINEL = "__DROP__"
+
+
+def load_overrides(path: str) -> dict[tuple[str, str, int], str]:
+    """page_slug + raw category heading + occurrence-on-page -> correct category text.
+
+    Two or more sections on the same page can carry the IDENTICAL raw heading
+    text (page shows "15КМ МЪЖЕ" twice, once for men and once — wrongly — for
+    women) or an EMPTY/generic heading repeated for every table. Heading text
+    alone can never disambiguate that case; a human (or an agent that fetched
+    the live page and matched runner names/row counts) must say what the Nth
+    occurrence of that heading on that page actually is. That verified mapping
+    lives in this CSV, never guessed here.
+
+    occurrence is 1-based and counts every section with this exact raw
+    category text on this page, in document order — including the first one,
+    since the "first" occurrence is not always the correct one either (e.g.
+    results-iran-run15's first "5.2КМ ЖЕНИ" table is actually men's).
+
+    Missing file is not an error — an empty overrides map just means every
+    collision falls back to the old numbered-suffix behaviour, now logged
+    loudly instead of applied silently (see main()).
+    """
+    overrides: dict[tuple[str, str, int], str] = {}
+    p = Path(path)
+    if not p.exists():
+        return overrides
+    with open(p, encoding="utf-8-sig") as f:
+        for row in csv.DictReader(f):
+            key = (row["page_slug"], row["category_raw"].casefold(), int(row["occurrence"]))
+            overrides[key] = row["correct_category"]
+    return overrides
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--xml", default="migration/data/raw/runbgtrailseries.WordPress.2026-07-02.xml")
     parser.add_argument("--pages", default="migration/results-page-list.csv")
     parser.add_argument("--category-map", default="migration/category-map.csv")
+    parser.add_argument("--overrides", default="migration/category-overrides.csv")
     parser.add_argument("--out-dir", default="migration/data/canonical")
     args = parser.parse_args()
 
@@ -756,6 +840,7 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     category_map = load_category_map(args.category_map)
+    overrides = load_overrides(args.overrides)
     with open(args.pages, encoding="utf-8-sig") as f:
         page_list = {(r["page_title"], r["slug"]): r for r in csv.DictReader(f)}
 
@@ -764,7 +849,10 @@ def main() -> int:
     issue_lines: list[str] = []
     used_names: set[str] = set()
     processed_items: set[tuple[str, str]] = set()
-    written = skipped_oos = 0
+    # How many times each (page_slug, raw category heading) has been seen so
+    # far, in document order — the occurrence index overrides are keyed on.
+    occurrence_counts: dict[tuple[str, str], int] = defaultdict(int)
+    dropped = written = skipped_oos = 0
 
     for item in ET.parse(args.xml).getroot().findall("./channel/item"):
         post_type = item.findtext("wp:post_type", "", NS)
@@ -797,16 +885,66 @@ def main() -> int:
 
         for section in extractor.extract(content):
             raw = section.category
-            distance, gender = category_map.get(raw.casefold(), ("", ""))
+            occurrence_key = (page_slug, raw.casefold())
+            occurrence_counts[occurrence_key] += 1
+            occurrence = occurrence_counts[occurrence_key]
+
+            override = overrides.get((page_slug, raw.casefold(), occurrence))
+            if override == DROP_SENTINEL:
+                dropped += 1
+                issue_lines.append(
+                    f"{page_slug} [{raw or 'no category'}] occurrence {occurrence}: "
+                    f"dropped per category-overrides.csv (redundant/duplicate extraction, {len(section.rows)} rows discarded)"
+                )
+                continue
+            # A verified override replaces the raw heading text for labeling
+            # purposes only — category_raw in the manifest still records what
+            # was actually printed on the page, for auditability.
+            effective_raw = override if override else raw
+
+            distance, gender = category_map.get(effective_raw.casefold(), ("", ""))
             cat_part = (
-                f"{distance}km-{gender.casefold()}" if distance and gender else slugify(raw)[:40] if raw else "all"
+                f"{distance}km-{gender.casefold()}"
+                if distance and gender
+                else slugify(effective_raw)[:40] if effective_raw else "all"
             )
             base = f"{page_slug}__{cat_part}"
             name = base
-            counter = 2
-            while name in used_names:
-                name = f"{base}-{counter}"
-                counter += 1
+
+            # A repeated heading (occurrence > 1) with no override is an
+            # UNVERIFIED guess no matter what — warn regardless of whether it
+            # happens to collide with an existing filename. Relying on the
+            # collision alone is not enough: resolving an EARLIER occurrence
+            # via an override can free up the original fallback name, letting
+            # a still-unresolved LATER occurrence slide through silently
+            # under a clean-looking name. See AUDIT-category-mislabeling.md.
+            unverified_repeat = occurrence > 1 and not override
+            if unverified_repeat:
+                issue_lines.append(
+                    f"{page_slug} [{raw or 'no category'}] occurrence {occurrence}: "
+                    f"UNRESOLVED CATEGORY COLLISION -> tentatively named '{name}'; "
+                    f"add a category-overrides.csv row (page_slug={page_slug}, "
+                    f"category_raw={raw!r}, occurrence={occurrence}) once the correct "
+                    f"category is known, or {DROP_SENTINEL} if it's a redundant extraction"
+                )
+
+            if name in used_names:
+                counter = 2
+                while name in used_names:
+                    name = f"{base}-{counter}"
+                    counter += 1
+                if not unverified_repeat:
+                    # Collision from an unrelated cause (e.g. two different
+                    # overrides resolving to the same effective category) —
+                    # still must not silently overwrite a file.
+                    issue_lines.append(
+                        f"{page_slug} [{raw or 'no category'}] occurrence {occurrence}: "
+                        f"unexpected filename collision (not a repeated-heading case) -> wrote '{name}'"
+                    )
+                else:
+                    issue_lines[-1] = issue_lines[-1].replace(
+                        f"tentatively named '{base}'", f"wrote '{name}' with a numbered suffix"
+                    )
             used_names.add(name)
 
             file_name = ""
@@ -831,6 +969,8 @@ def main() -> int:
                     "slug": page_slug,
                     "page_title": title,
                     "category_raw": raw,
+                    "occurrence": occurrence,
+                    "override_applied": override or "",
                     "distance_km": distance,
                     "gender": gender,
                     "rows": len(section.rows),
@@ -851,7 +991,7 @@ def main() -> int:
 
     total_rows = sum(m["rows"] for m in manifest)
     print(f"Wrote {written} canonical JSON files ({total_rows} result rows) to {out_dir}/")
-    print(f"Sections seen: {len(manifest)}; out-of-scope pages skipped: {skipped_oos}")
+    print(f"Sections seen: {len(manifest)}; out-of-scope pages skipped: {skipped_oos}; dropped per overrides: {dropped}")
     print(f"Issues: {len(issue_lines)} (see {out_dir}/_issues.txt)")
     return 0
 

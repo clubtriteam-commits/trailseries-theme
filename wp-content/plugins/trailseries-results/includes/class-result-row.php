@@ -67,6 +67,14 @@ final class TSR_Result_Row {
 			}
 		}
 
+		// Mirror image of the check above: a row explicitly marked as having
+		// no recorded time must not carry one — that ambiguity ("did we mean
+		// Finished and forget the time, or genuinely never have one?") is
+		// exactly what the two distinct statuses exist to remove.
+		if ( TSR_Status::FinishedNoTime === $this->status && '' !== $this->finish_time ) {
+			throw new InvalidArgumentException( 'FinishedNoTime rows must not have a finish time — use Finished instead.' );
+		}
+
 		if ( array_is_list( $this->splits ) === false ) {
 			throw new InvalidArgumentException( 'Splits must be a list.' );
 		}
