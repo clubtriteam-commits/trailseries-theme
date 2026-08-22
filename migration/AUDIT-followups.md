@@ -25,6 +25,19 @@ A single "-N" file contains rows from **two or more** genuinely different catego
 
 ## Not yet swept at all
 
-The 9-batch audit only checked files that already had a filename collision (127 groups). It did **not** check:
-- Whether any *cleanly-named* (non-suffixed) file is nonetheless mislabeled — out of scope so far, only collisions were checked.
-- Two confirmed **extraction gaps**: `iran-run19-results` and `lyulin-trail-run-класиране` each have a "Деца"/"KIDS" table visible on the live page with **no canonical JSON file at all** — those finishers are entirely missing from the migration, not just mislabeled. No file exists to add an override for; this needs the parser to actually extract the section in the first place.
+The 9-batch audit only checked files that already had a filename collision (127 groups). It did **not** check whether any *cleanly-named* (non-suffixed) file is nonetheless mislabeled — out of scope so far, only collisions were checked.
+
+~~Two confirmed extraction gaps: `iran-run19-results` and `lyulin-trail-run-класиране` each have a "Деца"/"KIDS" table missing entirely.~~ **Resolved 2026-08-23** — both were incidentally fixed by the malformed-`<tr>` parser fix below (same root cause as the Malak Sechko Run'26 case): `iran-run19-results__kids.json`, `lyulin-trail-run-класиране__деца.json` now extract correctly.
+
+## 4. Full production-vs-staging cross-check (2026-08-23)
+
+A systematic pass — every ~172 production page's finisher-time-token count vs. local canonical row sums, then 26 flagged pages individually re-verified against raw production HTML — found and fixed three further bug classes, all now deployed to staging and byte-verified live:
+
+- **Missing `<tr>` before a header row** (same root cause as the original Malak Sechko Run'26 report): silently dropped the whole section with zero errors logged. Fixed generically in the HTML parser (a `<td>`/`<th>` run with no active row now implicitly opens one). Recovered sections: Malak Sechko Run'26 & '25 19KM МЪЖЕ, The Chrismas Run'19 11КМ МЪЖЕ, The Cactus Run'25 7КМ МЪЖЕ, the two kids sections noted above.
+- **Relay/team tables dropped entirely**: rows require a first_name or last_name, but relay tables have no such column (team name is the row's identity) — every relay row was excluded as "row without a name". Fixed: falls back to the team name as first_name. Recovered: Pancharevo Night Run '18/'19/'21 — 3 relay categories each, 41 teams total.
+- **Untimed finishers discarded as standings tables**: a few short kids' categories have no recorded times at all and were being treated as season-standings noise. Added `TSR_Status::FinishedNoTime` ('FNT') — a new, clearly-distinct status (PHP enum + validation + Python extraction, narrowly scoped to inherited-mapping sections with a genuinely blank finish_time cell) — rather than either losing the runners or mislabeling them DNF. Recovered: simeonovo-run-ranking "1км МОМИЧЕТА" (4), the-cactus-run15-results kids sections (11), cactus-run18-ranking "Kids Run Winners" (6).
+- **Source-data age errors crashing the whole import**: two rows across the whole dataset had a birth year typed into the age column (e.g. "1992") instead of an age; the schema correctly rejects it, but as a fatal exception rather than a recoverable per-row issue. Age is now range-checked (0–130) at extraction time and nulled with a logged issue on failure.
+
+**Decided, not migrated**: `news__*.json` (6 files, 18 rows, "7/14/21km × M/F" top-3 fragments) — traced to a 2013 news-article recap ("Новини след The Cactus Run"), confirmed byte-for-byte duplicate of runners already present in `cactus-run-10-11-2013`'s proper results files. `results-page-list.csv` had already flagged this URL `has_results_table=no` during curation. Deliberately excluded — would only create redundant posts.
+
+**False alarms, no action needed**: `malak-sechko-run25-results` and `-run26-results`' "19KM МЪЖЕ"/"19KM ЖЕНИ" appearing to be missing from `/rezultati/` — both are the page's "hub" post (shown as the bare event-name link, not a distance pill) and were confirmed present, published, and byte-verified all along.
