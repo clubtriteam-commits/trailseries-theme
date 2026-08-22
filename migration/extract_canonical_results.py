@@ -717,7 +717,16 @@ class PageExtractor:
         place = int(place_raw) if place_raw.isdigit() else None
         age_raw = field("age")
         age = int(age_raw) if age_raw.isdigit() else None
-        if age_raw and age is None:
+        if age is not None and not 0 <= age <= 130:
+            # Source data-entry error, not a parsing failure — e.g. a birth
+            # year ("1992") typed into the age column instead of an age.
+            # The schema (TSR_Result_Row) rejects out-of-range ages outright,
+            # so this must be caught here or the whole section's import
+            # crashes on one bad cell. Null it out; the runner and their
+            # real result are still worth keeping.
+            section.issues.append(f'age "{age_raw}" out of range for {first_name} {last_name} -> null')
+            age = None
+        elif age_raw and age is None:
             section.issues.append(f'unparseable age "{age_raw}" for {first_name} {last_name} -> null')
 
         time_value, marker = normalize_time(field("finish_time"))
