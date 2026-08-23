@@ -27,8 +27,10 @@ declare( strict_types=1 );
  * Siblings are matched by slug prefix, NOT by _tsr_event_base/_tsr_season
  * meta: the prefix exactly reconstructs the legacy page (meta could merge two
  * different legacy pages of the same event+season, duplicating content), and
- * it works even before `wp tsr backfill-meta` has run. Section order is post
- * ID ascending = bulk-import order = the old page's top-to-bottom order.
+ * it works even before `wp tsr backfill-meta` has run. tsr_hub_sections()
+ * itself returns post ID ascending (bulk-import order); the accordion
+ * display re-orders that per ADR-004 (longest distance first, men before
+ * women) via tsr_sort_results_by_distance_gender().
  *
  * The table itself comes from tsr_render_results() in the trailseries-results
  * plugin — the theme has no ability to alter columns, by design (ADR-002).
@@ -110,7 +112,11 @@ function tsr_hub_title( WP_Post $post ): string {
 while ( have_posts() ) :
 	the_post();
 
-	$tsr_sections = tsr_hub_sections( get_post() );
+	// tsr_hub_sections() returns legacy page order (post ID ascending); the
+	// accordion instead follows the site-wide results-listing rule (ADR-004):
+	// longest distance first, men before women within a distance. Section 0
+	// (below) is whichever category that leaves first, auto-expanded.
+	$tsr_sections = tsr_sort_results_by_distance_gender( tsr_hub_sections( get_post() ) );
 	$tsr_is_hub   = count( $tsr_sections ) > 1;
 	?>
 	<div class="tsr-page-hero">
