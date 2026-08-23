@@ -115,7 +115,9 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void 
 	?>
 	<li class="tsr-track<?php echo $is_legacy ? ' tsr-track--legacy' : ''; ?>"
 	    role="button" tabindex="0" aria-haspopup="dialog"
+	    aria-label="<?php echo esc_attr( $tr['title'] . ' — детайли за трасето' ); ?>"
 	    data-title="<?php echo esc_attr( $tr['title'] ); ?>"
+	    data-variant="<?php echo esc_attr( $tr['variant'] ?? '' ); ?>"
 	    data-event="<?php echo esc_attr( $event_name ); ?>"
 	    data-gpx="<?php echo esc_attr( ! empty( $tr['gpx_file'] ) ? $gpx_base . $tr['gpx_file'] : '' ); ?>"
 	    data-kml="<?php echo esc_attr( ! empty( $tr['kml_file'] ) ? $gpx_base . $tr['kml_file'] : '' ); ?>"
@@ -127,7 +129,12 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void 
 	    data-lowest="<?php echo esc_attr( (string) ( $tr['lowest_m'] ?? '' ) ); ?>">
 
 		<div class="tsr-track__head">
-			<span class="tsr-track__name"><?php echo esc_html( $tr['title'] ); ?></span>
+			<?php
+			// The group heading (H2) already names the event — the row shows
+			// only the distinguishing part ("6 км", "Hard Core Edition 26 км").
+			// Full title stays in data-title/aria-label for the modal and AT.
+			?>
+			<span class="tsr-track__name"><?php echo esc_html( $tr['variant'] ?? $tr['title'] ); ?></span>
 			<?php if ( $is_legacy ) : ?>
 				<span class="tsr-track__badge tsr-track__badge--legacy">Легаси</span>
 			<?php else : ?>

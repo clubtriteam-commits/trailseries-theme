@@ -106,6 +106,49 @@ def event_name(title: str) -> str:
     return EVENT_ALIASES.get(name, name)
 
 
+# Distance tokens in any spelling — "6KM", "13km", "17.5КМ", "16K" — become
+# "6 км" / "13 км" / "17.5 км" / "16 км": Cyrillic lowercase, one space, to
+# match the stat values ("5.7 км") rendered next to the name.
+RE_DIST_TOKEN = re.compile(r"(\d+(?:[.,]\d+)?)\s*(?:[kK][mM]|[кК][мМ]|[kK]\b)")
+
+
+def track_variant(title: str, event: str, distance_km: float | None) -> str:
+    """Display name for a track row inside its event group.
+
+    The group heading already says the event, so the row shows only what
+    distinguishes this track: "6 км", "Hard Core Edition 26 км", "’20 – 6.6 км".
+    Falls back to the formatted distance when the title IS the event name
+    ("Buhovo Half Marathon"), and to the raw title when even that is missing.
+    """
+    v = html.unescape(title).strip()
+    # Strip the event-name prefix — longest match first so "Boyana X Trails"
+    # (alias spelling) wins over "Boyana X Trail" and doesn't leave "s - long".
+    prefixes = sorted(
+        [event] + [alias for alias, canon in EVENT_ALIASES.items() if canon == event],
+        key=len,
+        reverse=True,
+    )
+    for p in prefixes:
+        if v.lower().startswith(p.lower()):
+            v = v[len(p):]
+            break
+    # Trim separators but keep an apostrophe-year ("'20") readable.
+    v = v.strip(" -–—")
+    v = RE_DIST_TOKEN.sub(lambda m: m.group(1).replace(",", ".") + " км", v)
+    v = re.sub(r"\s+-\s+", " – ", v)  # hyphen separators → en dash
+    # A leading apostrophe is only a year marker when NOT followed by a
+    # distance — "The Cactus Run'7km" is "'7km" the distance, "Birthday
+    # Run'20" is the year 2020. Distances just drop the apostrophe.
+    v = re.sub(r"^['’](?=\d+(?:\.\d+)? км)", "", v)
+    v = re.sub(r"^['’](\d\d)\b", r"’\1", v)
+    v = re.sub(r"^(’\d\d)\s+(?=\d)", r"\1 – ", v)  # "’20 12 км" → "’20 – 12 км"
+    if not v:
+        if distance_km is not None:
+            return f"{round(distance_km, 1):g} км"
+        return html.unescape(title).strip()
+    return v
+
+
 # First <trkpt> of a GPX file = the track's real-world start point. Used by
 # the front-page map to place event pins (the previous pins were hand-guessed
 # mountain coordinates, off by 3.5-43 km from the actual trailheads).
@@ -174,6 +217,7 @@ def main() -> int:
         ev = event_name(t["title"])
         entry = {
             "title":       html.unescape(t["title"]),
+            "variant":     track_variant(t["title"], ev, t.get("distance_km")),
             "slug":        t["slug"],
             "year":        track_year(t["title"], t["slug"]),
             "distance_km": t.get("distance_km"),

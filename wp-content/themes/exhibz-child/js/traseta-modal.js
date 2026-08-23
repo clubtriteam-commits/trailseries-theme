@@ -564,17 +564,20 @@
 	}
 
 	/**
-	 * "7 Hills Run" + "7 Hills Run - Hard Core Edition 26km" → event name
-	 * plain, "– Hard Core Edition 26km" in .tsr-modal-title__dist. Falls
-	 * back to the raw title (no split) when it doesn't start with the event
-	 * name — defensive only; tracks.json always builds titles this way.
+	 * Modal heading: muted event name + "– variant" in the title's own
+	 * navy/800. The variant comes precomputed from tracks.json (normalized
+	 * "6 км" spelling, same as the list rows); the title-string split is
+	 * only the fallback for rows rendered before the variant field existed.
 	 */
-	function buildTitleHtml( title, eventName ) {
-		if ( ! eventName || title.indexOf( eventName ) !== 0 ) {
-			return escapeHtml( title );
-		}
-		var rest = title.slice( eventName.length ).trim().replace( /^[-–—]\s*/, '' );
+	function buildTitleHtml( title, eventName, variant ) {
+		var rest = variant || '';
 		if ( ! rest ) {
+			if ( ! eventName || title.indexOf( eventName ) !== 0 ) {
+				return escapeHtml( title );
+			}
+			rest = title.slice( eventName.length ).trim().replace( /^[-–—]\s*/, '' );
+		}
+		if ( ! eventName || ! rest ) {
 			return escapeHtml( title );
 		}
 		return '<span class="tsr-modal-title__event">' + escapeHtml( eventName ) + '</span>' +
@@ -593,7 +596,7 @@
 		hideChartHover();
 		chartState = null;
 
-		titleEl.innerHTML = buildTitleHtml( openTitle, d.event || '' );
+		titleEl.innerHTML = buildTitleHtml( openTitle, d.event || '', d.variant || '' );
 		fillStats( d );
 
 		gpxBtn.hidden = ! d.gpx;
