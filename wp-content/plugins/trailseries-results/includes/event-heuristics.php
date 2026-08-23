@@ -235,6 +235,41 @@ function tsr_race_gender( WP_Post $post ): string {
 }
 
 /**
+ * Site-wide ordering rule for any listing of multiple ts_result posts side
+ * by side (homepage teaser, event-history editions, category indexes, …):
+ * longest distance first, and men before women within a distance — most of
+ * the field is men, so their results lead (ADR-004). Sort key precedence:
+ *
+ *   1. _tsr_distance_km (backfill-meta), descending. Two posts with no
+ *      distance meta both read 0.0 and fall through to rule 2.
+ *   2. tsr_race_gender(): 'M' before 'F' before undetermined ('').
+ *
+ * Anything the rule can't order (equal distance, equal/undetermined gender)
+ * keeps its incoming relative order — usort() in PHP 8 is stable, so this
+ * never shuffles ties.
+ *
+ * @param list<WP_Post> $posts ts_result posts to order. Not mutated.
+ * @return list<WP_Post> The same posts, re-ordered.
+ */
+function tsr_sort_results_by_distance_gender( array $posts ): array {
+	static $gender_rank = array( 'M' => 0, 'F' => 1, '' => 2 );
+
+	usort(
+		$posts,
+		static function ( WP_Post $a, WP_Post $b ) use ( $gender_rank ): int {
+			$km_a = (float) get_post_meta( $a->ID, '_tsr_distance_km', true );
+			$km_b = (float) get_post_meta( $b->ID, '_tsr_distance_km', true );
+			if ( $km_a !== $km_b ) {
+				return $km_b <=> $km_a; // descending: longest first.
+			}
+			return $gender_rank[ tsr_race_gender( $a ) ] <=> $gender_rank[ tsr_race_gender( $b ) ];
+		}
+	);
+
+	return $posts;
+}
+
+/**
  * Convert a finish-time string to total seconds for comparison.
  *
  * Accepts H:MM:SS only — TSR_Schema::TIME_PATTERN guarantees every stored

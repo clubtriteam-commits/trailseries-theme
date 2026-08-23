@@ -137,24 +137,9 @@ if ( is_array( $tsr_past_cached ) ) {
 	}
 	wp_reset_postdata();
 
-	// Longest distance first, men before women within a distance — most of
-	// the field is men, so their results lead. _tsr_distance_km is set by
-	// backfill-meta; tsr_race_gender() (event-heuristics.php) falls back to
-	// slug/title parsing when a post predates that meta.
-	usort(
-		$tsr_past_results,
-		static function ( WP_Post $tsr_a, WP_Post $tsr_b ): int {
-			$tsr_km_a = (float) get_post_meta( $tsr_a->ID, '_tsr_distance_km', true );
-			$tsr_km_b = (float) get_post_meta( $tsr_b->ID, '_tsr_distance_km', true );
-			if ( $tsr_km_a !== $tsr_km_b ) {
-				return $tsr_km_b <=> $tsr_km_a; // descending: longest first.
-			}
-			// Same distance: men ('M') before women ('F'); anything
-			// undetermined ('') sorts after both rather than between them.
-			$tsr_rank = array( 'M' => 0, 'F' => 1, '' => 2 );
-			return $tsr_rank[ tsr_race_gender( $tsr_a ) ] <=> $tsr_rank[ tsr_race_gender( $tsr_b ) ];
-		}
-	);
+	// Site-wide ordering rule (ADR-004): longest distance first, men before
+	// women within a distance.
+	$tsr_past_results = tsr_sort_results_by_distance_gender( $tsr_past_results );
 
 	set_transient( $tsr_past_key, wp_list_pluck( $tsr_past_results, 'ID' ), 12 * HOUR_IN_SECONDS );
 }
