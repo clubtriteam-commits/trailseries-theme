@@ -6,8 +6,8 @@ declare( strict_types=1 );
  * Sections (in order):
  *   1. Hero with countdown to the 15th anniversary (1 October 2027)
  *   2. Upcoming events — next 3 from EventON plugin (post type ajde_events)
- *   3. Past events   — all ts_result posts belonging to the last 2 PAST
- *                      calendar events (ajde_events with evcal_srow < now),
+ *   3. Past events   — all ts_result posts belonging to the last 1 PAST
+ *                      calendar event (ajde_events with evcal_srow < now),
  *                      matched via _tsr_event_base + _tsr_season — not a
  *                      flat "last N published" query, since import order
  *                      isn't race order
@@ -61,7 +61,7 @@ if ( post_type_exists( 'ajde_events' ) ) {
 	wp_reset_postdata();
 }
 
-// 2. All ts_result posts for the last 2 PAST calendar events.
+// 2. All ts_result posts for the last 1 PAST calendar event.
 //
 // "Recent results" means results from races that have actually happened,
 // per the calendar — not "the 5 most recently published ts_result posts"
@@ -70,6 +70,9 @@ if ( post_type_exists( 'ajde_events' ) ) {
 // Matched via _tsr_event_base + _tsr_season, same fields page-event.php
 // uses; cached like it (functions.php tsr_cache_gen()) since this scans
 // every ts_result post per target event when the cache is cold.
+//
+// One event, not two: two events' worth of categories (up to a dozen rows)
+// crowded this teaser section — see commit history if that's ever revisited.
 $tsr_past_results = array();
 $tsr_past_key      = 'tsr_home_past_results_g' . tsr_cache_gen();
 $tsr_past_cached   = get_transient( $tsr_past_key );
@@ -80,7 +83,7 @@ if ( is_array( $tsr_past_cached ) ) {
 	$tsr_past_events_q = new WP_Query(
 		array(
 			'post_type'      => 'ajde_events',
-			'posts_per_page' => 2,
+			'posts_per_page' => 1,
 			'post_status'    => 'publish',
 			'meta_key'       => 'evcal_srow',
 			'orderby'        => 'meta_value_num',
@@ -133,6 +136,25 @@ if ( is_array( $tsr_past_cached ) ) {
 		$tsr_past_results = array_merge( $tsr_past_results, $tsr_matches );
 	}
 	wp_reset_postdata();
+
+	// Longest distance first, men before women within a distance — most of
+	// the field is men, so their results lead. _tsr_distance_km is set by
+	// backfill-meta; tsr_race_gender() (event-heuristics.php) falls back to
+	// slug/title parsing when a post predates that meta.
+	usort(
+		$tsr_past_results,
+		static function ( WP_Post $tsr_a, WP_Post $tsr_b ): int {
+			$tsr_km_a = (float) get_post_meta( $tsr_a->ID, '_tsr_distance_km', true );
+			$tsr_km_b = (float) get_post_meta( $tsr_b->ID, '_tsr_distance_km', true );
+			if ( $tsr_km_a !== $tsr_km_b ) {
+				return $tsr_km_b <=> $tsr_km_a; // descending: longest first.
+			}
+			// Same distance: men ('M') before women ('F'); anything
+			// undetermined ('') sorts after both rather than between them.
+			$tsr_rank = array( 'M' => 0, 'F' => 1, '' => 2 );
+			return $tsr_rank[ tsr_race_gender( $tsr_a ) ] <=> $tsr_rank[ tsr_race_gender( $tsr_b ) ];
+		}
+	);
 
 	set_transient( $tsr_past_key, wp_list_pluck( $tsr_past_results, 'ID' ), 12 * HOUR_IN_SECONDS );
 }
