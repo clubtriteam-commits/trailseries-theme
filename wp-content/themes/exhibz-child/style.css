@@ -1870,6 +1870,16 @@ body.tsr-modal-open {
 	margin:       0 2.5rem 1rem 0;
 }
 
+/* Title splits into "{event name} – {distance/variant}" (buildTitleHtml(),
+   traseta-modal.js): the event name is toned down to --tsr-muted so the
+   distance — left at the title's own navy/800 default — reads as the
+   dominant, contrasting half instead of both running together as one
+   same-weight phrase. */
+.tsr-modal-title__event {
+	color:       var(--tsr-muted);
+	font-weight: 700;
+}
+
 .tsr-modal__map {
 	height:        340px;
 	border-radius: var(--tsr-radius);

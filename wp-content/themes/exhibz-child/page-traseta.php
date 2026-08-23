@@ -102,16 +102,21 @@ function tsr_track_stat_icon( string $key ): string {
  * row (or Enter/Space when focused) opens the detail modal with a Leaflet
  * map and elevation profile parsed from the local GPX file.
  *
- * @param array<string, mixed> $tr       Track entry from tracks.json.
- * @param string               $gpx_base Base URL of the theme /gpx/ directory.
+ * @param array<string, mixed> $tr         Track entry from tracks.json.
+ * @param string               $gpx_base   Base URL of the theme /gpx/ directory.
+ * @param string               $event_name Parent event's display name (e.g. "7 Hills
+ *                                         Run") — the modal splits it off $tr['title']
+ *                                         to style the trailing distance/variant apart
+ *                                         from the event name.
  */
 if ( ! function_exists( 'tsr_track_row' ) ) {
-function tsr_track_row( array $tr, string $gpx_base ): void {
+function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void {
 	$is_legacy = ( 'legacy' === tsr_track_status( $tr ) );
 	?>
 	<li class="tsr-track<?php echo $is_legacy ? ' tsr-track--legacy' : ''; ?>"
 	    role="button" tabindex="0" aria-haspopup="dialog"
 	    data-title="<?php echo esc_attr( $tr['title'] ); ?>"
+	    data-event="<?php echo esc_attr( $event_name ); ?>"
 	    data-gpx="<?php echo esc_attr( ! empty( $tr['gpx_file'] ) ? $gpx_base . $tr['gpx_file'] : '' ); ?>"
 	    data-kml="<?php echo esc_attr( ! empty( $tr['kml_file'] ) ? $gpx_base . $tr['kml_file'] : '' ); ?>"
 	    data-distance="<?php echo esc_attr( (string) ( $tr['distance_km'] ?? '' ) ); ?>"
@@ -252,7 +257,7 @@ get_header();
 						<?php if ( ! empty( $tsr_current ) ) : ?>
 							<ul class="tsr-track-list">
 								<?php foreach ( $tsr_current as $tsr_tr ) : ?>
-									<?php tsr_track_row( $tsr_tr, $tsr_gpx_base ); ?>
+									<?php tsr_track_row( $tsr_tr, $tsr_gpx_base, $tsr_event['name'] ); ?>
 								<?php endforeach; ?>
 							</ul>
 						<?php endif; ?>
@@ -270,7 +275,7 @@ get_header();
 								</summary>
 								<ul class="tsr-track-list">
 									<?php foreach ( $tsr_legacy as $tsr_tr ) : ?>
-										<?php tsr_track_row( $tsr_tr, $tsr_gpx_base ); ?>
+										<?php tsr_track_row( $tsr_tr, $tsr_gpx_base, $tsr_event['name'] ); ?>
 									<?php endforeach; ?>
 								</ul>
 							</details>

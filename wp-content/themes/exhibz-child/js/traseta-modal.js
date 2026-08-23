@@ -66,12 +66,16 @@
 	//
 	// Point-to-point grade is too noisy to color by directly — ordinary GPS
 	// elevation jitter flickers between up/down on flat ground. Classify by
-	// the grade across a centered ~100 m window instead, so a segment only
-	// counts as a climb/descent once it's sustained for a real stretch.
+	// the grade across a centered ~300 m window instead, so a segment only
+	// counts as a climb/descent once it's sustained for a real stretch — a
+	// gently undulating trail can still cross the grade threshold every few
+	// dozen metres even smoothed this way, so smoothRuns() below also folds
+	// any short-lived run into its longer neighbor.
 
-	var GRADE_WINDOW_M = 100;
-	var GRADE_UP_PCT   = 3;
-	var GRADE_DOWN_PCT = -3;
+	var GRADE_WINDOW_M  = 300;
+	var GRADE_UP_PCT    = 3;
+	var GRADE_DOWN_PCT  = -3;
+	var MIN_RUN_SPAN_M  = 250;
 
 	var COLOR_CLIMB   = '#dc2626'; // var(--tsr-climb) in style.css — kept in
 	var COLOR_DESCENT = '#16a34a'; // sync manually; Leaflet's SVG renderer
@@ -127,6 +131,41 @@
 			runs.push( { cls: items[ start ].cls, items: items.slice( start ) } );
 		}
 		return runs;
+	}
+
+	/**
+	 * Reclassify any contiguous run shorter than minSpanM (metres) to match
+	 * whichever neighboring run is longer — without this, a trail that
+	 * repeatedly crosses the grade threshold over short stretches (a series
+	 * of small rollers) renders as visual noise: many thin alternating
+	 * stripes instead of a few real climb/descent bands. Mutates `vertices`
+	 * in place (rewrites `.cls`) and returns it. Two fixed passes catch runs
+	 * that only become mergeable after an earlier pass absorbs a neighbor;
+	 * fixed rather than loop-until-stable so it can never hang.
+	 *
+	 * @param {Array<{dist:number, cls:string}>} vertices
+	 * @param {number} minSpanM
+	 * @return {Array<Object>} The same array.
+	 */
+	function smoothRuns( vertices, minSpanM ) {
+		for ( var pass = 0; pass < 2; pass++ ) {
+			var runs = groupRuns( vertices );
+			if ( runs.length < 2 ) { break; }
+			runs.forEach( function ( run, r ) {
+				var span = run.items[ run.items.length - 1 ].dist - run.items[ 0 ].dist;
+				if ( span >= minSpanM ) { return; }
+				var prev = runs[ r - 1 ], next = runs[ r + 1 ];
+				var prevSpan = prev ? ( prev.items[ prev.items.length - 1 ].dist - prev.items[ 0 ].dist ) : -1;
+				var nextSpan = next ? ( next.items[ next.items.length - 1 ].dist - next.items[ 0 ].dist ) : -1;
+				var target = nextSpan > prevSpan ? ( next && next.cls ) : ( prev && prev.cls );
+				if ( ! target ) { return; }
+				var lo = run.items[ 0 ].dist, hi = run.items[ run.items.length - 1 ].dist;
+				vertices.forEach( function ( v ) {
+					if ( v.dist >= lo && v.dist <= hi ) { v.cls = target; }
+				} );
+			} );
+		}
+		return vertices;
 	}
 
 	function haversine( lat1, lon1, lat2, lon2 ) {
@@ -224,6 +263,7 @@
 		if ( vertices[ vertices.length - 1 ].dist !== last.dist ) {
 			vertices.push( { dist: last.dist, ele: last.ele, cls: classes[ classes.length - 1 ] } );
 		}
+		smoothRuns( vertices, MIN_RUN_SPAN_M );
 
 		var svg = '';
 
@@ -431,8 +471,9 @@
 		if ( elePoints.length >= 2 ) {
 			var classes  = classifyGrade( elePoints, GRADE_WINDOW_M );
 			var vertices = elePoints.map( function ( p, i ) {
-				return { lat: p.lat, lon: p.lon, cls: classes[ i ] };
+				return { lat: p.lat, lon: p.lon, dist: p.dist, cls: classes[ i ] };
 			} );
+			smoothRuns( vertices, MIN_RUN_SPAN_M );
 			groupRuns( vertices ).forEach( function ( run ) {
 				var latlngs = run.items.map( function ( v ) { return [ v.lat, v.lon ]; } );
 				L.polyline( latlngs, { color: classColor( run.cls ), weight: 3, opacity: 0.9 } ).addTo( trackLayer );
@@ -457,7 +498,30 @@
 		map.fitBounds( trackLayer.getBounds(), { padding: [ 20, 20 ] } );
 	}
 
-	// ── Stats row ───────────────────────────────────────────────────────────
+	// ── Title / stats row ───────────────────────────────────────────────────
+	//
+	// Same icon + label/value markup as tsr_track_row()'s stat cells
+	// (page-traseta.php) — the modal reuses .tsr-track__meta's grid, so both
+	// views need matching structure or the CSS grid has nothing to align.
+
+	var STAT_ICON_PATHS = {
+		distance:  '<circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/><path d="M6 12h12" stroke-dasharray="3 3"/>',
+		ascent:    '<path d="M4 20 20 4M20 4H10M20 4v10"/>',
+		descent:   '<path d="M4 4 20 20M20 20H10M20 20V10"/>',
+		elevation: '<path d="M3 20 9 8l4 6 2-3 6 9H3z"/>'
+	};
+
+	function statIcon( key ) {
+		return '<svg class="tsr-track__stat-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"' +
+			' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+			STAT_ICON_PATHS[ key ] + '</svg>';
+	}
+
+	function escapeHtml( s ) {
+		return String( s ).replace( /[&<>"']/g, function ( c ) {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ c ];
+		} );
+	}
 
 	function fmt( v ) {
 		return Number( v ).toLocaleString( 'bg-BG' );
@@ -465,26 +529,48 @@
 
 	function fillStats( d ) {
 		var items = [];
-		if ( d.distance ) { items.push( [ 'Дистанция', fmt( d.distance ) + ' км' ] ); }
-		if ( d.ascent )   { items.push( [ 'Изкачване', 'D+ ' + fmt( d.ascent ) + ' м' ] ); }
-		if ( d.descent )  { items.push( [ 'Спускане', 'D- ' + fmt( d.descent ) + ' м' ] ); }
-		if ( d.lowest && d.highest ) { items.push( [ 'Височина', fmt( d.lowest ) + '–' + fmt( d.highest ) + ' м' ] ); }
+		if ( d.distance ) { items.push( [ 'distance', 'Дистанция', fmt( d.distance ) + ' км' ] ); }
+		if ( d.ascent )   { items.push( [ 'ascent', 'Изкачване', 'D+ ' + fmt( d.ascent ) + ' м' ] ); }
+		if ( d.descent )  { items.push( [ 'descent', 'Спускане', 'D- ' + fmt( d.descent ) + ' м' ] ); }
+		if ( d.lowest && d.highest ) { items.push( [ 'elevation', 'Височина', fmt( d.lowest ) + '–' + fmt( d.highest ) + ' м' ] ); }
 		statsEl.innerHTML = items.map( function ( it ) {
-			return '<span class="tsr-track__stat"><span class="tsr-track__stat-label">' + it[ 0 ] +
-				'</span><span class="tsr-track__stat-value">' + it[ 1 ] + '</span></span>';
+			return '<span class="tsr-track__stat">' + statIcon( it[ 0 ] ) +
+				'<span class="tsr-track__stat-body"><span class="tsr-track__stat-label">' + it[ 1 ] +
+				'</span><span class="tsr-track__stat-value">' + it[ 2 ] + '</span></span></span>';
 		} ).join( '' );
+	}
+
+	/**
+	 * "7 Hills Run" + "7 Hills Run - Hard Core Edition 26km" → event name
+	 * plain, "– Hard Core Edition 26km" in .tsr-modal-title__dist. Falls
+	 * back to the raw title (no split) when it doesn't start with the event
+	 * name — defensive only; tracks.json always builds titles this way.
+	 */
+	function buildTitleHtml( title, eventName ) {
+		if ( ! eventName || title.indexOf( eventName ) !== 0 ) {
+			return escapeHtml( title );
+		}
+		var rest = title.slice( eventName.length ).trim().replace( /^[-–—]\s*/, '' );
+		if ( ! rest ) {
+			return escapeHtml( title );
+		}
+		return '<span class="tsr-modal-title__event">' + escapeHtml( eventName ) + '</span>' +
+			' <span class="tsr-modal-title__dist">– ' + escapeHtml( rest ) + '</span>';
 	}
 
 	// ── Modal open / close ──────────────────────────────────────────────────
 
+	var openTitle = null; // raw d.title of the currently-open track — stale-fetch guard.
+
 	function openModal( row ) {
 		var d = row.dataset;
 		lastFocus = row;
+		openTitle = d.title || '';
 
 		hideChartHover();
 		chartState = null;
 
-		titleEl.textContent = d.title || '';
+		titleEl.innerHTML = buildTitleHtml( openTitle, d.event || '' );
 		fillStats( d );
 
 		gpxBtn.hidden = ! d.gpx;
@@ -518,7 +604,7 @@
 				if ( ! points.length ) { throw new Error( 'no trkpt' ); }
 				gpxCache[ d.gpx ] = points;
 				// Ignore a stale response if another track was opened meanwhile.
-				if ( ! modal.hidden && titleEl.textContent === d.title ) {
+				if ( ! modal.hidden && openTitle === d.title ) {
 					drawMap( points );
 					drawChart( points );
 				}
