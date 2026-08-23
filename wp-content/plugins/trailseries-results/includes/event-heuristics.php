@@ -270,6 +270,31 @@ function tsr_sort_results_by_distance_gender( array $posts ): array {
 }
 
 /**
+ * Same ordering rule as tsr_sort_results_by_distance_gender() (ADR-004), for
+ * callers that already reduced posts to scalar km/gender pairs instead of
+ * WP_Post objects — e.g. page-event.php's editions list, which is
+ * transient-cached and deliberately holds scalars only, never post objects.
+ *
+ * @param list<array{km:float,gender:string}> $items Items to order. Not mutated.
+ * @return list<array{km:float,gender:string}> The same items, re-ordered.
+ */
+function tsr_sort_by_distance_gender_scalars( array $items ): array {
+	static $gender_rank = array( 'M' => 0, 'F' => 1, '' => 2 );
+
+	usort(
+		$items,
+		static function ( array $a, array $b ) use ( $gender_rank ): int {
+			if ( $a['km'] !== $b['km'] ) {
+				return $b['km'] <=> $a['km']; // descending: longest first.
+			}
+			return $gender_rank[ $a['gender'] ] <=> $gender_rank[ $b['gender'] ];
+		}
+	);
+
+	return $items;
+}
+
+/**
  * Convert a finish-time string to total seconds for comparison.
  *
  * Accepts H:MM:SS only — TSR_Schema::TIME_PATTERN guarantees every stored

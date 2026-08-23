@@ -35,22 +35,31 @@ Ties (equal distance, equal/undetermined gender) keep their incoming
 relative order — `usort()` is stable in PHP 8, so this never shuffles two
 otherwise-equal rows against each other.
 
-Currently applied: `front-page.php`'s "Последни резултати" section (the
-list of every category from the most recent past calendar event).
+Currently applied:
+
+- `front-page.php`'s "Последни резултати" section (every category from the
+  most recent past calendar event).
+- `single-ts_result.php`'s hub accordion (all sections of a legacy page
+  that absorbed multiple categories).
+- `page-rezultati.php`'s per-event category pills — including the hub
+  category itself, which used to render only as the plain event-name link
+  with no pill/label of its own (one category per event was invisible).
+- `page-event.php`'s "Издания" (editions) list, per year, via a second
+  function `tsr_sort_by_distance_gender_scalars( array $items ): array`
+  (same file) — this template reduces posts to scalar `{dist, url, km,
+  gender}` arrays before the ordering point (the array is transient-cached
+  and deliberately never holds `WP_Post` objects), so it sorts on the `km`/
+  `gender` scalars directly instead of calling the `WP_Post`-based
+  function.
 
 ## Consequences
 
-- Positive: one function, one rule — a future template that lists results
-  side by side reuses `tsr_sort_results_by_distance_gender()` instead of
-  reinventing (or silently diverging from) the ordering.
+- Positive: one rule, two small entry points (`WP_Post`-based and
+  scalar-based) — a future template that lists results side by side reuses
+  one of these instead of reinventing (or silently diverging from) the
+  ordering.
 - Negative: depends on `_tsr_distance_km` being populated
   (`wp tsr backfill-meta`) for a correct distance sort; a post missing that
   meta reads `0.0` and sorts as if it were the shortest distance rather than
   being flagged as unknown. Acceptable — every currently-published post has
   it, and a future gap would misplace one row, not crash.
-- Not yet retrofitted: `page-event.php`'s "Издания" (editions) list, which
-  currently builds `{dist, url}` pairs (not full `WP_Post` objects) while
-  looping for course records in the same pass — applying the shared
-  function there means restructuring that loop to carry `WP_Post` through,
-  not a drop-in call. Left for whoever next touches that template, per this
-  ADR.

@@ -113,10 +113,14 @@ if ( $tsr_searching ) {
 		$tsr_dist = tsr_dist_label_from_title( $tsr_p->post_title );
 		$tsr_dk   = '' !== $tsr_dist ? $tsr_dist : 'Всички';
 
-		// Scalars only — this array is transient-cached below.
+		// Scalars only — this array is transient-cached below. 'km' and
+		// 'gender' exist only to sort (ADR-004; tsr_sort_by_distance_gender_scalars()),
+		// never rendered.
 		$tsr_editions[ $tsr_year ][] = array(
-			'dist' => $tsr_dist,
-			'url'  => get_permalink( $tsr_p ),
+			'dist'   => $tsr_dist,
+			'url'    => get_permalink( $tsr_p ),
+			'km'     => (float) get_post_meta( $tsr_p->ID, '_tsr_distance_km', true ),
+			'gender' => tsr_race_gender( $tsr_p ),
 		);
 
 		// Course record per distance category.
@@ -156,6 +160,13 @@ if ( $tsr_searching ) {
 
 	krsort( $tsr_editions, SORT_NUMERIC );
 	ksort( $tsr_records );
+
+	// Site-wide ordering rule (ADR-004): longest distance first, men
+	// before women within a distance, applied within each year.
+	foreach ( $tsr_editions as &$tsr_eds_for_year ) {
+		$tsr_eds_for_year = tsr_sort_by_distance_gender_scalars( $tsr_eds_for_year );
+	}
+	unset( $tsr_eds_for_year );
 
 	if ( is_array( $tsr_event_hit ) ) {
 		$tsr_event_display = (string) $tsr_event_hit['display'];
