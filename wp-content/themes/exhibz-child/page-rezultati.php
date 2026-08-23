@@ -84,6 +84,63 @@ foreach ( $all_posts as $post ) {
 // lands last after krsort — correct position at the bottom of the list.
 krsort( $grouped, SORT_NUMERIC );
 
+// ── 2b. Within each year, order races by actual calendar date ───────────────
+//
+// $grouped[$year] is keyed by event name in whatever order the date-DESC
+// post fetch happened to first encounter each event's posts — arbitrary
+// relative to the actual race calendar (results-derived, not date-derived).
+// The requested order is reverse-chronological within a season: the year's
+// LAST race at the top, its FIRST race at the bottom. ts_result slugs for
+// these events carry no day/month token to derive that from, so the real
+// signal is the ajde_events calendar (evcal_srow) — same event_base/year
+// match front-page.php's "Последни резултати" section already uses.
+//
+// Events with no calendar match (older seasons that predate the EventON
+// calendar) have no date signal at all; they sort after every dated event
+// in their year, keeping their prior relative order among themselves
+// (usort is stable in PHP 8) rather than being scrambled.
+if ( post_type_exists( 'ajde_events' ) ) {
+	$tsr_event_dates = array(); // [ year => [ event_base => evcal_srow ] ]
+	foreach ( get_posts( array(
+		'post_type'      => 'ajde_events',
+		'posts_per_page' => -1,
+		'post_status'    => 'publish',
+	) ) as $tsr_ev_post ) {
+		$tsr_ev_title = html_entity_decode( $tsr_ev_post->post_title, ENT_QUOTES, 'UTF-8' );
+		$tsr_ev_base  = tsr_event_base_name( $tsr_ev_title );
+		if ( '' === $tsr_ev_base ) {
+			continue;
+		}
+		$tsr_ev_ts   = (int) get_post_meta( $tsr_ev_post->ID, 'evcal_srow', true );
+		$tsr_ev_year = tsr_title_year( $tsr_ev_title ) ?? (int) date_i18n( 'Y', $tsr_ev_ts );
+		// A later calendar entry for the same event+year (edit, duplicate)
+		// wins — last one processed simply overwrites, no ordering assumed.
+		$tsr_event_dates[ $tsr_ev_year ][ $tsr_ev_base ] = $tsr_ev_ts;
+	}
+
+	foreach ( $grouped as $tsr_year => &$tsr_events_for_year ) {
+		$tsr_dates_this_year = $tsr_event_dates[ $tsr_year ] ?? array();
+		uksort(
+			$tsr_events_for_year,
+			static function ( string $tsr_a, string $tsr_b ) use ( $tsr_dates_this_year ): int {
+				$tsr_ts_a = $tsr_dates_this_year[ $tsr_a ] ?? null;
+				$tsr_ts_b = $tsr_dates_this_year[ $tsr_b ] ?? null;
+				if ( null === $tsr_ts_a && null === $tsr_ts_b ) {
+					return 0; // neither dated — keep relative order (stable sort).
+				}
+				if ( null === $tsr_ts_a ) {
+					return 1; // undated sorts after dated.
+				}
+				if ( null === $tsr_ts_b ) {
+					return -1;
+				}
+				return $tsr_ts_b <=> $tsr_ts_a; // descending: latest race first.
+			}
+		);
+	}
+	unset( $tsr_events_for_year );
+}
+
 // ── Season display labels ─────────────────────────────────────────────────────
 $season_labels = array(
 	2012 => 'Сезон 1 (2012–2013)',
@@ -175,7 +232,9 @@ $season_labels = array(
 								if ( null === $primary ) {
 									$primary = array_shift( $event_posts );
 								}
-								usort( $cats, static fn( $a, $b ) => strcmp( $a->post_title, $b->post_title ) );
+								// Site-wide ordering rule (ADR-004): longest distance first,
+								// men before women within a distance.
+								$cats = tsr_sort_results_by_distance_gender( $cats );
 
 								$primary_url = get_permalink( $primary );
 								?>

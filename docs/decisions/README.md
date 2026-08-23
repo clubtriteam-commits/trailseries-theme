@@ -9,6 +9,7 @@ numbered, never deleted — superseded ADRs get `Status: Superseded by ADR-NNN`.
 | [ADR-002](ADR-002-plugin-separate-from-theme.md) | Results logic lives in a plugin, separate from the theme | Accepted |
 | [ADR-003](ADR-003-url-preservation.md) | Legacy URLs are preserved byte-for-byte, verified by crawl diff | Accepted |
 | [ADR-004](ADR-004-results-list-ordering.md) | Results listings order by distance (desc), then gender (M before F) | Accepted |
+| [ADR-005](ADR-005-chronological-proximity-ordering.md) | Event/race listings order by proximity to "now" (soonest upcoming / most recent past first) | Accepted |
 
 ## Template
 
