@@ -27,6 +27,8 @@ Text Domain:  exhibz-child
 	--tsr-navy:    #0a1628;   /* near-black navy for hero + dark sections   */
 	--tsr-navy-2:  #0d2040;   /* slightly lighter navy for gradient depth   */
 	--tsr-orange:  #e05c1e;   /* accent / CTA — use sparingly               */
+	--tsr-climb:   #dc2626;   /* track profile/map — uphill segments (≥3% grade)   */
+	--tsr-descent: #16a34a;   /* track profile/map — downhill segments (≤-3% grade) */
 	--tsr-text:    #111827;   /* near-black body text                        */
 	--tsr-muted:   #5b6472;   /* secondary / meta text — ≥4.5:1 on #f2f4f7 (the old #6b7280 was ~4.4:1) */
 	--tsr-bg:      #f2f4f7;   /* light neutral page background               */
@@ -1954,6 +1956,20 @@ body.tsr-modal-open {
 	transform:     translate(-50%, -50%);
 }
 
+/* Discreet per-km marker on the route: a small plain dot, deliberately much
+   quieter than the hover marker above — it's a passive distance reference,
+   not something to click or focus on. Shows "N км" in a tooltip on hover. */
+.tsr-km-marker {
+	display:       block;
+	width:         7px;
+	height:        7px;
+	border-radius: 50%;
+	background:    #fff;
+	border:        1.5px solid var(--tsr-navy);
+	opacity:       0.75;
+	box-sizing:    border-box;
+}
+
 .tsr-chart__grid {
 	stroke:       var(--tsr-border);
 	stroke-width: 1;
@@ -1964,8 +1980,18 @@ body.tsr-modal-open {
 	stroke-width: 1;
 }
 
+/* Discreet, unlabeled tick at every whole km — thinner and fainter than
+   .tsr-chart__tick (the labeled "nice interval" ticks), so the km grid
+   reads as a subtle texture rather than competing with the labeled ones. */
+.tsr-chart__km-tick {
+	stroke:       var(--tsr-border);
+	stroke-width: 1;
+	opacity:      0.8;
+}
+
+/* Segment stroke color is set inline per-path (climb/descent/flat vary
+   within one chart) — this class only fixes width/join, shared by all three. */
 .tsr-chart__line {
-	stroke:          #e05c1e;
 	stroke-width:    2;
 	stroke-linejoin: round;
 }

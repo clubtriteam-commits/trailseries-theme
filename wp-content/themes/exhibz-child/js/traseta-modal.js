@@ -2,8 +2,10 @@
  * Трасета — track detail modal.
  *
  * Click a track row → modal with a Leaflet map (full-resolution GPX
- * polyline), an SVG elevation profile, stats, and GPX/KML downloads.
- * GPX files are fetched and parsed lazily on first open, then cached.
+ * polyline) and an SVG elevation profile, both colored by local grade —
+ * climbs red, descents green, flat blue (classifyGrade(), ~100 m smoothing
+ * window) — plus stats, discreet per-km markers/ticks on both, and GPX/KML
+ * downloads. GPX files are fetched and parsed lazily on first open, cached.
  *
  * @package exhibz-child
  */
@@ -41,11 +43,91 @@
 		iconSize:   [ 16, 16 ],
 		iconAnchor: [ 8, 8 ]
 	} );
+	// Discreet per-km distance reference — deliberately much quieter than
+	// the hover marker (small, low-opacity, no permanent label; "N км"
+	// shows in a tooltip on hover only). Styles inlined for the same
+	// pre-stylesheet-load resilience as hoverIcon above.
+	var kmIcon = L.divIcon( {
+		className: 'tsr-km-marker-wrap',
+		html:
+			'<span class="tsr-km-marker" style="display:block;width:7px;height:7px;' +
+			'border-radius:50%;background:#fff;border:1.5px solid #0a1628;opacity:.75;' +
+			'box-sizing:border-box;"></span>',
+		iconSize:   [ 7, 7 ],
+		iconAnchor: [ 3.5, 3.5 ]
+	} );
 	var gpxCache   = {}; // url → parsed points [{lat, lon, ele, dist}]
 	var lastFocus  = null;
 	var chartState = null; // geometry + points needed to map hover x → track point
 
 	// ── GPX parsing ─────────────────────────────────────────────────────────
+
+	// ── Slope classification (изкачване / равно / спускане) ────────────────
+	//
+	// Point-to-point grade is too noisy to color by directly — ordinary GPS
+	// elevation jitter flickers between up/down on flat ground. Classify by
+	// the grade across a centered ~100 m window instead, so a segment only
+	// counts as a climb/descent once it's sustained for a real stretch.
+
+	var GRADE_WINDOW_M = 100;
+	var GRADE_UP_PCT   = 3;
+	var GRADE_DOWN_PCT = -3;
+
+	var COLOR_CLIMB   = '#dc2626'; // var(--tsr-climb) in style.css — kept in
+	var COLOR_DESCENT = '#16a34a'; // sync manually; Leaflet's SVG renderer
+	var COLOR_FLAT    = '#00aadd'; // sets `stroke` as a plain attribute, not
+	                                // a style property, so var() won't resolve there.
+
+	function classColor( cls ) {
+		return 'up' === cls ? COLOR_CLIMB : ( 'down' === cls ? COLOR_DESCENT : COLOR_FLAT );
+	}
+
+	/**
+	 * Classify every point in a dist-sorted array as 'up' | 'down' | 'flat'
+	 * by the elevation change across a centered window (metres) around it.
+	 *
+	 * @param {Array<{dist:number, ele:number}>} points
+	 * @param {number} windowM
+	 * @return {string[]} One class per input point, same order/length.
+	 */
+	function classifyGrade( points, windowM ) {
+		var n = points.length;
+		var classes = new Array( n );
+		var lo = 0, hi = 0;
+		for ( var i = 0; i < n; i++ ) {
+			var d = points[ i ].dist;
+			while ( lo < i && d - points[ lo ].dist > windowM / 2 ) { lo++; }
+			while ( hi < n - 1 && points[ hi + 1 ].dist - d <= windowM / 2 ) { hi++; }
+			var span  = points[ hi ].dist - points[ lo ].dist;
+			var grade = span > 5 ? ( ( points[ hi ].ele - points[ lo ].ele ) / span ) * 100 : 0;
+			classes[ i ] = grade >= GRADE_UP_PCT ? 'up' : ( grade <= GRADE_DOWN_PCT ? 'down' : 'flat' );
+		}
+		return classes;
+	}
+
+	/**
+	 * Group a list of { ..., cls } items into contiguous same-class runs.
+	 * Each run (after the first) starts by repeating the previous run's
+	 * last item, so adjacent segments share a boundary point and draw with
+	 * no visual gap between them.
+	 *
+	 * @param {Array<Object>} items Each item must carry a `cls` property.
+	 * @return {Array<{cls: string, items: Array<Object>}>}
+	 */
+	function groupRuns( items ) {
+		var runs  = [];
+		var start = 0;
+		for ( var i = 1; i < items.length; i++ ) {
+			if ( items[ i ].cls !== items[ i - 1 ].cls ) {
+				runs.push( { cls: items[ start ].cls, items: items.slice( start, i + 1 ) } );
+				start = i;
+			}
+		}
+		if ( start < items.length ) {
+			runs.push( { cls: items[ start ].cls, items: items.slice( start ) } );
+		}
+		return runs;
+	}
 
 	function haversine( lat1, lon1, lat2, lon2 ) {
 		var R  = 6371000;
@@ -129,21 +211,21 @@
 		function x( d ) { return padL + ( d / totalM ) * iw; }
 		function y( e ) { return padT + ( 1 - ( e - minE ) / ( maxE - minE ) ) * ih; }
 
-		// Downsample to ~400 points for the path.
-		var step = Math.max( 1, Math.floor( eles.length / 400 ) );
-		var line = '';
+		// Downsample to ~400 points for the path, classifying each by local
+		// grade so the profile draws as climb/flat/descent-colored segments
+		// instead of one flat-colored fill.
+		var step    = Math.max( 1, Math.floor( eles.length / 400 ) );
+		var classes = classifyGrade( eles, GRADE_WINDOW_M );
+		var vertices = [];
 		for ( var i = 0; i < eles.length; i += step ) {
-			line += ( line ? 'L' : 'M' ) + x( eles[ i ].dist ).toFixed( 1 ) + ',' + y( eles[ i ].ele ).toFixed( 1 );
+			vertices.push( { dist: eles[ i ].dist, ele: eles[ i ].ele, cls: classes[ i ] } );
 		}
 		var last = eles[ eles.length - 1 ];
-		line += 'L' + x( last.dist ).toFixed( 1 ) + ',' + y( last.ele ).toFixed( 1 );
-		var area = line + 'L' + x( last.dist ).toFixed( 1 ) + ',' + ( padT + ih ) +
-			'L' + padL + ',' + ( padT + ih ) + 'Z';
+		if ( vertices[ vertices.length - 1 ].dist !== last.dist ) {
+			vertices.push( { dist: last.dist, ele: last.ele, cls: classes[ classes.length - 1 ] } );
+		}
 
-		var svg = '<defs><linearGradient id="tsr-ele-grad" x1="0" y1="0" x2="0" y2="1">' +
-			'<stop offset="0%" stop-color="#ff9a3c" stop-opacity="0.95"/>' +
-			'<stop offset="100%" stop-color="#e05c1e" stop-opacity="0.55"/>' +
-			'</linearGradient></defs>';
+		var svg = '';
 
 		// Horizontal gridlines + y labels (fewer on mobile — larger text needs
 		// more vertical room to avoid overlapping).
@@ -155,7 +237,14 @@
 			svg += '<text x="' + ( padL - 6 ) + '" y="' + yy + '" class="tsr-chart__ylabel">' + Math.round( e ) + '</text>';
 		}
 
-		// X ticks every niceStep km.
+		// Discreet, unlabeled tick at every whole km — a subtle distance
+		// reference denser than the labeled ticks below.
+		for ( var dkm = 1; dkm < totalKm; dkm++ ) {
+			var dxx = x( dkm * 1000 ).toFixed( 1 );
+			svg += '<line x1="' + dxx + '" y1="' + ( padT + ih ) + '" x2="' + dxx + '" y2="' + ( padT + ih + 3 ) + '" class="tsr-chart__km-tick"/>';
+		}
+
+		// Labeled X ticks every niceStep km.
 		var kmStep = niceStep( totalKm, isMobile );
 		for ( var km = 0; km <= totalKm; km += kmStep ) {
 			var xx = x( km * 1000 ).toFixed( 1 );
@@ -163,8 +252,19 @@
 			svg += '<text x="' + xx + '" y="' + ( H - 8 ) + '" class="tsr-chart__xlabel">' + km + ' км</text>';
 		}
 
-		svg += '<path d="' + area + '" fill="url(#tsr-ele-grad)"/>';
-		svg += '<path d="' + line + '" fill="none" class="tsr-chart__line"/>';
+		groupRuns( vertices ).forEach( function ( run ) {
+			var segLine = '';
+			run.items.forEach( function ( v ) {
+				segLine += ( segLine ? 'L' : 'M' ) + x( v.dist ).toFixed( 1 ) + ',' + y( v.ele ).toFixed( 1 );
+			} );
+			var segFirst = run.items[ 0 ];
+			var segLast  = run.items[ run.items.length - 1 ];
+			var segArea  = segLine + 'L' + x( segLast.dist ).toFixed( 1 ) + ',' + ( padT + ih ) +
+				'L' + x( segFirst.dist ).toFixed( 1 ) + ',' + ( padT + ih ) + 'Z';
+			var color = classColor( run.cls );
+			svg += '<path d="' + segArea + '" style="fill:' + color + ';fill-opacity:.28;stroke:none;"/>';
+			svg += '<path d="' + segLine + '" fill="none" class="tsr-chart__line" style="stroke:' + color + ';"/>';
+		} );
 
 		// Hover guide (vertical line + dot on the profile), updated on
 		// mousemove without touching the rest of the markup.
@@ -322,8 +422,37 @@
 		if ( trackLayer ) {
 			map.removeLayer( trackLayer );
 		}
-		var latlngs = points.map( function ( p ) { return [ p.lat, p.lon ]; } );
-		trackLayer = L.polyline( latlngs, { color: '#e05c1e', weight: 3, opacity: 0.9 } ).addTo( map );
+		trackLayer = L.featureGroup();
+
+		// Color the polyline itself by grade, same climb/flat/descent rule
+		// and window as the elevation profile. Falls back to a single flat-
+		// colored line when the GPX carries no elevation at all.
+		var elePoints = points.filter( function ( p ) { return p.ele !== null; } );
+		if ( elePoints.length >= 2 ) {
+			var classes  = classifyGrade( elePoints, GRADE_WINDOW_M );
+			var vertices = elePoints.map( function ( p, i ) {
+				return { lat: p.lat, lon: p.lon, cls: classes[ i ] };
+			} );
+			groupRuns( vertices ).forEach( function ( run ) {
+				var latlngs = run.items.map( function ( v ) { return [ v.lat, v.lon ]; } );
+				L.polyline( latlngs, { color: classColor( run.cls ), weight: 3, opacity: 0.9 } ).addTo( trackLayer );
+			} );
+		} else {
+			var flatLatlngs = points.map( function ( p ) { return [ p.lat, p.lon ]; } );
+			L.polyline( flatLatlngs, { color: COLOR_FLAT, weight: 3, opacity: 0.9 } ).addTo( trackLayer );
+		}
+
+		// Discreet distance markers, one per whole km (endpoints excluded —
+		// the start/finish are already obvious on the map).
+		var totalM = points[ points.length - 1 ].dist;
+		for ( var km = 1; km * 1000 < totalM; km++ ) {
+			var pt = pointAtDistance( points, km * 1000 );
+			L.marker( [ pt.lat, pt.lon ], { icon: kmIcon, keyboard: false } )
+				.bindTooltip( km + ' км', { direction: 'top', opacity: 0.9 } )
+				.addTo( trackLayer );
+		}
+
+		trackLayer.addTo( map );
 		map.invalidateSize();
 		map.fitBounds( trackLayer.getBounds(), { padding: [ 20, 20 ] } );
 	}
