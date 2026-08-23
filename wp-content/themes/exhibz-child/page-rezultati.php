@@ -232,9 +232,12 @@ $season_labels = array(
 								if ( null === $primary ) {
 									$primary = array_shift( $event_posts );
 								}
-								// Site-wide ordering rule (ADR-004): longest distance first,
-								// men before women within a distance.
-								$cats = tsr_sort_results_by_distance_gender( $cats );
+								// Every available category gets a pill — including the hub
+								// category itself, which otherwise has no visible label at
+								// all (it's only reachable via the bare event-name link).
+								// Site-wide ordering rule (ADR-004) governs the combined
+								// list: longest distance first, men before women.
+								$pills = tsr_sort_results_by_distance_gender( array_merge( array( $primary ), $cats ) );
 
 								$primary_url = get_permalink( $primary );
 								?>
@@ -246,9 +249,9 @@ $season_labels = array(
 										<?php echo esc_html( $event_name ); ?>
 									</a>
 
-									<?php if ( ! empty( $cats ) ) : ?>
+									<?php if ( ! empty( $pills ) ) : ?>
 										<ul class="tsr-cat-list">
-											<?php foreach ( $cats as $cat_post ) : ?>
+											<?php foreach ( $pills as $cat_post ) : ?>
 												<?php
 												$cat_sep   = mb_strpos( $cat_post->post_title, ' — ' );
 												$cat_label = false !== $cat_sep
