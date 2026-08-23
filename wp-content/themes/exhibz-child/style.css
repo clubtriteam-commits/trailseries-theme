@@ -2997,14 +2997,16 @@ a.tsr-partner-card:hover {
 }
 
 /* ── Single event page — EventON plugin overrides ────────────────────────────
-   The plugin's own boxes (thumbnail/Event Details/Time/Location/
-   Calendar/Get Directions on /events/<slug>/) ship flat #f3f3f3 grey
-   (.evocard_box, eventon_styles.css) that reads as washed-out against our
-   white page background. Overridden here rather than editing the plugin's
-   CSS directly — wp-content/plugins/* is gitignored and updates would wipe
-   an in-place edit. Pale pastel blue, same tone already used for the
-   traseta row hover state, so it reads as intentional brand accent rather
-   than a mismatched grey. */
-.evocard_box {
+   The plugin's own boxes ship flat grey that reads as washed-out against
+   our white page background — two separate rules in eventon_styles.css:
+   .evocard_box (#f3f3f3 — Event Details/Time/Location/Calendar/Get
+   Directions) and .desc_trig (#e6e6e6 — the top thumbnail+date+title
+   summary bar). Overridden here rather than editing the plugin's CSS
+   directly — wp-content/plugins/* is gitignored and updates would wipe an
+   in-place edit. Pale pastel blue, same tone already used for the traseta
+   row hover state, so it reads as intentional brand accent rather than a
+   mismatched grey. */
+.evocard_box,
+.desc_trig {
 	background-color: #eaf6fb;
 }
