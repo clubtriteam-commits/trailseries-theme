@@ -701,6 +701,34 @@
 		}
 		if ( ev.key === 'Escape' ) {
 			closeModal();
+			return;
+		}
+		// Focus trap: while the dialog is open, Tab cycles inside it instead
+		// of escaping to the (visually inert) page underneath.
+		if ( ev.key === 'Tab' ) {
+			var focusables = Array.prototype.filter.call(
+				modal.querySelectorAll( 'a[href], button:not([disabled])' ),
+				function ( el ) {
+					// Skips [hidden] buttons (KML/Strava when absent) — a
+					// hidden element has no offsetParent.
+					return el.offsetParent !== null;
+				}
+			);
+			if ( ! focusables.length ) {
+				return;
+			}
+			var first = focusables[ 0 ];
+			var last  = focusables[ focusables.length - 1 ];
+			if ( ev.shiftKey && document.activeElement === first ) {
+				ev.preventDefault();
+				last.focus();
+			} else if ( ! ev.shiftKey && document.activeElement === last ) {
+				ev.preventDefault();
+				first.focus();
+			} else if ( ! modal.contains( document.activeElement ) ) {
+				ev.preventDefault();
+				first.focus();
+			}
 		}
 	} );
 }());

@@ -1815,6 +1815,23 @@ h1, h2, h3, h4, h5, h6 {
 	background: var(--tsr-navy);
 }
 
+/* Keyboard focus — the default outline is suppressed by the parent theme's
+   reset, so without these a keyboard user has no idea where they are. */
+.tsr-track[role="button"]:focus-visible,
+.tsr-track__gpx:focus-visible,
+.tsr-modal__close:focus-visible,
+.tsr-track-legacy-group__summary:focus-visible {
+	outline:        2px solid var(--tsr-blue-dk);
+	outline-offset: 2px;
+}
+
+/* Touch devices: lift the pill buttons to a ~44px tap target. */
+@media (pointer: coarse) {
+	.tsr-track__gpx {
+		padding: 0.6rem 1.05rem;
+	}
+}
+
 /* ── Трасета — track detail modal ───────────────────────────────────────────── */
 .tsr-modal {
 	position: fixed;
@@ -2081,6 +2098,35 @@ body.tsr-modal-open {
 		font-size: 16px;
 	}
 }
+
+/* Legend for the grade colors on the profile + map — without it the
+   red/blue/green segments are unexplained, and for red-green colorblind
+   visitors the labels are the only reliable decoding. */
+.tsr-chart-legend {
+	display:         flex;
+	justify-content: center;
+	gap:             1.25rem;
+	margin-top:      0.35rem;
+	font-size:       0.72rem;
+	font-weight:     600;
+	color:           var(--tsr-muted);
+}
+
+.tsr-chart-legend__item {
+	display:     inline-flex;
+	align-items: center;
+	gap:         0.35rem;
+}
+
+.tsr-chart-legend__swatch {
+	width:         14px;
+	height:        4px;
+	border-radius: 2px;
+}
+
+.tsr-chart-legend__swatch--climb   { background: var(--tsr-climb); }
+.tsr-chart-legend__swatch--flat    { background: var(--tsr-blue); }
+.tsr-chart-legend__swatch--descent { background: var(--tsr-descent); }
 
 .tsr-modal__stats {
 	margin-bottom: 1rem;

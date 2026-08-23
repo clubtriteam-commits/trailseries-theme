@@ -323,6 +323,11 @@ get_header();
 			     viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet"
 			     role="img" aria-label="Профил на изкачването"></svg>
 			<div class="tsr-chart-tooltip" id="tsr-modal-chart-tooltip" hidden></div>
+			<div class="tsr-chart-legend">
+				<span class="tsr-chart-legend__item"><span class="tsr-chart-legend__swatch tsr-chart-legend__swatch--climb"></span>Изкачване</span>
+				<span class="tsr-chart-legend__item"><span class="tsr-chart-legend__swatch tsr-chart-legend__swatch--flat"></span>Равно</span>
+				<span class="tsr-chart-legend__item"><span class="tsr-chart-legend__swatch tsr-chart-legend__swatch--descent"></span>Спускане</span>
+			</div>
 		</div>
 		<div class="tsr-modal__stats tsr-track__meta" id="tsr-modal-stats"></div>
 		<div class="tsr-modal__actions">
