@@ -102,6 +102,13 @@ add_filter( 'wp_resource_hints', static function ( array $urls, string $relation
 			'href'        => 'https://fonts.gstatic.com',
 			'crossorigin' => 'anonymous',
 		);
+		// Map pages fetch OSM tiles the moment a map first renders — warming
+		// the origin saves the DNS+TLS round trip on the first modal open.
+		if ( is_front_page() || is_page_template( 'page-traseta.php' ) ) {
+			$urls[] = array(
+				'href' => 'https://tile.openstreetmap.org',
+			);
+		}
 	}
 	return $urls;
 }, 10, 2 );

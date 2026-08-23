@@ -40,7 +40,8 @@ usort(
 	static fn( array $a, array $b ): int => strnatcasecmp( $a['name'], $b['name'] )
 );
 
-$tsr_gpx_base = get_stylesheet_directory_uri() . '/gpx/';
+$tsr_gpx_base    = get_stylesheet_directory_uri() . '/gpx/';
+$tsr_points_base = get_stylesheet_directory_uri() . '/data/tracks/';
 
 /**
  * Render a 1-5 star difficulty rating.
@@ -91,7 +92,29 @@ function tsr_track_stat_icon( string $key ): string {
 	}
 	return '<svg class="tsr-track__stat-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"'
 		. ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-		. $paths[ $key ] . '</svg>';
+		. '<use href="#tsr-i-' . esc_attr( $key ) . '"/></svg>';
+}
+}
+
+/**
+ * Icon <symbol> definitions, rendered once per page — every stat cell and
+ * button references these via <use> instead of repeating the full path
+ * markup on all 59 rows. Geometry only; fill/stroke live on the <svg>
+ * wrappers so the same symbol can be stroked (stats) or filled (buttons).
+ */
+if ( ! function_exists( 'tsr_track_icon_defs' ) ) {
+function tsr_track_icon_defs(): void {
+	?>
+	<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+		<symbol id="tsr-i-distance" viewBox="0 0 24 24"><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/><path d="M6 12h12" stroke-dasharray="3 3"/></symbol>
+		<symbol id="tsr-i-ascent" viewBox="0 0 24 24"><path d="M4 20 20 4M20 4H10M20 4v10"/></symbol>
+		<symbol id="tsr-i-descent" viewBox="0 0 24 24"><path d="M4 4 20 20M20 20H10M20 20V10"/></symbol>
+		<symbol id="tsr-i-elevation" viewBox="0 0 24 24"><path d="M3 20 9 8l4 6 2-3 6 9H3z"/></symbol>
+		<symbol id="tsr-i-download" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></symbol>
+		<?php // Official Strava mark (Simple Icons, CC0) — brand guidelines ask for the real glyph when linking to Strava. ?>
+		<symbol id="tsr-i-strava" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></symbol>
+	</svg>
+	<?php
 }
 }
 
@@ -102,15 +125,17 @@ function tsr_track_stat_icon( string $key ): string {
  * row (or Enter/Space when focused) opens the detail modal with a Leaflet
  * map and elevation profile parsed from the local GPX file.
  *
- * @param array<string, mixed> $tr         Track entry from tracks.json.
- * @param string               $gpx_base   Base URL of the theme /gpx/ directory.
- * @param string               $event_name Parent event's display name (e.g. "7 Hills
- *                                         Run") — the modal splits it off $tr['title']
- *                                         to style the trailing distance/variant apart
- *                                         from the event name.
+ * @param array<string, mixed> $tr          Track entry from tracks.json.
+ * @param string               $gpx_base    Base URL of the theme /gpx/ directory.
+ * @param string               $event_name  Parent event's display name (e.g. "7 Hills
+ *                                          Run") — the modal splits it off $tr['title']
+ *                                          to style the trailing distance/variant apart
+ *                                          from the event name.
+ * @param string               $points_base Base URL of the /data/tracks/ points files
+ *                                          (the modal's lightweight GPX alternative).
  */
 if ( ! function_exists( 'tsr_track_row' ) ) {
-function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void {
+function tsr_track_row( array $tr, string $gpx_base, string $event_name, string $points_base = '' ): void {
 	$is_legacy = ( 'legacy' === tsr_track_status( $tr ) );
 	?>
 	<li class="tsr-track<?php echo $is_legacy ? ' tsr-track--legacy' : ''; ?>"
@@ -121,6 +146,7 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void 
 	    data-event="<?php echo esc_attr( $event_name ); ?>"
 	    data-gpx="<?php echo esc_attr( ! empty( $tr['gpx_file'] ) ? $gpx_base . $tr['gpx_file'] : '' ); ?>"
 	    data-kml="<?php echo esc_attr( ! empty( $tr['kml_file'] ) ? $gpx_base . $tr['kml_file'] : '' ); ?>"
+	    data-points="<?php echo esc_attr( ! empty( $tr['points_file'] ) ? $points_base . $tr['points_file'] : '' ); ?>"
 	    data-strava="<?php echo esc_attr( $tr['strava_route_url'] ?? '' ); ?>"
 	    data-distance="<?php echo esc_attr( (string) ( $tr['distance_km'] ?? '' ) ); ?>"
 	    data-ascent="<?php echo esc_attr( (string) ( $tr['ascent_m'] ?? '' ) ); ?>"
@@ -206,7 +232,7 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void 
 			<a class="tsr-track__gpx"
 			   href="<?php echo esc_url( $gpx_base . $tr['gpx_file'] ); ?>"
 			   download>
-				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-download"/></svg>
 				GPX
 			</a>
 		<?php endif; ?>
@@ -215,7 +241,7 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void 
 			<a class="tsr-track__gpx tsr-track__gpx--strava"
 			   href="<?php echo esc_url( $tr['strava_route_url'] ); ?>"
 			   target="_blank" rel="noopener">
-				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M13 2 5 14h5l-2 8 9-13h-5l1-7z"/></svg>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-strava"/></svg>
 				Strava Course
 			</a>
 		<?php endif; ?>
@@ -226,6 +252,7 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void 
 }
 
 get_header();
+tsr_track_icon_defs();
 ?>
 
 <div class="tsr-page-hero">
@@ -274,7 +301,7 @@ get_header();
 						<?php if ( ! empty( $tsr_current ) ) : ?>
 							<ul class="tsr-track-list">
 								<?php foreach ( $tsr_current as $tsr_tr ) : ?>
-									<?php tsr_track_row( $tsr_tr, $tsr_gpx_base, $tsr_event['name'] ); ?>
+									<?php tsr_track_row( $tsr_tr, $tsr_gpx_base, $tsr_event['name'], $tsr_points_base ); ?>
 								<?php endforeach; ?>
 							</ul>
 						<?php endif; ?>
@@ -292,7 +319,7 @@ get_header();
 								</summary>
 								<ul class="tsr-track-list">
 									<?php foreach ( $tsr_legacy as $tsr_tr ) : ?>
-										<?php tsr_track_row( $tsr_tr, $tsr_gpx_base, $tsr_event['name'] ); ?>
+										<?php tsr_track_row( $tsr_tr, $tsr_gpx_base, $tsr_event['name'], $tsr_points_base ); ?>
 									<?php endforeach; ?>
 								</ul>
 							</details>
@@ -332,15 +359,15 @@ get_header();
 		<div class="tsr-modal__stats tsr-track__meta" id="tsr-modal-stats"></div>
 		<div class="tsr-modal__actions">
 			<a class="tsr-track__gpx" id="tsr-modal-gpx" href="#" download hidden>
-				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-download"/></svg>
 				GPX
 			</a>
 			<a class="tsr-track__gpx tsr-track__gpx--secondary" id="tsr-modal-kml" href="#" download hidden>
-				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-download"/></svg>
 				KML
 			</a>
 			<a class="tsr-track__gpx tsr-track__gpx--strava" id="tsr-modal-strava" href="#" target="_blank" rel="noopener" hidden>
-				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M13 2 5 14h5l-2 8 9-13h-5l1-7z"/></svg>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-strava"/></svg>
 				Strava Course
 			</a>
 		</div>

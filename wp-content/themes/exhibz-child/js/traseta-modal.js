@@ -535,9 +535,12 @@
 	};
 
 	function statIcon( key ) {
+		// References the <symbol> defs rendered once by tsr_track_icon_defs()
+		// (page-traseta.php); STAT_ICON_PATHS stays as fallback documentation
+		// of the geometry but the markup no longer inlines it.
 		return '<svg class="tsr-track__stat-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"' +
 			' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-			STAT_ICON_PATHS[ key ] + '</svg>';
+			'<use href="#tsr-i-' + key + '"/></svg>';
 	}
 
 	function escapeHtml( s ) {
@@ -603,53 +606,79 @@
 		if ( d.gpx ) { gpxBtn.href = d.gpx; }
 		kmlBtn.hidden = ! d.kml;
 		if ( d.kml ) { kmlBtn.href = d.kml; }
-		stravaBtn.hidden = ! d.strava;
-		if ( d.strava ) { stravaBtn.href = d.strava; }
+		if ( stravaBtn ) {
+			stravaBtn.hidden = ! d.strava;
+			if ( d.strava ) { stravaBtn.href = d.strava; }
+		}
 
 		modal.hidden = false;
 		document.body.classList.add( 'tsr-modal-open' );
 		modal.querySelector( '.tsr-modal__close' ).focus();
 
 		var mapEl = document.getElementById( 'tsr-modal-map' );
-		if ( ! d.gpx ) {
+		if ( ! d.gpx && ! d.points ) {
 			setStatus( null );
 			chartWrap.hidden = true;
 			mapEl.hidden = true;
 			return;
 		}
 
-		if ( gpxCache[ d.gpx ] ) {
+		// Prefer the pre-built points file (a few KB) over parsing the full
+		// GPX in the browser (up to ~450 KB raw); the GPX stays the fallback.
+		var src = d.points || d.gpx;
+
+		function draw( points ) {
 			setStatus( null );
+			// Unhide BEFORE drawing — Leaflet's invalidateSize/fitBounds
+			// need real dimensions, and a hidden container has none.
 			mapEl.hidden = false;
-			drawMap( gpxCache[ d.gpx ] );
-			drawChart( gpxCache[ d.gpx ] );
+			drawMap( points );
+			drawChart( points );
+		}
+
+		if ( gpxCache[ src ] ) {
+			draw( gpxCache[ src ] );
 			return;
 		}
 
 		// Hide the map/chart while fetching — the map object persists between
 		// opens, so leaving it visible would show the PREVIOUS track's map
-		// under this track's title until the new GPX arrives.
+		// under this track's title until the new data arrives.
 		setStatus( 'loading' );
 		mapEl.hidden = true;
 		chartWrap.hidden = true;
 
-		fetch( d.gpx )
-			.then( function ( r ) {
-				if ( ! r.ok ) { throw new Error( 'HTTP ' + r.status ); }
-				return r.text();
+		function fetchPoints( url ) {
+			var isJson = /\.json(\?|$)/.test( url );
+			return fetch( url )
+				.then( function ( r ) {
+					if ( ! r.ok ) { throw new Error( 'HTTP ' + r.status ); }
+					return isJson ? r.json() : r.text();
+				} )
+				.then( function ( body ) {
+					var points = 'string' === typeof body
+						? parseGpx( body )
+						: ( body.pts || [] ).map( function ( p ) {
+							return { lat: p[ 0 ], lon: p[ 1 ], ele: p[ 2 ], dist: p[ 3 ] };
+						} );
+					if ( ! points.length ) { throw new Error( 'no points' ); }
+					return points;
+				} );
+		}
+
+		fetchPoints( src )
+			.catch( function ( err ) {
+				// Points file missing/broken → retry with the full GPX.
+				if ( src !== d.gpx && d.gpx ) {
+					return fetchPoints( d.gpx );
+				}
+				throw err;
 			} )
-			.then( function ( text ) {
-				var points = parseGpx( text );
-				if ( ! points.length ) { throw new Error( 'no trkpt' ); }
-				gpxCache[ d.gpx ] = points;
+			.then( function ( points ) {
+				gpxCache[ src ] = points;
 				// Ignore a stale response if another track was opened meanwhile.
 				if ( ! modal.hidden && openTitle === d.title ) {
-					setStatus( null );
-					// Unhide BEFORE drawing — Leaflet's invalidateSize/fitBounds
-					// need real dimensions, and a hidden container has none.
-					mapEl.hidden = false;
-					drawMap( points );
-					drawChart( points );
+					draw( points );
 				}
 			} )
 			.catch( function () {

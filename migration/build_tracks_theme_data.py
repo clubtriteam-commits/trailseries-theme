@@ -35,6 +35,7 @@ GPX_SRC = BASE_DIR / "gpx"
 THEME_DIR = REPO_DIR / "wp-content" / "themes" / "exhibz-child"
 OUT_FILE = THEME_DIR / "data" / "tracks.json"
 GPX_DST = THEME_DIR / "gpx"
+POINTS_DST = THEME_DIR / "data" / "tracks"
 
 # Manually-curated slug -> Strava route URL map, filled in by hand after each
 # GPX is uploaded to Strava's Route Builder (no public API for creating
@@ -154,6 +155,63 @@ def track_variant(title: str, event: str, distance_km: float | None) -> str:
 # mountain coordinates, off by 3.5-43 km from the actual trailheads).
 RE_TRKPT = re.compile(r'<trkpt[^>]*\blat="(-?[0-9.]+)"[^>]*\blon="(-?[0-9.]+)"')
 
+# Full trackpoint with optional elevation, for the per-track points files.
+RE_TRKPT_FULL = re.compile(
+    r'<trkpt[^>]*\blat="(-?[0-9.]+)"[^>]*\blon="(-?[0-9.]+)"[^>]*>'
+    r'(?:(?!</trkpt>).)*?<ele>(-?[0-9.]+)</ele>',
+    re.DOTALL,
+)
+
+
+def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+    )
+    return 2 * 6371000 * math.asin(math.sqrt(a))
+
+
+MAX_POINTS = 800
+
+
+def build_points_file(gpx_file: str | None, slug: str) -> str | None:
+    """Write data/tracks/<slug>.json — the modal's lightweight alternative to
+    parsing the full GPX in the browser (a 26 km GPX is ~450 KB raw / ~94 KB
+    gzipped; the downsampled points file is a few KB).
+
+    Format: {"pts": [[lat, lon, ele, dist_m], ...]} — arrays, not objects,
+    to keep the payload small. Cumulative distance is computed at FULL GPX
+    resolution before downsampling, so dist stays accurate even where the
+    kept points are sparse. Returns the filename, or None without a GPX.
+    """
+    if not gpx_file:
+        return None
+    path = GPX_SRC / gpx_file
+    if not path.exists():
+        return None
+    text = path.read_text(encoding="utf-8", errors="replace")
+    raw: list[tuple[float, float, float]] = [
+        (float(m.group(1)), float(m.group(2)), float(m.group(3)))
+        for m in RE_TRKPT_FULL.finditer(text)
+    ]
+    if len(raw) < 2:
+        return None
+    dist = 0.0
+    pts: list[list[float]] = []
+    for i, (lat, lon, ele) in enumerate(raw):
+        if i:
+            dist += haversine_m(raw[i - 1][0], raw[i - 1][1], lat, lon)
+        pts.append([round(lat, 5), round(lon, 5), round(ele), round(dist)])
+    if len(pts) > MAX_POINTS:
+        step = (len(pts) - 1) / (MAX_POINTS - 1)
+        pts = [pts[round(i * step)] for i in range(MAX_POINTS)]
+    POINTS_DST.mkdir(parents=True, exist_ok=True)
+    out = POINTS_DST / f"{slug}.json"
+    out.write_text(json.dumps({"pts": pts}, separators=(",", ":")), encoding="utf-8")
+    return out.name
+
 
 def gpx_start(gpx_file: str | None) -> tuple[float, float] | None:
     """(lat, lng) of the first trackpoint, None when unavailable."""
@@ -227,6 +285,7 @@ def main() -> int:
             "lowest_m":    round(t["lowest_m"]) if t.get("lowest_m") is not None else None,
             "gpx_file":    t.get("gpx_file"),
             "kml_file":    t.get("kml_file"),
+            "points_file": build_points_file(t.get("gpx_file"), t["slug"]),
             "stars":       stars(t.get("distance_km"), t.get("ascent_m")),
             "strava_route_url": strava_routes.get(t["slug"]),
         }
