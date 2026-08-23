@@ -119,6 +119,7 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void 
 	    data-event="<?php echo esc_attr( $event_name ); ?>"
 	    data-gpx="<?php echo esc_attr( ! empty( $tr['gpx_file'] ) ? $gpx_base . $tr['gpx_file'] : '' ); ?>"
 	    data-kml="<?php echo esc_attr( ! empty( $tr['kml_file'] ) ? $gpx_base . $tr['kml_file'] : '' ); ?>"
+	    data-strava="<?php echo esc_attr( $tr['strava_route_url'] ?? '' ); ?>"
 	    data-distance="<?php echo esc_attr( (string) ( $tr['distance_km'] ?? '' ) ); ?>"
 	    data-ascent="<?php echo esc_attr( (string) ( $tr['ascent_m'] ?? '' ) ); ?>"
 	    data-descent="<?php echo esc_attr( (string) ( $tr['descent_m'] ?? '' ) ); ?>"
@@ -200,6 +201,15 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name ): void 
 			   download>
 				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
 				GPX
+			</a>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $tr['strava_route_url'] ) ) : ?>
+			<a class="tsr-track__gpx tsr-track__gpx--strava"
+			   href="<?php echo esc_url( $tr['strava_route_url'] ); ?>"
+			   target="_blank" rel="noopener">
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M13 2 5 14h5l-2 8 9-13h-5l1-7z"/></svg>
+				Strava Course
 			</a>
 		<?php endif; ?>
 
@@ -312,6 +322,10 @@ get_header();
 			<a class="tsr-track__gpx tsr-track__gpx--secondary" id="tsr-modal-kml" href="#" download hidden>
 				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
 				KML
+			</a>
+			<a class="tsr-track__gpx tsr-track__gpx--strava" id="tsr-modal-strava" href="#" target="_blank" rel="noopener" hidden>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M13 2 5 14h5l-2 8 9-13h-5l1-7z"/></svg>
+				Strava Course
 			</a>
 		</div>
 	</div>

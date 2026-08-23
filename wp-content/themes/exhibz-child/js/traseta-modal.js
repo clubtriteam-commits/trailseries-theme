@@ -24,6 +24,7 @@
 	var tooltipEl = document.getElementById( 'tsr-modal-chart-tooltip' );
 	var gpxBtn    = document.getElementById( 'tsr-modal-gpx' );
 	var kmlBtn    = document.getElementById( 'tsr-modal-kml' );
+	var stravaBtn = document.getElementById( 'tsr-modal-strava' );
 
 	var map          = null;
 	var trackLayer   = null;
@@ -577,6 +578,8 @@
 		if ( d.gpx ) { gpxBtn.href = d.gpx; }
 		kmlBtn.hidden = ! d.kml;
 		if ( d.kml ) { kmlBtn.href = d.kml; }
+		stravaBtn.hidden = ! d.strava;
+		if ( d.strava ) { stravaBtn.href = d.strava; }
 
 		modal.hidden = false;
 		document.body.classList.add( 'tsr-modal-open' );

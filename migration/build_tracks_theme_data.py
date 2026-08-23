@@ -36,6 +36,12 @@ THEME_DIR = REPO_DIR / "wp-content" / "themes" / "exhibz-child"
 OUT_FILE = THEME_DIR / "data" / "tracks.json"
 GPX_DST = THEME_DIR / "gpx"
 
+# Manually-curated slug -> Strava route URL map, filled in by hand after each
+# GPX is uploaded to Strava's Route Builder (no public API for creating
+# routes, see migration/strava_course_checklist.csv). Kept separate from
+# tracks-data.json so re-running the drace.bg migration never wipes it.
+STRAVA_ROUTES_FILE = BASE_DIR / "strava-routes.json"
+
 # Distance / year / edition tokens stripped from the tail of a title to get
 # the event name: "The Christmas Run - 15.5km" → "The Christmas Run".
 RE_TAIL = re.compile(
@@ -153,6 +159,11 @@ def stars(distance_km: float | None, ascent_m: float | None) -> int | None:
 
 def main() -> int:
     data = json.loads(IN_FILE.read_text(encoding="utf-8"))
+    strava_routes: dict[str, str] = (
+        json.loads(STRAVA_ROUTES_FILE.read_text(encoding="utf-8"))
+        if STRAVA_ROUTES_FILE.exists()
+        else {}
+    )
 
     events: dict[str, list[dict]] = {}
     copied = 0
@@ -173,6 +184,7 @@ def main() -> int:
             "gpx_file":    t.get("gpx_file"),
             "kml_file":    t.get("kml_file"),
             "stars":       stars(t.get("distance_km"), t.get("ascent_m")),
+            "strava_route_url": strava_routes.get(t["slug"]),
         }
         start = gpx_start(t.get("gpx_file"))
         entry["start_lat"] = start[0] if start else None
@@ -246,8 +258,12 @@ def main() -> int:
     n_starts = sum(
         1 for e in out["events"] for t in e["tracks"] if t["start_lat"] is not None
     )
+    n_strava = sum(
+        1 for e in out["events"] for t in e["tracks"] if t["strava_route_url"]
+    )
     print(f"Wrote {n_tracks} tracks in {len(out['events'])} events to {OUT_FILE}")
     print(f"GPX start points resolved for {n_starts}/{n_tracks} tracks")
+    print(f"Strava route URLs set for {n_strava}/{n_tracks} tracks")
     print(f"Copied {copied} GPX files to {GPX_DST}")
     for e in out["events"]:
         print(f"  {e['name']}: {len(e['tracks'])} tracks")

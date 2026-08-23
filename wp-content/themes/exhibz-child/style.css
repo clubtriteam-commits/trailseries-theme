@@ -1807,6 +1807,14 @@ h1, h2, h3, h4, h5, h6 {
 	background: var(--tsr-blue);
 }
 
+.tsr-track__gpx--strava {
+	background: var(--tsr-orange);
+}
+
+.tsr-track__gpx--strava:hover {
+	background: var(--tsr-navy);
+}
+
 /* ── Трасета — track detail modal ───────────────────────────────────────────── */
 .tsr-modal {
 	position: fixed;
