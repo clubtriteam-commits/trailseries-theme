@@ -306,6 +306,10 @@ get_header();
 	<div class="tsr-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="tsr-modal-title">
 		<button class="tsr-modal__close" type="button" data-close aria-label="Затвори">&times;</button>
 		<h2 class="tsr-modal__title" id="tsr-modal-title"></h2>
+		<!-- Fetch status: spinner while the GPX loads, an error line when it
+		     fails — populated/toggled by js/traseta-modal.js. aria-live so
+		     screen readers hear the state change without focus moving. -->
+		<div class="tsr-modal__status" id="tsr-modal-status" role="status" aria-live="polite" hidden></div>
 		<div class="tsr-modal__map" id="tsr-modal-map"></div>
 		<div class="tsr-modal__chart-wrap" id="tsr-modal-chart-wrap" hidden>
 			<svg class="tsr-modal__chart" id="tsr-modal-chart"

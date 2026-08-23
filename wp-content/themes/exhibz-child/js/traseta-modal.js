@@ -25,6 +25,28 @@
 	var gpxBtn    = document.getElementById( 'tsr-modal-gpx' );
 	var kmlBtn    = document.getElementById( 'tsr-modal-kml' );
 	var stravaBtn = document.getElementById( 'tsr-modal-strava' );
+	var statusEl  = document.getElementById( 'tsr-modal-status' );
+
+	/**
+	 * Fetch status line: 'loading' (spinner + text), 'error' (message), or
+	 * null to hide. Lives above the map so the dialog never sits silently
+	 * empty while a large GPX downloads on a slow connection.
+	 */
+	function setStatus( state ) {
+		if ( ! statusEl ) {
+			return;
+		}
+		if ( ! state ) {
+			statusEl.hidden = true;
+			statusEl.innerHTML = '';
+			return;
+		}
+		statusEl.hidden = false;
+		statusEl.className = 'tsr-modal__status tsr-modal__status--' + state;
+		statusEl.innerHTML = 'loading' === state
+			? '<span class="tsr-spinner" aria-hidden="true"></span> Зареждане на трасето…'
+			: 'Трасето не можа да се зареди. Провери връзката и опитай пак — или свали GPX файла директно.';
+	}
 
 	var map          = null;
 	var trackLayer   = null;
@@ -585,18 +607,29 @@
 		document.body.classList.add( 'tsr-modal-open' );
 		modal.querySelector( '.tsr-modal__close' ).focus();
 
+		var mapEl = document.getElementById( 'tsr-modal-map' );
 		if ( ! d.gpx ) {
+			setStatus( null );
 			chartWrap.hidden = true;
-			document.getElementById( 'tsr-modal-map' ).hidden = true;
+			mapEl.hidden = true;
 			return;
 		}
-		document.getElementById( 'tsr-modal-map' ).hidden = false;
 
 		if ( gpxCache[ d.gpx ] ) {
+			setStatus( null );
+			mapEl.hidden = false;
 			drawMap( gpxCache[ d.gpx ] );
 			drawChart( gpxCache[ d.gpx ] );
 			return;
 		}
+
+		// Hide the map/chart while fetching — the map object persists between
+		// opens, so leaving it visible would show the PREVIOUS track's map
+		// under this track's title until the new GPX arrives.
+		setStatus( 'loading' );
+		mapEl.hidden = true;
+		chartWrap.hidden = true;
+
 		fetch( d.gpx )
 			.then( function ( r ) {
 				if ( ! r.ok ) { throw new Error( 'HTTP ' + r.status ); }
@@ -608,13 +641,20 @@
 				gpxCache[ d.gpx ] = points;
 				// Ignore a stale response if another track was opened meanwhile.
 				if ( ! modal.hidden && openTitle === d.title ) {
+					setStatus( null );
+					// Unhide BEFORE drawing — Leaflet's invalidateSize/fitBounds
+					// need real dimensions, and a hidden container has none.
+					mapEl.hidden = false;
 					drawMap( points );
 					drawChart( points );
 				}
 			} )
 			.catch( function () {
-				document.getElementById( 'tsr-modal-map' ).hidden = true;
-				chartWrap.hidden = true;
+				if ( ! modal.hidden && openTitle === d.title ) {
+					setStatus( 'error' );
+					mapEl.hidden = true;
+					chartWrap.hidden = true;
+				}
 			} );
 	}
 

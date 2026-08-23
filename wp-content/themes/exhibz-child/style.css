@@ -1895,6 +1895,49 @@ body.tsr-modal-open {
 	z-index:       0;
 }
 
+/* Fetch status line (loading / error) — sized like the map it stands in for,
+   so the dialog doesn't collapse and then jump when the map appears. */
+.tsr-modal__status {
+	display:         flex;
+	align-items:     center;
+	justify-content: center;
+	gap:             0.6rem;
+	min-height:      120px;
+	margin-bottom:   1rem;
+	border-radius:   var(--tsr-radius);
+	background:      #f4f7fa;
+	font-size:       0.9rem;
+	font-weight:     600;
+	color:           var(--tsr-muted);
+	text-align:      center;
+	padding:         1rem;
+}
+
+.tsr-modal__status--error {
+	background: #fdf2f0;
+	color:      #b3401f;
+}
+
+.tsr-spinner {
+	width:         18px;
+	height:        18px;
+	flex:          0 0 auto;
+	border:        2.5px solid var(--tsr-border);
+	border-top-color: var(--tsr-blue);
+	border-radius: 50%;
+	animation:     tsr-spin 0.8s linear infinite;
+}
+
+@keyframes tsr-spin {
+	to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tsr-spinner {
+		animation: none;
+	}
+}
+
 .tsr-modal__chart-wrap {
 	position:      relative;
 	margin-bottom: 1rem;
