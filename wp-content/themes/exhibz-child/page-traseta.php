@@ -32,6 +32,14 @@ if ( is_readable( $tsr_tracks_file ) ) {
 	}
 }
 
+// Event groups (H2 headings) in alphabetical order — tracks.json otherwise
+// lists them in migration/insertion order, unrelated to display order.
+// Current-vs-legacy track order within a group (below) is unaffected.
+usort(
+	$tsr_events,
+	static fn( array $a, array $b ): int => strnatcasecmp( $a['name'], $b['name'] )
+);
+
 $tsr_gpx_base = get_stylesheet_directory_uri() . '/gpx/';
 
 /**
