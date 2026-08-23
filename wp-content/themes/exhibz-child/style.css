@@ -1645,17 +1645,40 @@ h1, h2, h3, h4, h5, h6 {
 	color:       var(--tsr-navy);
 }
 
+/*
+ * Fixed-width columns, same order on every row (Дистанция, Изкачване,
+ * Спускане, Височина) — a grid, not flex-wrap, so a stat that's present on
+ * one row and missing on another (or a "обиколки" badge that only some
+ * rows carry) can never push the columns of one card out of line with the
+ * cards above and below it. tsr_track_row() always renders all four
+ * cells, using "—" as a placeholder value, to guarantee that alignment.
+ */
 .tsr-track__meta {
-	display:   flex;
-	flex-wrap: wrap;
-	gap:       0.4rem 1.5rem;
-	flex:      1;
+	display:               grid;
+	grid-template-columns: 7.5rem 7rem 7rem 9rem;
+	column-gap:            1.25rem;
+	row-gap:               0.4rem;
+	align-items:           center;
+	flex:                  1;
 }
 
 .tsr-track__stat {
+	display:     flex;
+	align-items: center;
+	gap:         0.45rem;
+	min-width:   0;
+}
+
+.tsr-track__stat-icon {
+	flex:      0 0 auto;
+	color:     var(--tsr-blue);
+}
+
+.tsr-track__stat-body {
 	display:        flex;
 	flex-direction: column;
 	line-height:    1.3;
+	min-width:      0;
 }
 
 .tsr-track__stat-label {
@@ -1670,6 +1693,7 @@ h1, h2, h3, h4, h5, h6 {
 	font-size:   0.9rem;
 	font-weight: 700;
 	color:       var(--tsr-navy);
+	white-space: nowrap;
 }
 
 .tsr-track__gpx {
@@ -1720,6 +1744,8 @@ h1, h2, h3, h4, h5, h6 {
 	letter-spacing: normal;
 	font-size:      0.72rem;
 	padding:        0.1rem 0.55rem;
+	margin-top:     0.2rem;
+	align-self:     flex-start;
 }
 
 .tsr-track--legacy {
@@ -2005,7 +2031,9 @@ body.tsr-modal-open {
 
 @media (max-width: 600px) {
 	.tsr-track__meta {
-		flex-basis: 100%;
+		flex-basis:             100%;
+		grid-template-columns:  1fr 1fr;
+		row-gap:                0.6rem;
 	}
 }
 

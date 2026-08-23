@@ -65,6 +65,29 @@ function tsr_star_rating( ?int $stars ): string {
 }
 
 /**
+ * Inline SVG icon for one stat column. Same 14x14 outline style as the GPX
+ * button glyph, colored via currentColor so CSS controls the tint.
+ *
+ * @param string $key 'distance'|'ascent'|'descent'|'elevation'.
+ */
+if ( ! function_exists( 'tsr_track_stat_icon' ) ) {
+function tsr_track_stat_icon( string $key ): string {
+	$paths = array(
+		'distance'  => '<circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/><path d="M6 12h12" stroke-dasharray="3 3"/>',
+		'ascent'    => '<path d="M4 20 20 4M20 4H10M20 4v10"/>',
+		'descent'   => '<path d="M4 4 20 20M20 20H10M20 20V10"/>',
+		'elevation' => '<path d="M3 20 9 8l4 6 2-3 6 9H3z"/>',
+	);
+	if ( ! isset( $paths[ $key ] ) ) {
+		return '';
+	}
+	return '<svg class="tsr-track__stat-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"'
+		. ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+		. $paths[ $key ] . '</svg>';
+}
+}
+
+/**
  * Render one track row (<li>).
  *
  * Rows carry data attributes consumed by js/traseta-modal.js: clicking a
@@ -99,41 +122,63 @@ function tsr_track_row( array $tr, string $gpx_base ): void {
 			<?php echo tsr_star_rating( isset( $tr['stars'] ) ? (int) $tr['stars'] : null ); // phpcs:ignore WordPress.Security.EscapeOutput -- built from ints + esc_attr. ?>
 		</div>
 
+		<?php
+		// Always four stat cells, in the same fixed order, even when a value
+		// is missing ('—' placeholder) — grid-based alignment (style.css)
+		// depends on every row offering the same column layout; conditionally
+		// omitting a cell would shift every following column out of line
+		// with the rows above and below it.
+		$tsr_laps = tsr_track_laps( $tr );
+		?>
 		<div class="tsr-track__meta">
-			<?php if ( ! empty( $tr['distance_km'] ) ) : ?>
-				<span class="tsr-track__stat">
+			<span class="tsr-track__stat">
+				<?php echo tsr_track_stat_icon( 'distance' ); // phpcs:ignore WordPress.Security.EscapeOutput -- static markup, no user input. ?>
+				<span class="tsr-track__stat-body">
 					<span class="tsr-track__stat-label">Дистанция</span>
-					<span class="tsr-track__stat-value"><?php echo esc_html( number_format_i18n( (float) $tr['distance_km'], 1 ) ); ?> км</span>
+					<span class="tsr-track__stat-value">
+						<?php echo ! empty( $tr['distance_km'] ) ? esc_html( number_format_i18n( (float) $tr['distance_km'], 1 ) ) . ' км' : '—'; ?>
+					</span>
+					<?php if ( $tsr_laps > 1 ) : ?>
+						<span class="tsr-track__badge tsr-track__badge--laps">
+							<?php echo esc_html( $tsr_laps ); ?> обиколки
+						</span>
+					<?php endif; ?>
 				</span>
-			<?php endif; ?>
+			</span>
 
-			<?php $tsr_laps = tsr_track_laps( $tr ); ?>
-			<?php if ( $tsr_laps > 1 ) : ?>
-				<span class="tsr-track__badge tsr-track__badge--laps">
-					<?php echo esc_html( $tsr_laps ); ?> обиколки
-				</span>
-			<?php endif; ?>
-
-			<?php if ( isset( $tr['ascent_m'] ) && null !== $tr['ascent_m'] ) : ?>
-				<span class="tsr-track__stat">
+			<span class="tsr-track__stat">
+				<?php echo tsr_track_stat_icon( 'ascent' ); // phpcs:ignore WordPress.Security.EscapeOutput -- static markup, no user input. ?>
+				<span class="tsr-track__stat-body">
 					<span class="tsr-track__stat-label">Изкачване</span>
-					<span class="tsr-track__stat-value">D+ <?php echo esc_html( number_format_i18n( (int) $tr['ascent_m'] ) ); ?> м</span>
+					<span class="tsr-track__stat-value">
+						<?php echo isset( $tr['ascent_m'] ) && null !== $tr['ascent_m'] ? 'D+ ' . esc_html( number_format_i18n( (int) $tr['ascent_m'] ) ) . ' м' : '—'; ?>
+					</span>
 				</span>
-			<?php endif; ?>
+			</span>
 
-			<?php if ( isset( $tr['descent_m'] ) && null !== $tr['descent_m'] ) : ?>
-				<span class="tsr-track__stat">
+			<span class="tsr-track__stat">
+				<?php echo tsr_track_stat_icon( 'descent' ); // phpcs:ignore WordPress.Security.EscapeOutput -- static markup, no user input. ?>
+				<span class="tsr-track__stat-body">
 					<span class="tsr-track__stat-label">Спускане</span>
-					<span class="tsr-track__stat-value">D- <?php echo esc_html( number_format_i18n( (int) $tr['descent_m'] ) ); ?> м</span>
+					<span class="tsr-track__stat-value">
+						<?php echo isset( $tr['descent_m'] ) && null !== $tr['descent_m'] ? 'D- ' . esc_html( number_format_i18n( (int) $tr['descent_m'] ) ) . ' м' : '—'; ?>
+					</span>
 				</span>
-			<?php endif; ?>
+			</span>
 
-			<?php if ( isset( $tr['highest_m'], $tr['lowest_m'] ) && null !== $tr['highest_m'] && null !== $tr['lowest_m'] ) : ?>
-				<span class="tsr-track__stat">
+			<span class="tsr-track__stat">
+				<?php echo tsr_track_stat_icon( 'elevation' ); // phpcs:ignore WordPress.Security.EscapeOutput -- static markup, no user input. ?>
+				<span class="tsr-track__stat-body">
 					<span class="tsr-track__stat-label">Височина</span>
-					<span class="tsr-track__stat-value"><?php echo esc_html( number_format_i18n( (int) $tr['lowest_m'] ) ); ?>&ndash;<?php echo esc_html( number_format_i18n( (int) $tr['highest_m'] ) ); ?> м</span>
+					<span class="tsr-track__stat-value">
+						<?php
+						echo isset( $tr['highest_m'], $tr['lowest_m'] ) && null !== $tr['highest_m'] && null !== $tr['lowest_m']
+							? esc_html( number_format_i18n( (int) $tr['lowest_m'] ) ) . '&ndash;' . esc_html( number_format_i18n( (int) $tr['highest_m'] ) ) . ' м'
+							: '—';
+						?>
+					</span>
 				</span>
-			<?php endif; ?>
+			</span>
 		</div>
 
 		<?php if ( ! empty( $tr['gpx_file'] ) ) : ?>
