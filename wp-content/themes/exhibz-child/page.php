@@ -10,7 +10,7 @@ declare( strict_types=1 );
  * breadcrumbs and .tsr-page-content wrapper.
  *
  * Template hierarchy note: page-{slug}.php (novini, sabitia, calendar, …)
- * and assigned templates (Класирания, Трасета, …) all outrank page.php,
+ * and assigned templates (Ранкинг, Трасета, …) all outrank page.php,
  * so this file only ever serves pages without a more specific match —
  * exactly the migrated landing pages plus future generic pages.
  *

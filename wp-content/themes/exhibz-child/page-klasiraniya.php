@@ -1,9 +1,10 @@
 <?php
 declare( strict_types=1 );
 /**
- * Template Name: Класирания
+ * Template Name: Ранкинг
  *
- * Template for the Класирания page (slug: klasiraniya).
+ * Template for the Ранкинг page (slug: klasiraniya — unchanged, legacy URL
+ * per ADR-003; only the displayed name changed from "Класирания").
  *
  * Season standings split into Мъже / Жени columns, accumulated points per
  * athlete across all races in a season using the scoring rules from Правила.
@@ -381,9 +382,9 @@ function tsr_render_standings_col( array $rows, string $heading ): void {
 <div class="tsr-page-hero">
 	<div class="tsr-container">
 		<p class="tsr-page-hero__kicker">TrailSeries.bg</p>
-		<h1 class="tsr-page-hero__title">Класирания</h1>
+		<h1 class="tsr-page-hero__title">Ранкинг</h1>
 		<p class="tsr-page-hero__subtitle">
-			Сезонно класиране по точки
+			Сезонен ранкинг по точки
 		</p>
 	</div>
 </div>
@@ -391,7 +392,7 @@ function tsr_render_standings_col( array $rows, string $heading ): void {
 <main id="main" class="tsr-page-content">
 	<div class="tsr-container">
 
-		<?php tsr_page_breadcrumbs( 'Класирания' ); ?>
+		<?php tsr_page_breadcrumbs( 'Ранкинг' ); ?>
 
 		<!-- Season picker -->
 		<?php if ( count( $available_seasons ) > 1 ) : ?>

@@ -25,7 +25,7 @@ add_action( 'after_setup_theme', static function (): void {
 	 *   Начало → /
 	 *   Календар → /kalendar/
 	 *   Резултати → /rezultati/
-	 *   Класирания → /klasiraniya/
+	 *   Ранкинг → /klasiraniya/
 	 *   Рекорди → /rekordi/
 	 *   Правила → /pravila/
 	 *   Новини → /novini/
@@ -641,8 +641,8 @@ function tsr_meta_description(): string {
 	if ( is_page_template( 'page-klasiraniya.php' ) ) {
 		$season = isset( $_GET['sezon'] ) ? absint( $_GET['sezon'] ) : tsr_latest_season(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		return $cached = ( $season > 0 )
-			? sprintf( 'Генерално класиране Сезон %d — точки по сезон, мъже и жени.', $season )
-			: 'Генерално класиране по сезони — точки, мъже и жени.';
+			? sprintf( 'Ранкинг Сезон %d — точки по сезон, мъже и жени.', $season )
+			: 'Ранкинг по сезони — точки, мъже и жени.';
 	}
 
 	if ( is_page_template( 'page-rezultati.php' ) ) {
