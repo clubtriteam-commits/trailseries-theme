@@ -713,15 +713,24 @@ get_header();
 			}
 		).addTo( map );
 
+		// Classic teardrop map-pin glyph (MDI "map-marker") — a genuine
+		// circular cutout, not a separately-shaded circle, so the tile
+		// underneath shows through the hole the way Google/Apple Maps pins
+		// do. One <path>, two subpaths; the SVG default fill-rule already
+		// makes the inner circle a hole, no evenodd needed.
+		var PIN_SVG_PATH = 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z';
+
 		var makePin = function ( cls, label ) {
 			var esc = document.createElement( 'div' );
 			esc.textContent = label;
 			return L.divIcon( {
 				className:   '',
-				html:        '<div class="tsr-map-pin ' + cls + '" role="img" aria-label="' + esc.innerHTML.replace( /"/g, '&quot;' ) + '"></div>',
-				iconSize:    [ 20, 30 ],
-				iconAnchor:  [ 10, 30 ],
-				popupAnchor: [ 0, -32 ],
+				html:        '<div class="tsr-map-pin ' + cls + '" role="img" aria-label="' + esc.innerHTML.replace( /"/g, '&quot;' ) + '">' +
+					'<svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="' + PIN_SVG_PATH + '"/></svg>' +
+					'</div>',
+				iconSize:    [ 28, 28 ],
+				iconAnchor:  [ 14, 27 ],
+				popupAnchor: [ 0, -29 ],
 			} );
 		};
 
