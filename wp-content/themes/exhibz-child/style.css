@@ -1112,17 +1112,41 @@ h1, h2, h3, h4, h5, h6 {
 	background: var(--tsr-orange);
 }
 
-/* ── Zero to HERO — image-background card grid ───────────────────────────── */
+/* ── Zero to HERO — single-row sliding carousel ──────────────────────────────
+   .tsr-zero-carousel (position: relative, holds nav + dots)
+     └ .tsr-zero-viewport (overflow: hidden — clips the track horizontally,
+                            padded/negative-margined vertically so card hover
+                            lift + box-shadow aren't clipped)
+         └ .tsr-zero-track (flex row, JS translateX()s it in real px)
+             └ .tsr-zero-card × N (JS sizes flex-basis in px; the CSS calc()
+                                    below is the pre-JS / no-JS fallback,
+                                    driven by --tsr-zero-visible from PHP) */
 
-.tsr-zero-grid {
-	display:               grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap:                   var(--tsr-gap);
+.tsr-zero-carousel {
+	position: relative;
+}
+
+.tsr-zero-viewport {
+	overflow: hidden;
+	/* Real (uncancelled) padding, not a negative-margin trick — the latter
+	   collapses through .tsr-zero-carousel since it has no border/padding
+	   of its own to establish a containing block boundary. A few extra px
+	   of section height is a fair trade for that risk: this is just
+	   breathing room so a card's hover lift/box-shadow isn't clipped by
+	   the overflow:hidden that makes the horizontal slide work. */
+	padding:  10px 0 22px;
+}
+
+.tsr-zero-track {
+	display:    flex;
+	gap:        var(--tsr-gap);
+	transition: transform 0.5s ease;
 }
 
 .tsr-zero-card {
 	position:            relative;
 	height:              280px;
+	flex:                0 0 calc((100% - (var(--tsr-zero-visible, 3) - 1) * var(--tsr-gap)) / var(--tsr-zero-visible, 3));
 	border-radius:       var(--tsr-radius);
 	overflow:            hidden;
 	background-color:    var(--tsr-navy-2);
@@ -1179,36 +1203,7 @@ h1, h2, h3, h4, h5, h6 {
 	color: #c94e16;
 }
 
-/* ── Zero to HERO — CSS slideshow ────────────────────────────────────────── */
-
-.tsr-zero-slider {
-	position:      relative;
-	height:        280px;
-	border-radius: var(--tsr-radius);
-	overflow:      hidden;
-}
-
-.tsr-zero-slide {
-	position:            absolute;
-	inset:               0;
-	background-color:    var(--tsr-navy-2);
-	background-size:     cover;
-	background-position: center;
-	display:             flex;
-	flex-direction:      column;
-	justify-content:     flex-end;
-	border-radius:       var(--tsr-radius);
-	opacity:             0;
-	visibility:          hidden;
-	transition:          opacity 0.45s ease, visibility 0.45s;
-}
-
-.tsr-zero-slide.is-active {
-	opacity:    1;
-	visibility: visible;
-}
-
-/* Prev/next arrows — 44px tap targets, vertically centred over the slide */
+/* Prev/next arrows — 44px tap targets, vertically centred over the row */
 .tsr-zero-nav {
 	position:        absolute;
 	top:             50%;
@@ -1238,10 +1233,12 @@ h1, h2, h3, h4, h5, h6 {
 .tsr-zero-nav--next { right: 8px; }
 
 /* Dot indicators — top centre, 44px hit area each with a small visual dot
-   (the bottom of the slide is occupied by the card body/link) */
+   (the bottom of the row is occupied by the card body/link). top:10px lines
+   up with .tsr-zero-viewport's padding-top so dots sit flush against the
+   card row itself, not the extra breathing room above it. */
 .tsr-zero-dots {
 	position:  absolute;
-	top:       0;
+	top:       10px;
 	left:      50%;
 	transform: translateX(-50%);
 	z-index:   2;
@@ -1280,13 +1277,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 768px) {
-	.tsr-zero-grid {
-		grid-template-columns: 1fr;
-	}
-
-	.tsr-zero-card,
-	.tsr-zero-slider {
-		height: 240px;
+	/* One card per row on mobile — overrides the --tsr-zero-visible calc()
+	   fallback; the carousel script sizes to the same 1-per-row above this
+	   breakpoint anyway (see the vpWidth <= 768 check in layout()). */
+	.tsr-zero-card {
+		flex-basis: 100%;
+		height:     240px;
 	}
 }
 

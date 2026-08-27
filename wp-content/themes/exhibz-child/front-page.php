@@ -502,54 +502,39 @@ get_header();
      SECTION 5 — ZERO TO HERO
      ════════════════════════════════════════════════════════════════════════ -->
 <?php if ( ! empty( $tsr_zero ) ) :
-	$tsr_zero_visible = array_slice( $tsr_zero, 0, 3 );
-	$tsr_zero_slides  = array_slice( $tsr_zero, 3 );
+	// Cards visible per "page" on desktop — never more than the actual post
+	// count, so 1-2 stories render as 1-2 full-width cards instead of a
+	// mostly-empty row. Exposed as a CSS var so the no-JS first paint (and
+	// the mobile 1-per-row override below) size cards the same way the
+	// carousel script will once it measures the live viewport.
+	$tsr_zero_visible_n = min( 3, count( $tsr_zero ) );
 ?>
 <section class="tsr-section tsr-zero-section" aria-labelledby="tsr-zero-title">
 	<div class="tsr-container">
 		<h2 class="tsr-section__title" id="tsr-zero-title">Zero to HERO</h2>
 
-		<!-- First 3 posts (always visible) + slideshow cycling the rest, all as
-		     equal-sized cells of the same 3-column grid. -->
-		<div class="tsr-zero-grid">
-			<?php foreach ( $tsr_zero_visible as $tsr_zp ) :
-				// 'large' returns false when the source image is smaller than the
-				// 'large' threshold (WordPress never upscales) — 'full' always
-				// resolves, so it's the fallback rather than a second guess.
-				$tsr_z_thumb  = get_the_post_thumbnail_url( $tsr_zp, 'large' )
-					?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
-				// A manual post_excerpt is used as-is by get_the_excerpt() — any
-				// literal shortcode markup in it (e.g. a leftover [quote] tag) is
-				// never stripped automatically, only auto-generated excerpts get
-				// that treatment. Strip shortcodes/tags from whichever source we
-				// use before trimming.
-				$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
-				$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( tsr_strip_shortcode_syntax( strip_shortcodes( $tsr_z_source ) ) ), 18, '…' );
-				?>
-				<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
-					<div class="tsr-zero-card__body">
-						<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
-						<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
-						<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
-					</div>
-				</article>
-			<?php endforeach; ?>
-
-			<?php if ( ! empty( $tsr_zero_slides ) ) : ?>
-				<!-- Remaining posts — JS slideshow (auto every 5 s until the user
-				     interacts), one grid cell. Slides stack absolutely; .is-active
-				     controls visibility, script id tsr-zero-slider-js below. -->
-				<div class="tsr-zero-slider" id="tsr-zero-slider" aria-label="Допълнителни истории" aria-roledescription="слайдшоу">
-					<?php foreach ( $tsr_zero_slides as $tsr_si => $tsr_zp ) :
-						// See the visible-cards loop above for why both lines below
-						// need the fallback/strip treatment.
-						$tsr_z_thumb   = get_the_post_thumbnail_url( $tsr_zp, 'large' )
+		<!-- Single-row sliding carousel — every story is one .tsr-zero-card in
+		     .tsr-zero-track; JS measures the viewport and slides the track in
+		     real pixels so exactly N full cards are always on one row (never a
+		     lone card wrapping to a second row). -->
+		<div class="tsr-zero-carousel" id="tsr-zero-carousel" style="--tsr-zero-visible: <?php echo (int) $tsr_zero_visible_n; ?>">
+			<div class="tsr-zero-viewport">
+				<div class="tsr-zero-track">
+					<?php foreach ( $tsr_zero as $tsr_zp ) :
+						// 'large' returns false when the source image is smaller than the
+						// 'large' threshold (WordPress never upscales) — 'full' always
+						// resolves, so it's the fallback rather than a second guess.
+						$tsr_z_thumb  = get_the_post_thumbnail_url( $tsr_zp, 'large' )
 							?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
+						// A manual post_excerpt is used as-is by get_the_excerpt() — any
+						// literal shortcode markup in it (e.g. a leftover [quote] tag) is
+						// never stripped automatically, only auto-generated excerpts get
+						// that treatment. Strip shortcodes/tags from whichever source we
+						// use before trimming.
 						$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
 						$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( tsr_strip_shortcode_syntax( strip_shortcodes( $tsr_z_source ) ) ), 18, '…' );
 						?>
-						<article class="tsr-zero-slide<?php echo 0 === $tsr_si ? ' is-active' : ''; ?>"
-						         <?php echo $tsr_z_thumb ? 'style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
+						<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
 							<div class="tsr-zero-card__body">
 								<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
 								<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
@@ -557,52 +542,106 @@ get_header();
 							</div>
 						</article>
 					<?php endforeach; ?>
-
-					<?php if ( count( $tsr_zero_slides ) > 1 ) : ?>
-						<button class="tsr-zero-nav tsr-zero-nav--prev" type="button"
-						        aria-label="Предишна история" aria-controls="tsr-zero-slider">&lsaquo;</button>
-						<button class="tsr-zero-nav tsr-zero-nav--next" type="button"
-						        aria-label="Следваща история" aria-controls="tsr-zero-slider">&rsaquo;</button>
-
-						<div class="tsr-zero-dots">
-							<?php foreach ( $tsr_zero_slides as $tsr_si => $tsr_zp ) : ?>
-								<button class="tsr-zero-dot<?php echo 0 === $tsr_si ? ' is-active' : ''; ?>" type="button"
-								        aria-label="<?php echo esc_attr( sprintf( 'История %d: %s', $tsr_si + 1, get_the_title( $tsr_zp ) ) ); ?>"
-								        aria-controls="tsr-zero-slider"
-								        aria-current="<?php echo 0 === $tsr_si ? 'true' : 'false'; ?>"
-								        data-slide="<?php echo esc_attr( (string) $tsr_si ); ?>"></button>
-							<?php endforeach; ?>
-						</div>
-					<?php endif; ?>
 				</div>
+			</div>
+
+			<?php if ( count( $tsr_zero ) > 1 ) : ?>
+				<button class="tsr-zero-nav tsr-zero-nav--prev" type="button"
+				        aria-label="Предишна история" aria-controls="tsr-zero-carousel">&lsaquo;</button>
+				<button class="tsr-zero-nav tsr-zero-nav--next" type="button"
+				        aria-label="Следваща история" aria-controls="tsr-zero-carousel">&rsaquo;</button>
+				<div class="tsr-zero-dots" id="tsr-zero-dots"></div>
 			<?php endif; ?>
 		</div>
 
 	</div>
 </section>
 
-<?php if ( count( $tsr_zero_slides ) > 1 ) : ?>
+<?php if ( count( $tsr_zero ) > 1 ) : ?>
 <script>
 (function () {
 	'use strict';
 
-	var slider = document.getElementById( 'tsr-zero-slider' );
-	if ( ! slider ) { return; }
-	var slides = slider.querySelectorAll( '.tsr-zero-slide' );
-	var dots   = slider.querySelectorAll( '.tsr-zero-dot' );
-	if ( slides.length < 2 ) { return; }
+	var root = document.getElementById( 'tsr-zero-carousel' );
+	if ( ! root ) { return; }
+	var viewport = root.querySelector( '.tsr-zero-viewport' );
+	var track    = root.querySelector( '.tsr-zero-track' );
+	var cards    = Array.prototype.slice.call( track.children );
+	var dotsWrap = root.querySelector( '.tsr-zero-dots' );
+	var prevBtn  = root.querySelector( '.tsr-zero-nav--prev' );
+	var nextBtn  = root.querySelector( '.tsr-zero-nav--next' );
+	var total    = cards.length;
+	if ( total < 2 ) { return; }
 
-	var index   = 0;
-	var timer   = null;
-	var stopped = false; // set forever on first manual interaction
+	var index     = 0;
+	var maxIndex  = 0;
+	var cardWidth = 0;
+	var gapPx     = 32;
+	var timer     = null;
+	var stopped   = false; // set forever on first manual interaction
 
-	function show( n ) {
-		index = ( n + slides.length ) % slides.length;
-		for ( var i = 0; i < slides.length; i++ ) {
-			slides[ i ].classList.toggle( 'is-active', i === index );
+	// ── Measure + size: exactly N full cards visible, never a clipped Nth
+	//    card — recomputed on load and on resize (debounced) ─────────────
+	function layout() {
+		var cs = getComputedStyle( track );
+		gapPx  = parseFloat( cs.columnGap || cs.gap ) || gapPx;
+
+		var vpWidth = viewport.clientWidth;
+		var visible = vpWidth <= 768 ? 1 : Math.min( 3, total );
+		maxIndex    = Math.max( 0, total - visible );
+		if ( index > maxIndex ) { index = maxIndex; }
+
+		cardWidth = ( vpWidth - gapPx * ( visible - 1 ) ) / visible;
+		cards.forEach( function ( card ) {
+			card.style.flex = '0 0 ' + cardWidth + 'px';
+		} );
+
+		buildDots();
+		move( false );
+	}
+
+	function buildDots() {
+		var showControls = maxIndex > 0;
+		if ( prevBtn )  { prevBtn.style.display  = showControls ? '' : 'none'; }
+		if ( nextBtn )  { nextBtn.style.display  = showControls ? '' : 'none'; }
+		if ( ! dotsWrap ) { return; }
+		dotsWrap.style.display = showControls ? '' : 'none';
+		dotsWrap.innerHTML = '';
+		for ( var i = 0; i <= maxIndex; i++ ) {
+			var dot = document.createElement( 'button' );
+			dot.type      = 'button';
+			dot.className = 'tsr-zero-dot';
+			dot.setAttribute( 'aria-label', 'Покажи истории от позиция ' + ( i + 1 ) );
+			dot.setAttribute( 'aria-controls', 'tsr-zero-carousel' );
+			dot.dataset.index = String( i );
+			dot.addEventListener( 'click', function () {
+				stopAuto();
+				go( parseInt( this.dataset.index, 10 ) );
+			} );
+			dotsWrap.appendChild( dot );
+		}
+	}
+
+	function move( animate ) {
+		if ( false === animate ) {
+			track.style.transition = 'none';
+			void track.offsetHeight; // force reflow so the transition:none actually applies
+		} else {
+			track.style.transition = '';
+		}
+		track.style.transform = 'translateX(-' + ( index * ( cardWidth + gapPx ) ) + 'px)';
+
+		var dots = dotsWrap ? dotsWrap.querySelectorAll( '.tsr-zero-dot' ) : [];
+		for ( var i = 0; i < dots.length; i++ ) {
 			dots[ i ].classList.toggle( 'is-active', i === index );
 			dots[ i ].setAttribute( 'aria-current', i === index ? 'true' : 'false' );
 		}
+	}
+
+	function go( n ) {
+		if ( 0 === maxIndex ) { return; }
+		index = ( n + maxIndex + 1 ) % ( maxIndex + 1 );
+		move( true );
 	}
 
 	function stopAuto() {
@@ -611,34 +650,30 @@ get_header();
 	}
 
 	// ── Manual controls: any use pauses auto-rotation for good ────────────
-	slider.querySelector( '.tsr-zero-nav--prev' ).addEventListener( 'click', function () {
-		stopAuto();
-		show( index - 1 );
-	} );
-	slider.querySelector( '.tsr-zero-nav--next' ).addEventListener( 'click', function () {
-		stopAuto();
-		show( index + 1 );
-	} );
-	for ( var d = 0; d < dots.length; d++ ) {
-		dots[ d ].addEventListener( 'click', function () {
-			stopAuto();
-			show( parseInt( this.getAttribute( 'data-slide' ), 10 ) );
-		} );
-	}
+	if ( prevBtn ) { prevBtn.addEventListener( 'click', function () { stopAuto(); go( index - 1 ); } ); }
+	if ( nextBtn ) { nextBtn.addEventListener( 'click', function () { stopAuto(); go( index + 1 ); } ); }
 
 	// ── Touch swipe (mobile) ───────────────────────────────────────────────
 	var touchX = null;
-	slider.addEventListener( 'touchstart', function ( ev ) {
+	viewport.addEventListener( 'touchstart', function ( ev ) {
 		touchX = ev.changedTouches[0].clientX;
 	}, { passive: true } );
-	slider.addEventListener( 'touchend', function ( ev ) {
+	viewport.addEventListener( 'touchend', function ( ev ) {
 		if ( null === touchX ) { return; }
 		var dx = ev.changedTouches[0].clientX - touchX;
 		touchX = null;
 		if ( Math.abs( dx ) < 40 ) { return; } // tap, not a swipe
 		stopAuto();
-		show( dx < 0 ? index + 1 : index - 1 );
+		go( dx < 0 ? index + 1 : index - 1 );
 	}, { passive: true } );
+
+	var resizeTimer = null;
+	window.addEventListener( 'resize', function () {
+		clearTimeout( resizeTimer );
+		resizeTimer = setTimeout( layout, 150 );
+	} );
+
+	layout();
 
 	// ── Auto-rotation: 5 s cadence, paused while hovered, none for
 	//    prefers-reduced-motion users ─────────────────────────────────────
@@ -646,13 +681,13 @@ get_header();
 		return;
 	}
 	function startAuto() {
-		if ( stopped || timer ) { return; }
-		timer = setInterval( function () { show( index + 1 ); }, 5000 );
+		if ( stopped || timer || 0 === maxIndex ) { return; }
+		timer = setInterval( function () { go( index + 1 ); }, 5000 );
 	}
-	slider.addEventListener( 'mouseenter', function () {
+	root.addEventListener( 'mouseenter', function () {
 		if ( timer ) { clearInterval( timer ); timer = null; }
 	} );
-	slider.addEventListener( 'mouseleave', startAuto );
+	root.addEventListener( 'mouseleave', startAuto );
 	startAuto();
 }());
 </script>
