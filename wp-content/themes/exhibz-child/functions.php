@@ -82,12 +82,17 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 		wp_get_theme( get_template() )->get( 'Version' )
 	);
 
-	// Child theme stylesheet (overrides + homepage sections).
+	// Child theme stylesheet (overrides + homepage sections). Busts on the
+	// file's own mtime, not the theme's Version: header — that header is a
+	// hand-edited string nobody reliably remembers to bump on every CSS
+	// change, and with the site's long Cache-Control max-age (see
+	// .htaccess), a stale ?ver= means visitors' browsers keep serving old
+	// CSS against new markup indefinitely instead of just until next load.
 	wp_enqueue_style(
 		'exhibz-child',
 		get_stylesheet_uri(),
 		array( 'exhibz-parent' ),
-		wp_get_theme()->get( 'Version' )
+		(string) filemtime( get_stylesheet_directory() . '/style.css' )
 	);
 }, 20 );
 
