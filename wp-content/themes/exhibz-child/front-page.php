@@ -540,12 +540,14 @@ get_header();
 						?>
 						<article class="tsr-zero-card">
 							<span class="tsr-zero-card__eyebrow"><?php echo esc_html( $tsr_z_eyebrow ); ?></span>
-							<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
+							<div class="tsr-zero-card__header">
+								<?php if ( $tsr_z_thumb ) : ?>
+									<img class="tsr-zero-card__avatar" src="<?php echo esc_url( $tsr_z_thumb ); ?>" alt="" loading="lazy">
+								<?php endif; ?>
+								<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
+							</div>
 							<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
 							<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
-							<?php if ( $tsr_z_thumb ) : ?>
-								<img class="tsr-zero-card__photo" src="<?php echo esc_url( $tsr_z_thumb ); ?>" alt="" loading="lazy">
-							<?php endif; ?>
 						</article>
 					<?php endforeach; ?>
 				</div>

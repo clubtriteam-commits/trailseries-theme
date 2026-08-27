@@ -1155,21 +1155,21 @@ h1, h2, h3, h4, h5, h6 {
 	transition: transform 0.5s ease;
 }
 
-/* Light "editorial" card — eyebrow pill, dark heading, muted excerpt, a
-   tucked-in corner photo standing in for the reference's collage cluster
-   (we only have one thumbnail per story, not several). Reuses the site's
-   existing light-surface tokens (--tsr-text/--tsr-muted/--tsr-bg), the
-   same ones .tsr-card already uses elsewhere — a light card on this dark
-   section reads as a deliberate accent, not a one-off palette. */
+/* Light "editorial" card — eyebrow pill, a circular athlete photo next to
+   the heading (these stories are named-athlete interviews, so the photo
+   identifies who the story is about), then a muted excerpt. Reuses the
+   site's existing light-surface tokens (--tsr-text/--tsr-muted/--tsr-bg),
+   the same ones .tsr-card already uses elsewhere — a light card on this
+   dark section reads as a deliberate accent, not a one-off palette. */
 .tsr-zero-card {
 	position:       relative;
-	min-height:     300px;
+	min-height:     260px;
 	flex:           0 0 calc((100% - (var(--tsr-zero-visible, 3) - 1) * var(--tsr-gap)) / var(--tsr-zero-visible, 3));
 	display:        flex;
 	flex-direction: column;
 	align-items:    flex-start;
-	gap:            0.5rem;
-	padding:        1.5rem 1.5rem 6rem;
+	gap:            0.6rem;
+	padding:        1.5rem;
 	background:     var(--tsr-white);
 	border-radius:  var(--tsr-radius);
 	box-shadow:     0 1px 4px rgba(0, 0, 0, 0.16), 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -1193,6 +1193,27 @@ h1, h2, h3, h4, h5, h6 {
 	border-radius:  999px;
 }
 
+.tsr-zero-card__header {
+	display:     flex;
+	align-items: center;
+	gap:         0.75rem;
+}
+
+.tsr-zero-card__avatar {
+	flex:          0 0 auto;
+	width:         56px;
+	height:        56px;
+	object-fit:    cover;
+	border-radius: 50%;
+	border:        2px solid var(--tsr-bg);
+	box-shadow:    0 2px 6px rgba(10, 22, 40, 0.18);
+	transition:    transform 0.2s ease;
+}
+
+.tsr-zero-card:hover .tsr-zero-card__avatar {
+	transform: scale(1.08);
+}
+
 .tsr-zero-card__title {
 	font-size:   1.05rem;
 	font-weight: 700;
@@ -1206,24 +1227,6 @@ h1, h2, h3, h4, h5, h6 {
 	color:       var(--tsr-muted);
 	margin:      0;
 	line-height: 1.55;
-}
-
-.tsr-zero-card__photo {
-	position:      absolute;
-	right:         1.25rem;
-	bottom:        1.25rem;
-	width:         76px;
-	height:        76px;
-	object-fit:    cover;
-	border-radius: 8px;
-	border:        3px solid var(--tsr-white);
-	box-shadow:    0 6px 16px rgba(10, 22, 40, 0.22);
-	transform:     rotate(-6deg);
-	transition:    transform 0.2s ease;
-}
-
-.tsr-zero-card:hover .tsr-zero-card__photo {
-	transform: rotate(-2deg) scale(1.06);
 }
 
 .tsr-zero-card__link {
