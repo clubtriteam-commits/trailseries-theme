@@ -704,12 +704,16 @@ get_header();
 			tsrOpenPopupMarker = ev.popup._source;
 		} );
 
+		// CARTO's free anonymous basemap tiles (basemaps.cartocdn.com) now
+		// require an API key — switched to Esri's Dark Gray Canvas, which
+		// stays free with no key/signup and is visually close (muted dark
+		// grey vs. CARTO's near-black). Note the {z}/{y}/{x} order — ArcGIS
+		// REST tile services use y-before-x, the reverse of most providers.
 		L.tileLayer(
-			'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+			'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
 			{
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
-				subdomains: 'abcd',
-				maxZoom: 19,
+				attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, FAO, NOAA, USGS, &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, and the GIS User Community',
+				maxZoom: 16,
 			}
 		).addTo( map );
 
