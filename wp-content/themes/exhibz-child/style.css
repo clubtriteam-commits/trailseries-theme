@@ -2972,25 +2972,56 @@ a.tsr-partner-card:hover {
 	color:      var(--tsr-white);
 }
 
-/* ── Партньори strip (front-page.php) ────────────────────────────────────── */
+/* ── Партньори strip (front-page.php) ──────────────────────────────────────
+   Front page only — plain, large logos in a row (no card box), matching
+   the event-template mockup's sponsor band. /partniori/'s own grid keeps
+   the bordered .tsr-partner-card look untouched — these overrides are all
+   scoped under .tsr-partners-strip so they don't leak there. */
 .tsr-partners-strip {
 	display:         flex;
 	flex-wrap:       wrap;
 	justify-content: center;
-	gap:             var(--tsr-gap);
+	align-items:     center;
+	gap:             3.5rem;
 }
 
 .tsr-partners-strip .tsr-partner-card {
-	width:   180px;
-	padding: 1.25rem 1rem;
+	width:      auto;
+	padding:    0;
+	background: none;
+	border:     none;
+	gap:        0.4rem;
+}
+
+.tsr-partners-strip a.tsr-partner-card:hover {
+	transform:  none;
+	box-shadow: none;
+	opacity:    0.75;
 }
 
 .tsr-partners-strip .tsr-partner-card__logo {
-	height: 90px;
+	height: 130px;
 }
 
 .tsr-partners-strip .tsr-partner-card__logo--ph {
-	font-size: 1.6rem;
+	font-size:     2.2rem;
+	width:         130px;
+	border-radius: var(--tsr-radius);
+}
+
+.tsr-partners-strip .tsr-partner-card__name {
+	font-size: 0.8rem;
+	color:     var(--tsr-muted);
+}
+
+@media (max-width: 640px) {
+	.tsr-partners-strip {
+		gap: 2rem;
+	}
+
+	.tsr-partners-strip .tsr-partner-card__logo {
+		height: 90px;
+	}
 }
 
 /* ── Accessibility: 44×44 touch targets on touch devices ─────────────────────
