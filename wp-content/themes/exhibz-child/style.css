@@ -1319,7 +1319,11 @@ h1, h2, h3, h4, h5, h6 {
 	cursor:           pointer;
 	transform-origin: 50% 92%; /* scale from the pin's tip, not the icon's bounding box */
 	transition:       transform 0.18s ease, filter 0.18s ease;
-	filter:           drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+	/* STAGING PREVIEW (2026-08-27): white halo layered via repeated
+	   drop-shadows so the pin stays legible over the satellite basemap's
+	   photographic greens/browns — revert to the single dark drop-shadow
+	   below if the satellite tile is dropped. */
+	filter:           drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
 }
 
 .tsr-map-pin svg {

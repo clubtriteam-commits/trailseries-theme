@@ -704,18 +704,16 @@ get_header();
 			tsrOpenPopupMarker = ev.popup._source;
 		} );
 
-		// CARTO's free anonymous basemap tiles now require an API key
-		// (account created 2026-08-27, free tier: 5M tile requests/month,
-		// no card required — https://carto.com/legal/basemap-terms/). The
-		// key is meant to be client-visible — every tile request carries
-		// it in the URL by design, same model as a Google Maps JS key —
-		// so it's fine committed here, no secrets handling needed. Rotate
-		// it in this one spot if it's ever regenerated on CARTO's side.
+		// STAGING PREVIEW — satellite basemap (Esri World Imagery), swapped
+		// in 2026-08-27 to compare against the CARTO dark_all style. Free,
+		// no API key. Verified real tile coverage up to zoom 19 over the
+		// Sofia region before wiring this in. Revert: restore the CARTO
+		// dark_all block (see git history around this line) once a style
+		// is picked.
 		L.tileLayer(
-			'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=cb1_2do5_1_22eed41e0209f9012a227baf',
+			'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 			{
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
-				subdomains: 'abcd',
+				attribution: 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>',
 				maxZoom: 19,
 			}
 		).addTo( map );
