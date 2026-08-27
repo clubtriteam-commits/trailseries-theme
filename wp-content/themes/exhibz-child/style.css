@@ -2444,6 +2444,14 @@ body.tsr-modal-open {
 	color:      #fff !important;
 }
 
+/* Temporarily hide an unfinished menu item without deleting it — add class
+   "tsr-menu-hidden" in WP menu editor. Currently on "Рекорди" (2026-08-27)
+   while that section is reworked; remove the class in the menu editor to
+   bring it back, no template changes needed. */
+#masthead .tsr-nav-list > .tsr-menu-hidden {
+	display: none;
+}
+
 /* ── Mobile nav toggle (hamburger) ───────────────────────────────────── */
 
 .tsr-nav-toggle {
