@@ -538,16 +538,13 @@ get_header();
 						// same date_i18n( 'F Y', ... ) pattern for month grouping).
 						$tsr_z_eyebrow = date_i18n( 'F Y', strtotime( $tsr_zp->post_date ) );
 						?>
-						<article class="tsr-zero-card">
+						<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
 							<span class="tsr-zero-card__eyebrow"><?php echo esc_html( $tsr_z_eyebrow ); ?></span>
-							<div class="tsr-zero-card__header">
-								<?php if ( $tsr_z_thumb ) : ?>
-									<img class="tsr-zero-card__avatar" src="<?php echo esc_url( $tsr_z_thumb ); ?>" alt="" loading="lazy">
-								<?php endif; ?>
+							<div class="tsr-zero-card__body">
 								<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
+								<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
+								<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
 							</div>
-							<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
-							<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
 						</article>
 					<?php endforeach; ?>
 				</div>

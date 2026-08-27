@@ -1155,78 +1155,68 @@ h1, h2, h3, h4, h5, h6 {
 	transition: transform 0.5s ease;
 }
 
-/* Light "editorial" card — eyebrow pill, a circular athlete photo next to
-   the heading (these stories are named-athlete interviews, so the photo
-   identifies who the story is about), then a muted excerpt. Reuses the
-   site's existing light-surface tokens (--tsr-text/--tsr-muted/--tsr-bg),
-   the same ones .tsr-card already uses elsewhere — a light card on this
-   dark section reads as a deliberate accent, not a one-off palette. */
+/* Full-bleed photo card — the athlete's photo IS the card background
+   again (user: the plain-white cards "не е гот", wanted the photo back
+   like the original design), with a dark gradient scrim so title/excerpt
+   stay legible. The eyebrow pill survives as an overlay badge straight on
+   the photo instead of sitting on a white surface. */
 .tsr-zero-card {
-	position:       relative;
-	min-height:     260px;
-	flex:           0 0 calc((100% - (var(--tsr-zero-visible, 3) - 1) * var(--tsr-gap)) / var(--tsr-zero-visible, 3));
-	display:        flex;
-	flex-direction: column;
-	align-items:    flex-start;
-	gap:            0.6rem;
-	padding:        1.5rem;
-	background:     var(--tsr-white);
-	border-radius:  var(--tsr-radius);
-	box-shadow:     0 1px 4px rgba(0, 0, 0, 0.16), 0 4px 16px rgba(0, 0, 0, 0.12);
-	transition:     transform 0.2s ease, box-shadow 0.2s ease;
+	position:            relative;
+	height:              280px;
+	flex:                0 0 calc((100% - (var(--tsr-zero-visible, 3) - 1) * var(--tsr-gap)) / var(--tsr-zero-visible, 3));
+	border-radius:       var(--tsr-radius);
+	overflow:            hidden;
+	background-color:    var(--tsr-navy-2);
+	background-size:     cover;
+	background-position: center;
+	display:             flex;
+	flex-direction:      column;
+	justify-content:     flex-end;
+	transition:          transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tsr-zero-card:hover {
 	transform:  translateY(-3px);
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28), 0 0 0 2px var(--tsr-orange);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--tsr-orange);
 }
 
 .tsr-zero-card__eyebrow {
+	position:       absolute;
+	top:            1rem;
+	left:           1rem;
+	z-index:        1;
 	display:        inline-block;
 	font-size:      0.7rem;
 	font-weight:    700;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
-	color:          var(--tsr-orange);
-	background:     rgba(224, 92, 30, 0.1);
+	color:          var(--tsr-white);
+	background:     rgba(10, 22, 40, 0.55);
 	padding:        0.3rem 0.7rem;
 	border-radius:  999px;
 }
 
-.tsr-zero-card__header {
-	display:     flex;
-	align-items: center;
-	gap:         0.75rem;
-}
-
-.tsr-zero-card__avatar {
-	flex:          0 0 auto;
-	width:         56px;
-	height:        56px;
-	object-fit:    cover;
-	border-radius: 50%;
-	border:        2px solid var(--tsr-bg);
-	box-shadow:    0 2px 6px rgba(10, 22, 40, 0.18);
-	transition:    transform 0.2s ease;
-}
-
-.tsr-zero-card:hover .tsr-zero-card__avatar {
-	transform: scale(1.08);
+.tsr-zero-card__body {
+	padding:        1.25rem;
+	background:     linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
+	display:        flex;
+	flex-direction: column;
+	gap:            0.35rem;
 }
 
 .tsr-zero-card__title {
-	font-size:   1.05rem;
+	font-size:   1rem;
 	font-weight: 700;
-	color:       var(--tsr-text);
+	color:       var(--tsr-white);
 	line-height: 1.3;
 	margin:      0;
 }
 
 .tsr-zero-card__excerpt {
-	font-size:   0.85rem;
-	color:       var(--tsr-muted);
+	font-size:   0.8rem;
+	color:       rgba(255, 255, 255, 0.68);
 	margin:      0;
-	line-height: 1.55;
+	line-height: 1.5;
 }
 
 .tsr-zero-card__link {
@@ -1325,7 +1315,7 @@ h1, h2, h3, h4, h5, h6 {
 	   breakpoint anyway (see the vpWidth <= 768 check in layout()). */
 	.tsr-zero-card {
 		flex-basis: 100%;
-		min-height: 240px;
+		height:     240px;
 	}
 }
 
