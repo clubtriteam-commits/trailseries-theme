@@ -1688,6 +1688,16 @@ h1, h2, h3, h4, h5, h6 {
 	transition:      background 0.15s ease;
 }
 
+/* Same cascade trap as .tsr-modal__status: an unconditional `display` here
+   would otherwise beat the browser's default [hidden]{display:none}, since
+   author rules win over the user-agent stylesheet regardless of specificity.
+   Without this, the modal's KML/Strava buttons (toggled via .hidden in
+   traseta-modal.js) would show up empty/broken on every track missing that
+   file — i.e. most tracks, since only 4/49 have a Strava route so far. */
+.tsr-track__gpx[hidden] {
+	display: none;
+}
+
 .tsr-track__gpx:hover {
 	background: var(--tsr-navy);
 	color:      #fff;
@@ -1904,6 +1914,14 @@ body.tsr-modal-open {
 	color:           var(--tsr-muted);
 	text-align:      center;
 	padding:         1rem;
+}
+
+/* An author `display` declaration otherwise wins over the browser's default
+   [hidden]{display:none} UA rule regardless of specificity (origin beats
+   specificity in the cascade) — without this, the status box stayed visible
+   (empty) even while its `hidden` attribute was set. */
+.tsr-modal__status[hidden] {
+	display: none;
 }
 
 .tsr-modal__status--error {
