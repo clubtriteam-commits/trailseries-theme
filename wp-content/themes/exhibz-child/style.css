@@ -3002,12 +3002,24 @@ a.tsr-partner-card:hover {
 .tsr-partners-strip a.tsr-partner-card:hover {
 	transform:  none;
 	box-shadow: none;
-	opacity:    0.75;
 }
 
 .tsr-partners-strip .tsr-partner-card__logo {
 	width:  190px;
 	height: 100px;
+}
+
+/* Real logos are each a different brand color (red, blue, black...) —
+   full color together reads as busy/inconsistent. Mute to grayscale so
+   the row reads as one calm, cohesive strip (like the mockup's uniform
+   grey wordmarks), full color back on hover as the reward for looking. */
+.tsr-partners-strip .tsr-partner-card__logo img {
+	filter:     grayscale(1) opacity(0.55);
+	transition: filter 0.2s ease;
+}
+
+.tsr-partners-strip a.tsr-partner-card:hover .tsr-partner-card__logo img {
+	filter: grayscale(0) opacity(1);
 }
 
 .tsr-partners-strip .tsr-partner-card__logo--ph {
@@ -3016,9 +3028,10 @@ a.tsr-partner-card:hover {
 	border-radius: var(--tsr-radius);
 }
 
+/* The logo already carries the brand name — a caption under it is
+   redundant clutter the mockup doesn't have either. */
 .tsr-partners-strip .tsr-partner-card__name {
-	font-size: 0.8rem;
-	color:     var(--tsr-muted);
+	display: none;
 }
 
 @media (max-width: 640px) {
