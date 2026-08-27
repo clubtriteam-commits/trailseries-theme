@@ -704,12 +704,10 @@ get_header();
 			tsrOpenPopupMarker = ev.popup._source;
 		} );
 
-		// STAGING PREVIEW — satellite basemap (Esri World Imagery), swapped
-		// in 2026-08-27 to compare against the CARTO dark_all style. Free,
-		// no API key. Verified real tile coverage up to zoom 19 over the
-		// Sofia region before wiring this in. Revert: restore the CARTO
-		// dark_all block (see git history around this line) once a style
-		// is picked.
+		// Satellite basemap (Esri World Imagery) — chosen 2026-08-27 over
+		// CARTO dark_all after a live staging comparison. Free, no API
+		// key. Verified real tile coverage up to zoom 19 over the Sofia
+		// region before wiring this in.
 		L.tileLayer(
 			'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 			{
