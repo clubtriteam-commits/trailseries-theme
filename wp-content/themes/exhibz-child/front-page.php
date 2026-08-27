@@ -511,7 +511,7 @@ get_header();
 ?>
 <section class="tsr-section tsr-zero-section" aria-labelledby="tsr-zero-title">
 	<div class="tsr-container">
-		<h2 class="tsr-section__title" id="tsr-zero-title">Zero to HERO</h2>
+		<h2 class="tsr-section__title" id="tsr-zero-title"><span class="tsr-zero-title__accent">Zero</span> to HERO</h2>
 
 		<!-- Single-row sliding carousel — every story is one .tsr-zero-card in
 		     .tsr-zero-track; JS measures the viewport and slides the track in
@@ -533,13 +533,19 @@ get_header();
 						// use before trimming.
 						$tsr_z_source  = '' !== trim( (string) $tsr_zp->post_excerpt ) ? $tsr_zp->post_excerpt : $tsr_zp->post_content;
 						$tsr_z_excerpt = wp_trim_words( wp_strip_all_tags( tsr_strip_shortcode_syntax( strip_shortcodes( $tsr_z_source ) ) ), 18, '…' );
+						// Publish month/year as the eyebrow — real metadata, not an
+						// arbitrary "01/02/03" counter (page-calendar.php uses this
+						// same date_i18n( 'F Y', ... ) pattern for month grouping).
+						$tsr_z_eyebrow = date_i18n( 'F Y', strtotime( $tsr_zp->post_date ) );
 						?>
-						<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
-							<div class="tsr-zero-card__body">
-								<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
-								<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
-								<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
-							</div>
+						<article class="tsr-zero-card">
+							<span class="tsr-zero-card__eyebrow"><?php echo esc_html( $tsr_z_eyebrow ); ?></span>
+							<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
+							<p class="tsr-zero-card__excerpt"><?php echo esc_html( $tsr_z_excerpt ); ?></p>
+							<a class="tsr-zero-card__link" href="<?php echo esc_url( get_permalink( $tsr_zp ) ); ?>">Прочети →</a>
+							<?php if ( $tsr_z_thumb ) : ?>
+								<img class="tsr-zero-card__photo" src="<?php echo esc_url( $tsr_z_thumb ); ?>" alt="" loading="lazy">
+							<?php endif; ?>
 						</article>
 					<?php endforeach; ?>
 				</div>

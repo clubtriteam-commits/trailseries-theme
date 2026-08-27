@@ -1105,11 +1105,23 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .tsr-zero-section .tsr-section__title {
-	color: var(--tsr-orange);
+	color: var(--tsr-white);
 }
 
 .tsr-zero-section .tsr-section__title::after {
 	background: var(--tsr-orange);
+}
+
+/* Two-tone heading — accent word carries a warm gradient, the rest stays
+   plain white. Reference: sliderrevolution.com's "How do you want to
+   start?" treatment (coral accent word + bold rest), adapted to our navy
+   section background instead of their white one. */
+.tsr-zero-title__accent {
+	background:            linear-gradient(100deg, #ff8a4c 0%, var(--tsr-orange) 55%, #c94e16 100%);
+	-webkit-background-clip: text;
+	background-clip:       text;
+	-webkit-text-fill-color: transparent;
+	color:                  var(--tsr-orange); /* fallback if background-clip:text is unsupported */
 }
 
 /* ── Zero to HERO — single-row sliding carousel ──────────────────────────────
@@ -1143,47 +1155,75 @@ h1, h2, h3, h4, h5, h6 {
 	transition: transform 0.5s ease;
 }
 
+/* Light "editorial" card — eyebrow pill, dark heading, muted excerpt, a
+   tucked-in corner photo standing in for the reference's collage cluster
+   (we only have one thumbnail per story, not several). Reuses the site's
+   existing light-surface tokens (--tsr-text/--tsr-muted/--tsr-bg), the
+   same ones .tsr-card already uses elsewhere — a light card on this dark
+   section reads as a deliberate accent, not a one-off palette. */
 .tsr-zero-card {
-	position:            relative;
-	height:              280px;
-	flex:                0 0 calc((100% - (var(--tsr-zero-visible, 3) - 1) * var(--tsr-gap)) / var(--tsr-zero-visible, 3));
-	border-radius:       var(--tsr-radius);
-	overflow:            hidden;
-	background-color:    var(--tsr-navy-2);
-	background-size:     cover;
-	background-position: center;
-	display:             flex;
-	flex-direction:      column;
-	justify-content:     flex-end;
-	transition:          transform 0.2s ease, box-shadow 0.2s ease;
+	position:       relative;
+	min-height:     300px;
+	flex:           0 0 calc((100% - (var(--tsr-zero-visible, 3) - 1) * var(--tsr-gap)) / var(--tsr-zero-visible, 3));
+	display:        flex;
+	flex-direction: column;
+	align-items:    flex-start;
+	gap:            0.5rem;
+	padding:        1.5rem 1.5rem 6rem;
+	background:     var(--tsr-white);
+	border-radius:  var(--tsr-radius);
+	box-shadow:     0 1px 4px rgba(0, 0, 0, 0.16), 0 4px 16px rgba(0, 0, 0, 0.12);
+	transition:     transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tsr-zero-card:hover {
 	transform:  translateY(-3px);
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--tsr-orange);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28), 0 0 0 2px var(--tsr-orange);
 }
 
-.tsr-zero-card__body {
-	padding:    1.25rem;
-	background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
-	display:    flex;
-	flex-direction: column;
-	gap:        0.35rem;
+.tsr-zero-card__eyebrow {
+	display:        inline-block;
+	font-size:      0.7rem;
+	font-weight:    700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color:          var(--tsr-orange);
+	background:     rgba(224, 92, 30, 0.1);
+	padding:        0.3rem 0.7rem;
+	border-radius:  999px;
 }
 
 .tsr-zero-card__title {
-	font-size:   1rem;
+	font-size:   1.05rem;
 	font-weight: 700;
-	color:       var(--tsr-white);
+	color:       var(--tsr-text);
 	line-height: 1.3;
 	margin:      0;
 }
 
 .tsr-zero-card__excerpt {
-	font-size:   0.8rem;
-	color:       rgba(255, 255, 255, 0.68);
+	font-size:   0.85rem;
+	color:       var(--tsr-muted);
 	margin:      0;
-	line-height: 1.5;
+	line-height: 1.55;
+}
+
+.tsr-zero-card__photo {
+	position:      absolute;
+	right:         1.25rem;
+	bottom:        1.25rem;
+	width:         76px;
+	height:        76px;
+	object-fit:    cover;
+	border-radius: 8px;
+	border:        3px solid var(--tsr-white);
+	box-shadow:    0 6px 16px rgba(10, 22, 40, 0.22);
+	transform:     rotate(-6deg);
+	transition:    transform 0.2s ease;
+}
+
+.tsr-zero-card:hover .tsr-zero-card__photo {
+	transform: rotate(-2deg) scale(1.06);
 }
 
 .tsr-zero-card__link {
@@ -1282,7 +1322,7 @@ h1, h2, h3, h4, h5, h6 {
 	   breakpoint anyway (see the vpWidth <= 768 check in layout()). */
 	.tsr-zero-card {
 		flex-basis: 100%;
-		height:     240px;
+		min-height: 240px;
 	}
 }
 
