@@ -54,7 +54,7 @@ final class TSR_CLI {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp tsr import 123 migration/data/canonical/iran-run18-results__16.7km-m.json
+	 *     wp tsr import 123 /home/trailser/tsr-data/migration/data/canonical_fixed/iran-run18-results__16.7km-m.json
 	 *
 	 * @param array<int, string> $args Positional args.
 	 */
@@ -92,7 +92,7 @@ final class TSR_CLI {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp tsr verify-names 123 migration/data/canonical/iran-run18__16.7km-m.json
+	 *     wp tsr verify-names 123 /home/trailser/tsr-data/migration/data/canonical_fixed/iran-run18-results__16.7km-m.json
 	 *     wp tsr verify-names 123
 	 *
 	 * @subcommand verify-names
@@ -147,13 +147,18 @@ final class TSR_CLI {
 	 *
 	 * ## OPTIONS
 	 *
+	 * The canonical JSON files contain personal data (names, ages) and must
+	 * live OUTSIDE the web root. There is deliberately no default under
+	 * ABSPATH: define TSR_DATA_DIR in wp-config.php (the directory holding
+	 * _manifest.csv and the JSON files), or pass both paths explicitly.
+	 *
 	 * [--manifest=<file>]
 	 * : Path to _manifest.csv.
-	 *   Default: <WP root>/migration/data/canonical/_manifest.csv
+	 *   Default: TSR_DATA_DIR/_manifest.csv
 	 *
 	 * [--json-dir=<dir>]
 	 * : Directory containing the JSON files.
-	 *   Default: <WP root>/migration/data/canonical/
+	 *   Default: TSR_DATA_DIR
 	 *
 	 * [--status=<status>]
 	 * : Post status for created posts. Default: publish
@@ -197,8 +202,30 @@ final class TSR_CLI {
 		$slug_filter   = $assoc_args['slug'] ?? '';
 		$limit         = isset( $assoc_args['limit'] ) ? (int) $assoc_args['limit'] : 0;
 		$post_status   = $assoc_args['status'] ?? 'publish';
-		$manifest_path = $assoc_args['manifest'] ?? ABSPATH . 'migration/data/canonical/_manifest.csv';
-		$json_dir      = rtrim( $assoc_args['json-dir'] ?? ABSPATH . 'migration/data/canonical/', '/\\' ) . DIRECTORY_SEPARATOR;
+
+		// No default under ABSPATH: the canonical JSON is personal data and
+		// was once served straight from the web root because the default
+		// pointed there (docs/AUDIT-2026-11.md, H11).
+		$data_dir = ( defined( 'TSR_DATA_DIR' ) && is_string( TSR_DATA_DIR ) && '' !== TSR_DATA_DIR )
+			? rtrim( TSR_DATA_DIR, '/\\' )
+			: null;
+		if ( null === $data_dir && ( ! isset( $assoc_args['manifest'] ) || ! isset( $assoc_args['json-dir'] ) ) ) {
+			WP_CLI::error( 'No data location: define TSR_DATA_DIR in wp-config.php (a directory OUTSIDE the web root), or pass both --manifest and --json-dir.' );
+			return;
+		}
+		$manifest_path = $assoc_args['manifest'] ?? $data_dir . DIRECTORY_SEPARATOR . '_manifest.csv';
+		$json_dir      = rtrim( $assoc_args['json-dir'] ?? $data_dir, '/\\' ) . DIRECTORY_SEPARATOR;
+
+		// Refuse to read results data from inside the web root at all.
+		$web_root = wp_normalize_path( (string) realpath( ABSPATH ) );
+		foreach ( array( dirname( $manifest_path ), $json_dir ) as $tsr_dir ) {
+			$real = realpath( $tsr_dir );
+			if ( false !== $real && '' !== $web_root
+				&& str_starts_with( trailingslashit( wp_normalize_path( $real ) ), trailingslashit( $web_root ) ) ) {
+				WP_CLI::error( sprintf( 'Refusing to read results data from inside the web root: %s — move it outside %s.', $real, $web_root ) );
+				return;
+			}
+		}
 
 		// Resolve author ID.
 		$author_id = 0;

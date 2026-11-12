@@ -24,8 +24,11 @@ Two *different* directories are involved on the server — don't conflate them:
 - `/home/trailser/repositories/trailseries-theme` — the cPanel-managed git clone. `origin` is
   the GitHub repo, tracks `main`. Safe to `git pull origin main` here any time.
 - `/home/trailser/stg.trailseries.bg` — the actual live docroot served at stg.trailseries.bg.
-  It has its own separate, unrelated `.git` (uncommitted junk — ignore it, it is **not** the
-  deploy mechanism) and is not kept in sync with the clone automatically.
+  Not a git checkout (a stray `.git` here was publicly served and was deleted on 2026-11-12)
+  and not kept in sync with the clone automatically. Never run `git init`/`git clone` in it.
+- `/home/trailser/tsr-data/` — private data, mode 700, **outside** the docroot. Holds
+  `migration/` (the one-off scripts and `migration/data/` with the canonical results JSON —
+  names and ages of real people). See "Results data lives outside the docroot" below.
 
 **Procedure:**
 
@@ -41,6 +44,27 @@ Two *different* directories are involved on the server — don't conflate them:
    ```
 4. Verify on the live file (e.g. `grep` for a string you just added) — don't assume the copy
    landed correctly.
+
+Only `wp-content/plugins/trailseries-results/` and `wp-content/themes/exhibz-child/` are ever
+copied into the docroot. `migration/`, `docs/`, `README.md` and `CLAUDE.md` never go there.
+
+## Results data lives outside the docroot
+
+Until 2026-11-12 `migration/data/` sat inside the staging docroot and was downloadable over
+HTTP (docs/AUDIT-2026-11.md, H11). Rules since then:
+
+- Nothing under `migration/` is uploaded to a docroot. On the server it lives in
+  `/home/trailser/tsr-data/migration/`; run one-off scripts from the docroot with an absolute
+  path, e.g. `wp eval-file /home/trailser/tsr-data/migration/seed-partners.php`.
+- `wp tsr bulk-import` has no default data path. Either define `TSR_DATA_DIR` in
+  `wp-config.php` (the directory that holds `_manifest.csv` and the JSON files) or pass both
+  `--manifest` and `--json-dir`. It refuses any path inside the web root.
+- The server has four copies of the results data under `tsr-data/migration/data/`:
+  `canonical_fixed/` (904 files, 2026-08-22/23 — the current set), `canonical/` (July, stale),
+  loose JSON files directly in `data/` (July) and two zips. Which to keep is not decided yet.
+- The top of the docroot `.htaccess` has a "TSR security" block (`RedirectMatch 404` for
+  `/migration` and `.git`) as a second line of defence — keep it above the WordPress block.
+  Backups of the previous `.htaccess` are in `/home/trailser/htaccess-stg.bak-*`.
 
 Same server/account as the `training-agent` project (`argon.superhosting.bg`, same SSH key,
 comment says "training-agent-deploy" but it works for this repo too — same cPanel account).
