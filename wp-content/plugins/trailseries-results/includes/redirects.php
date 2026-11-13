@@ -5,7 +5,7 @@
  * Auto-generated from migration/redirect-map.csv — do not edit manually.
  * Regenerate: python migration/generate_redirects.py
  *
- * 301 redirects: 88 rules
+ * 301 redirects: 89 rules
  * 410 gone:      39 rules
  * prefix rules:  0 (from migration/redirect-prefixes.csv, 404 only)
  *
@@ -44,6 +44,7 @@ add_action(
 
 		// ── 301 Redirects ────────────────────────────────────────────────────
 		$redirects = array(
+			'/1539' => '/1539-2/',
 			'/all-seasons-rankings' => '/klasiraniya/',
 			'/category/covid-19' => '/novini/',
 			'/category/covid-19/page/1' => '/novini/',
