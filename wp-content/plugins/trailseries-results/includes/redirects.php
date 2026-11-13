@@ -5,8 +5,8 @@
  * Auto-generated from migration/redirect-map.csv — do not edit manually.
  * Regenerate: python migration/generate_redirects.py
  *
- * 301 redirects: 91 rules
- * 410 gone:      50 rules
+ * 301 redirects: 88 rules
+ * 410 gone:      39 rules
  * prefix rules:  0 (from migration/redirect-prefixes.csv, 404 only)
  *
  * Behaviour (hook, live-content gate, prefixes) is documented in the generator.
@@ -102,14 +102,10 @@ add_action(
 			'/page/3' => '/novini/',
 			'/втори-сезон-20132014' => '/klasiraniya/',
 			'/генерално-класиране-сезон-8' => '/klasiraniya/',
-			'/генерално-класиране22' => '/klasiraniya/',
 			'/за-trail-series' => '/istoriya/',
 			'/за-trail-series/calendar' => '/calendar/',
 			'/за-trail-series/rules' => '/pravila/',
 			'/класиране/генерално-класиране' => '/klasiraniya/',
-			'/победители-за-сезон-2022' => '/klasiraniya/',
-			'/победители-за-сезон-2023' => '/klasiraniya/',
-			'/победители-за-сезон-2024' => '/klasiraniya/',
 			'/сезон-1-резултати' => '/klasiraniya/',
 			'/сезон-10' => '/klasiraniya/',
 			'/сезон-10-резултати' => '/klasiraniya/',
@@ -134,6 +130,7 @@ add_action(
 			'/сезон-8-резултати' => '/klasiraniya/',
 			'/сезон-9' => '/klasiraniya/',
 			'/сезон-9-резултати' => '/klasiraniya/',
+			'/спонсори' => '/partniori/',
 			'/трети-сезон-20142015' => '/klasiraniya/',
 		);
 
@@ -144,16 +141,8 @@ add_action(
 
 		// ── 410 Gone ─────────────────────────────────────────────────────────
 		$gone = array(
-			'/100-регистрирани-за-thechristmasrun' => 1,
-			'/117' => 1,
-			'/135-регистрирани-за-thechristmasrun' => 1,
-			'/1539' => 1,
-			'/170-коледни-бегачи' => 1,
 			'/2012-2' => 1,
 			'/2143-2' => 1,
-			'/41-регистрирани-за-christmas-run' => 1,
-			'/81-регистрирани-за-thechristmasrun-04-12' => 1,
-			'/90-регистрирани-за-thechristmasrun' => 1,
 			'/feedback' => 1,
 			'/heat-stroke-run-gallery' => 1,
 			'/koledni-vaucheri' => 1,
@@ -183,9 +172,7 @@ add_action(
 			'/tag/регистрирани-за-участие' => 1,
 			'/tag/сезон-8' => 1,
 			'/tag/слс' => 1,
-			'/thechristmasrun-стартов-списък' => 1,
 			'/zheleznitsa-2-0-20-jan/olympus-digital-camera' => 1,
-			'/днес-затваря-регистрацията-за-коледн' => 1,
 			'/доброволчество' => 1,
 			'/за-trail-series/feedback' => 1,
 			'/за-trail-series/t-shirt-poruchka-no' => 1,
@@ -193,7 +180,6 @@ add_action(
 			'/за-trail-series/контакти' => 1,
 			'/лагера-на-бегача-пиратите' => 1,
 			'/обб-vertical-run-2019-снимки' => 1,
-			'/спонсори' => 1,
 		);
 
 		if ( isset( $gone[ $path ] ) ) {
