@@ -262,21 +262,6 @@ function tsr_season_select( array $years, int $current, string $note = '' ): voi
 	<?php
 }
 
-// ── Single calendar events: theme template, not EventON's ────────────────────
-//
-// EventON swaps in its own single-event template at template_include
-// priority 99; this runs after it so single-ajde_events.php (photo hero,
-// Bulgarian facts, the race's tracks) wins.
-add_filter( 'template_include', static function ( string $template ): string {
-	if ( is_singular( 'ajde_events' ) ) {
-		$own = locate_template( 'single-ajde_events.php' );
-		if ( '' !== $own ) {
-			return $own;
-		}
-	}
-	return $template;
-}, 100 );
-
 // ── Emoji loader off ─────────────────────────────────────────────────────────
 //
 // wp-emoji-loader tests emoji support in a blob: Worker, which the host's
@@ -308,9 +293,8 @@ add_action( 'init', static function (): void {
 add_action( 'wp_enqueue_scripts', static function (): void {
 
 	// True on the only pages that render EventON output.
-	// (Single events use the theme's own single-ajde_events.php since
-	// 2026-11-13 and need none of EventON's assets.)
 	$is_event_page = is_page( 'calendar' )
+		|| is_singular( 'ajde_events' )
 		|| is_post_type_archive( 'ajde_events' )
 		|| is_tax( 'event_type' )
 		|| is_tax( 'event_location' );
