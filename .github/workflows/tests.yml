@@ -1,0 +1,38 @@
+# Unit tests and syntax checks (audit H10).
+# Runs on synthetic fixtures only: the repository is public and the real
+# results data (names and ages of real people) never enters it. The data
+# checks — migration/verify_names.py and `wp tsr verify-import` — run
+# locally and on the server.
+name: tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring
+          coverage: none
+      - name: Lint plugin and theme
+        run: find wp-content/plugins/trailseries-results wp-content/themes/exhibz-child -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+      - name: Unit tests
+        run: php tests/php/run.php
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Extractor regression tests
+        run: python -X utf8 -m unittest discover -s migration/tests -v
