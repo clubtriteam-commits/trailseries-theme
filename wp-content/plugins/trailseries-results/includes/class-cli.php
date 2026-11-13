@@ -39,6 +39,77 @@ final class TSR_CLI {
 		WP_CLI::add_command( 'tsr prune',        array( $instance, 'prune' ) );
 		WP_CLI::add_command( 'tsr verify-import', array( $instance, 'verify_import' ) );
 		WP_CLI::add_command( 'tsr apply-seasons', array( $instance, 'apply_seasons' ) );
+		WP_CLI::add_command( 'tsr import-standings', array( $instance, 'import_standings' ) );
+	}
+
+	/**
+	 * Import the old site's official season standings (audit H1 step 2).
+	 *
+	 * Reads every season-*.json written by
+	 * migration/extract_official_standings.py, validates it
+	 * (TSR_Official_Standings::validate) and stores it. All files are checked
+	 * before anything is written. The directory must be outside the web root:
+	 * the files hold names of real people.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --dir=<path>
+	 * : Directory with season-*.json.
+	 *
+	 * [--dry-run]
+	 * : Validate and report without storing.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp tsr import-standings --dir=/home/trailser/tsr-data/migration/data/official-standings --dry-run
+	 *
+	 * @subcommand import-standings
+	 *
+	 * @param array<int, string>    $args
+	 * @param array<string, string> $assoc_args
+	 */
+	public function import_standings( array $args, array $assoc_args ): void {
+		$dir = rtrim( (string) ( $assoc_args['dir'] ?? '' ), '/\\' );
+		if ( '' === $dir || ! is_dir( $dir ) ) {
+			WP_CLI::error( 'Pass --dir=<directory with season-*.json>.' );
+			return;
+		}
+		$real = realpath( $dir );
+		$root = realpath( ABSPATH );
+		if ( false === $real || ( false !== $root && str_starts_with( $real . '/', rtrim( $root, '/' ) . '/' ) ) ) {
+			WP_CLI::error( 'Refusing a directory inside the web root — the files hold personal data.' );
+			return;
+		}
+		$files = glob( $real . '/season-*.json' ) ?: array();
+		if ( array() === $files ) {
+			WP_CLI::error( 'No season-*.json in --dir.' );
+			return;
+		}
+		$docs = array();
+		foreach ( $files as $file ) {
+			try {
+				$doc = TSR_Official_Standings::validate( json_decode( (string) file_get_contents( $file ), true, 32, JSON_THROW_ON_ERROR ) );
+			} catch ( Throwable $e ) {
+				WP_CLI::error( basename( $file ) . ': ' . $e->getMessage() );
+				return;
+			}
+			$docs[ $doc['season'] ] = $doc;
+		}
+		ksort( $docs );
+		foreach ( $docs as $doc ) {
+			WP_CLI::log( sprintf( '%s (%d) %-7s men %3d women %3d podiums %s%s',
+				$doc['label'], $doc['season'], $doc['kind'], count( $doc['m'] ), count( $doc['f'] ),
+				$doc['has_podiums'] ? 'yes' : 'no', array() !== $doc['notes'] ? ' — note: ' . implode( ' ', $doc['notes'] ) : '' ) );
+		}
+		if ( isset( $assoc_args['dry-run'] ) ) {
+			WP_CLI::success( sprintf( 'Dry run: %d season(s) valid, nothing stored.', count( $docs ) ) );
+			return;
+		}
+		foreach ( $docs as $doc ) {
+			TSR_Official_Standings::store( $doc );
+		}
+		do_action( 'tsr_results_updated' );
+		WP_CLI::success( sprintf( 'Stored %d season(s).', count( $docs ) ) );
 	}
 
 	/**

@@ -51,6 +51,11 @@ foreach ( tsr_results_index() as $tsr_entry ) {
 	}
 	$season_years[ (int) $tsr_entry['series'] ] = true;
 }
+// Seasons with an official old-site table are offered even if none of their
+// results were imported (audit H1 step 2).
+foreach ( array_keys( TSR_Official_Standings::seasons() ) as $tsr_os ) {
+	$season_years[ (int) $tsr_os ] = true;
+}
 krsort( $season_years );
 $available_seasons = array_keys( $season_years );
 
@@ -127,6 +132,16 @@ $tsr_standings_key  = sprintf( 'tsr_standings_g%d_s%d', tsr_cache_gen(), $curren
 $tsr_standings_hit  = in_array( $current_season, $available_seasons, true )
 	? get_transient( $tsr_standings_key )
 	: array( 'standings' => array( 'm' => array(), 'f' => array() ), 'has_cat_meta' => false );
+// Audit H1 step 2 / Q2: a past season with an official table shows it as
+// the old site published it — no calculation, no transient.
+$tsr_official      = in_array( $current_season, $available_seasons, true ) ? TSR_Official_Standings::get( $current_season ) : null;
+$tsr_official_full = null !== $tsr_official && 'full' === $tsr_official['kind'];
+if ( $tsr_official_full ) {
+	$tsr_standings_hit = array(
+		'standings'    => array( 'm' => $tsr_official['m'], 'f' => $tsr_official['f'] ),
+		'has_cat_meta' => true,
+	);
+}
 $tsr_need_compute   = ! is_array( $tsr_standings_hit );
 
 /**
@@ -339,8 +354,18 @@ $tsr_race_count = count( array_unique( array_filter( array_map(
  *
  * @param array<int, array{points:int, finishes:int, podiums:int, name:string}> $rows Sorted.
  */
-function tsr_render_standings_panel( array $rows, string $key, string $heading, bool $open, int $season, bool $show_all ): void {
-	$runner_url = static fn( string $name ): string => add_query_arg( 'runner', rawurlencode( $name ), home_url( '/runner/' ) );
+function tsr_render_standings_panel( array $rows, string $key, string $heading, bool $open, int $season, bool $show_all, ?callable $link_ok = null ): void {
+	$runner_url  = static fn( string $name ): string => add_query_arg( 'runner', rawurlencode( $name ), home_url( '/runner/' ) );
+	$link_ok     = $link_ok ?? static fn( string $name ): bool => true;
+	// Official tables carry their published place and may lack podiums.
+	$place       = static fn( array $a, int $i ): int => (int) ( $a['rank'] ?? ( $i + 1 ) );
+	$has_podiums = array() !== array_filter( $rows, static fn( array $a ): bool => isset( $a['podiums'] ) );
+	$name_html   = static function ( array $a, string $class = '' ) use ( $runner_url, $link_ok ): string {
+		$cls = '' !== $class ? ' class="' . esc_attr( $class ) . '"' : '';
+		return $link_ok( $a['name'] )
+			? '<a' . $cls . ' href="' . esc_url( $runner_url( $a['name'] ) ) . '">' . esc_html( $a['name'] ) . '</a>'
+			: '<span' . $cls . '>' . esc_html( $a['name'] ) . '</span>';
+	};
 	$total      = count( $rows );
 	$limit      = $show_all ? $total : min( $total, TSR_STANDINGS_TOP );
 	?>
@@ -354,9 +379,9 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 			<ol class="tsr-podium">
 				<?php foreach ( array_slice( $rows, 0, 3 ) as $i => $a ) : ?>
 					<li class="tsr-podium__item tsr-podium__item--<?php echo esc_attr( (string) ( $i + 1 ) ); ?>">
-						<span class="tsr-podium__place" aria-hidden="true"><?php echo esc_html( (string) ( $i + 1 ) ); ?></span>
-						<a class="tsr-podium__name" href="<?php echo esc_url( $runner_url( $a['name'] ) ); ?>"><?php echo esc_html( $a['name'] ); ?></a>
-						<span class="tsr-podium__pts"><?php echo esc_html( (string) $a['points'] ); ?> т. <span class="tsr-podium__meta">· <?php echo esc_html( (string) $a['podiums'] ); ?> <?php echo 1 === (int) $a['podiums'] ? 'подиум' : 'подиума'; ?></span></span>
+						<span class="tsr-podium__place" aria-hidden="true"><?php echo esc_html( (string) $place( $a, $i ) ); ?></span>
+						<?php echo $name_html( $a, 'tsr-podium__name' ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in $name_html. ?>
+						<span class="tsr-podium__pts"><?php echo esc_html( (string) $a['points'] ); ?> т.<?php if ( isset( $a['podiums'] ) ) : ?> <span class="tsr-podium__meta">· <?php echo esc_html( (string) $a['podiums'] ); ?> <?php echo 1 === (int) $a['podiums'] ? 'подиум' : 'подиума'; ?></span><?php endif; ?></span>
 					</li>
 				<?php endforeach; ?>
 			</ol>
@@ -364,22 +389,26 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 			<?php if ( $limit > 3 ) : ?>
 				<div class="tsr-results-wrap">
 					<table class="tsr-results tsr-standings-table">
-						<caption class="screen-reader-text"><?php echo esc_html( $heading ); ?> — места 4 до <?php echo esc_html( (string) $limit ); ?></caption>
+						<caption class="screen-reader-text"><?php echo esc_html( $heading ); ?> — от <?php echo esc_html( (string) $place( $rows[3], 3 ) ); ?> до <?php echo esc_html( (string) $place( $rows[ $limit - 1 ], $limit - 1 ) ); ?> място</caption>
 						<thead>
 							<tr>
 								<th scope="col">#</th>
 								<th scope="col">Атлет</th>
 								<th scope="col">Точки</th>
-								<th scope="col">Подиуми</th>
+								<?php if ( $has_podiums ) : ?>
+									<th scope="col">Подиуми</th>
+								<?php endif; ?>
 							</tr>
 						</thead>
 						<tbody>
 							<?php for ( $i = 3; $i < $limit; $i++ ) : $a = $rows[ $i ]; ?>
 								<tr>
-									<td><?php echo esc_html( (string) ( $i + 1 ) ); ?></td>
-									<td><a href="<?php echo esc_url( $runner_url( $a['name'] ) ); ?>"><?php echo esc_html( $a['name'] ); ?></a></td>
+									<td><?php echo esc_html( (string) $place( $a, $i ) ); ?></td>
+									<td><?php echo $name_html( $a ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in $name_html. ?></td>
 									<td><?php echo esc_html( (string) $a['points'] ); ?></td>
-									<td><?php echo esc_html( (string) $a['podiums'] ); ?></td>
+									<?php if ( $has_podiums ) : ?>
+										<td><?php echo esc_html( (string) ( $a['podiums'] ?? '' ) ); ?></td>
+									<?php endif; ?>
 								</tr>
 							<?php endfor; ?>
 						</tbody>
@@ -451,15 +480,36 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 				</div>
 
 				<?php
-				tsr_render_standings_panel( $standings['m'], 'm', 'Мъже', 'm' === $tsr_open_tab, $current_season, $tsr_show_all );
-				tsr_render_standings_panel( $standings['f'], 'f', 'Жени', 'f' === $tsr_open_tab, $current_season, $tsr_show_all );
+				// Official names come from the old standings page, not from the
+				// results — link only those a runner profile exists for.
+				$tsr_link_ok = null;
+				if ( $tsr_official_full ) {
+					$tsr_known = array();
+					foreach ( tsr_runner_name_index() as $tsr_blob ) {
+						foreach ( explode( "\n", $tsr_blob ) as $tsr_nm ) {
+							$tsr_known[ (string) preg_replace( '/\s+/u', ' ', trim( $tsr_nm ) ) ] = true;
+						}
+					}
+					$tsr_link_ok = static fn( string $n ): bool => isset( $tsr_known[ mb_strtolower( (string) preg_replace( '/\s+/u', ' ', trim( $n ) ) ) ] );
+				}
+				tsr_render_standings_panel( $standings['m'], 'm', 'Мъже', 'm' === $tsr_open_tab, $current_season, $tsr_show_all, $tsr_link_ok );
+				tsr_render_standings_panel( $standings['f'], 'f', 'Жени', 'f' === $tsr_open_tab, $current_season, $tsr_show_all, $tsr_link_ok );
 				?>
 			</div>
 
-			<p class="tsr-standings-note">
-				При равен брой точки предимство има броят подиуми.
-				<a href="<?php echo esc_url( home_url( '/pravila/' ) ); ?>">Пълните правила за класиране</a>
-			</p>
+			<?php if ( $tsr_official_full ) : ?>
+				<p class="tsr-standings-note">
+					Официалното генерално класиране за сезона, както е публикувано от Trail Series.
+					<?php if ( 2012 === $current_season ) : ?>
+						Местата при мъжете са по реда в публикуваната таблица (в нея колоната „място“ повтаря точките).
+					<?php endif; ?>
+				</p>
+			<?php else : ?>
+				<p class="tsr-standings-note">
+					При равен брой точки предимство има броят подиуми.
+					<a href="<?php echo esc_url( home_url( '/pravila/' ) ); ?>">Пълните правила за класиране</a>
+				</p>
+			<?php endif; ?>
 
 		<?php else : ?>
 			<p class="tsr-empty">Няма класиране за <?php echo esc_html( $current_season_label ); ?>.</p>
