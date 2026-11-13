@@ -733,7 +733,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .tsr-page-hero__kicker {
-	font-size: 0.72rem;
+	font-size: 0.75rem;
 	letter-spacing: 0.2em;
 	text-transform: uppercase;
 	color: var(--tsr-blue);
@@ -1726,7 +1726,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .tsr-track__stat-label {
-	font-size:      0.65rem;
+	font-size:      0.75rem;
 	font-weight:    700;
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
@@ -1796,7 +1796,7 @@ h1, h2, h3, h4, h5, h6 {
 	border:         1px solid var(--tsr-orange);
 	text-transform: none;
 	letter-spacing: normal;
-	font-size:      0.72rem;
+	font-size:      0.75rem;
 	padding:        0.1rem 0.55rem;
 	margin-top:     0.2rem;
 	align-self:     flex-start;
@@ -1838,15 +1838,30 @@ h1, h2, h3, h4, h5, h6 {
 	margin-bottom: 0.6rem;
 }
 
-.tsr-track[role="button"] {
+.tsr-track[data-title] {
 	cursor: pointer;
 }
 
-.tsr-track[role="button"]:hover {
+/* Track name is the row's <button> (audit L20) — looks like the old text */
+.tsr-track__open {
+	padding:    0;
+	margin:     0;
+	border:     0;
+	background: none;
+	font:       inherit;
+	font-weight: 700;
+	font-size:  1rem;
+	color:      var(--tsr-navy);
+	text-align: left;
+	cursor:     pointer;
+	min-height: 24px;
+}
+
+.tsr-track[data-title]:hover {
 	background: #eaf6fb;
 }
 
-.tsr-track--legacy[role="button"]:hover {
+.tsr-track--legacy[data-title]:hover {
 	background: var(--tsr-white);
 	opacity:    1;
 }
@@ -1869,10 +1884,15 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Keyboard focus — the default outline is suppressed by the parent theme's
    reset, so without these a keyboard user has no idea where they are. */
-.tsr-track[role="button"]:focus-visible,
+.tsr-track__open:focus-visible,
 .tsr-track__gpx:focus-visible,
 .tsr-modal__close:focus-visible,
 .tsr-track-legacy-group__summary:focus-visible {
+	outline:        2px solid var(--tsr-blue-dk);
+	outline-offset: 2px;
+}
+
+.tsr-track:has(.tsr-track__open:focus-visible) {
 	outline:        2px solid var(--tsr-blue-dk);
 	outline-offset: 2px;
 }

@@ -139,8 +139,6 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name, string 
 	$is_legacy = ( 'legacy' === tsr_track_status( $tr ) );
 	?>
 	<li class="tsr-track<?php echo $is_legacy ? ' tsr-track--legacy' : ''; ?>"
-	    role="button" tabindex="0" aria-haspopup="dialog"
-	    aria-label="<?php echo esc_attr( $tr['title'] . ' — детайли за трасето' ); ?>"
 	    data-title="<?php echo esc_attr( $tr['title'] ); ?>"
 	    data-variant="<?php echo esc_attr( $tr['variant'] ?? '' ); ?>"
 	    data-event="<?php echo esc_attr( $event_name ); ?>"
@@ -160,7 +158,15 @@ function tsr_track_row( array $tr, string $gpx_base, string $event_name, string 
 			// only the distinguishing part ("6 км", "Hard Core Edition 26 км").
 			// Full title stays in data-title/aria-label for the modal and AT.
 			?>
-			<span class="tsr-track__name"><?php echo esc_html( $tr['variant'] ?? $tr['title'] ); ?></span>
+			<?php
+			// Audit L20: a real <button> opens the modal (the <li> used to
+			// carry role="button", which is not allowed on a list item). Its
+			// accessible name starts with the visible text, then the event
+			// for context. A click anywhere else on the row still opens it.
+			?>
+			<button class="tsr-track__name tsr-track__open" type="button" aria-haspopup="dialog">
+				<?php echo esc_html( $tr['variant'] ?? $tr['title'] ); ?><span class="screen-reader-text"> — <?php echo esc_html( $event_name ); ?>, детайли за трасето</span>
+			</button>
 			<?php if ( $is_legacy ) : ?>
 				<span class="tsr-track__badge tsr-track__badge--legacy">Легаси</span>
 			<?php else : ?>

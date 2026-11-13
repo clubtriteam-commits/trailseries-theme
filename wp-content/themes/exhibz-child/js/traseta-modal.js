@@ -603,7 +603,8 @@
 
 	function openModal( row ) {
 		var d = row.dataset;
-		lastFocus = row;
+		// Focus returns to the row's button on close (audit L20).
+		lastFocus = row.querySelector( '.tsr-track__open' ) || row;
 		openTitle = d.title || '';
 
 		hideChartHover();
@@ -751,13 +752,8 @@
 
 	document.addEventListener( 'keydown', function ( ev ) {
 		if ( modal.hidden ) {
-			// Open with Enter/Space when a track row is focused.
-			if ( ( ev.key === 'Enter' || ev.key === ' ' ) &&
-					document.activeElement &&
-					document.activeElement.matches( '.tsr-track[data-title]' ) ) {
-				ev.preventDefault();
-				openModal( document.activeElement );
-			}
+			// Enter/Space on the row's <button> fire a native click, handled
+			// by the click listener above — no key handling needed (L20).
 			return;
 		}
 		if ( ev.key === 'Escape' ) {
