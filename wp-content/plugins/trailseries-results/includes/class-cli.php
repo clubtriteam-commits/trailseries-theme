@@ -60,6 +60,9 @@ final class TSR_CLI {
 	 *   OLD       — ≥ 90 % of its runner names appear in ONE expected post: an
 	 *               earlier extraction of a section the page still has.
 	 *               Trashable.
+	 *   SPLIT     — every runner appears in the page's current sections
+	 *               together (a merged section the extractor now splits).
+	 *               Trashable.
 	 *   EXTRA     — anything else: a table the current manifest does not
 	 *               have at all (e.g. relay and kids' sections that the August
 	 *               re-extraction lost and that were re-created by hand on
@@ -79,7 +82,7 @@ final class TSR_CLI {
 	 * : Only pages whose slug contains this string.
 	 *
 	 * [--trash]
-	 * : Move DUPLICATE and OLD candidates to the trash (reversible).
+	 * : Move DUPLICATE, OLD and SPLIT candidates to the trash (reversible).
 	 *   Without it the command only lists.
 	 *
 	 * [--ids=<ids>]
@@ -164,7 +167,7 @@ final class TSR_CLI {
 		}
 
 		$trashable = array();
-		$counts    = array( 'DUPLICATE' => 0, 'OLD' => 0, 'EXTRA' => 0 );
+		$counts    = array( 'DUPLICATE' => 0, 'OLD' => 0, 'SPLIT' => 0, 'EXTRA' => 0 );
 		foreach ( $candidates as $c ) {
 			$held  = $held_by_page[ $c['page'] ] ?? array();
 			$set   = TSR_Repository::load( (int) $c['post']->ID );
@@ -191,6 +194,21 @@ final class TSR_CLI {
 			if ( 'EXTRA' === $class && $best >= 0.9 ) {
 				$class = 'OLD';
 			}
+			// A merged section that the extractor now splits: every one of
+			// its runners appears in the page's current sections together,
+			// though no single one holds 90 % of them.
+			if ( 'EXTRA' === $class && array() !== $names ) {
+				$union = array();
+				foreach ( $held as [ $held_id ] ) {
+					$held_set = TSR_Repository::load( $held_id );
+					if ( null !== $held_set ) {
+						$union = array_merge( $union, $this->row_names( $held_set ) );
+					}
+				}
+				if ( array() === array_diff( $names, $union ) ) {
+					$class = 'SPLIT';
+				}
+			}
 			++$counts[ $class ];
 			WP_CLI::log( sprintf(
 				'%-9s [%d]  %-55s rows=%-4s %s  best=[%d] %3d%%  page=%s',
@@ -209,16 +227,17 @@ final class TSR_CLI {
 		}
 
 		WP_CLI::log( sprintf(
-			'Pages in scope: %d. Candidates: %d (DUPLICATE %d, OLD %d, EXTRA %d — EXTRA is never trashed without --ids).',
+			'Pages in scope: %d. Candidates: %d (DUPLICATE %d, OLD %d, SPLIT %d, EXTRA %d — EXTRA is never trashed without --ids).',
 			count( $pages ),
 			count( $candidates ),
 			$counts['DUPLICATE'],
 			$counts['OLD'],
+			$counts['SPLIT'],
 			$counts['EXTRA']
 		) );
 
 		if ( ! $do_trash ) {
-			WP_CLI::success( 'Listed only. Re-run with --trash to move DUPLICATE and OLD candidates to the trash.' );
+			WP_CLI::success( 'Listed only. Re-run with --trash to move DUPLICATE, OLD and SPLIT candidates to the trash.' );
 			return;
 		}
 		if ( null !== $only_ids && count( $trashable ) !== count( $only_ids ) ) {
