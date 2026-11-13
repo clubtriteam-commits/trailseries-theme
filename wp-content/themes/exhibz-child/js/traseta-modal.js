@@ -13,7 +13,8 @@
 	'use strict';
 
 	var modal = document.getElementById( 'tsr-track-modal' );
-	if ( ! modal || typeof L === 'undefined' ) {
+	// Leaflet is loaded on demand by window.tsrLeaflet() (js/tsr-leaflet.js).
+	if ( ! modal || typeof window.tsrLeaflet !== 'function' ) {
 		return;
 	}
 
@@ -627,13 +628,23 @@
 		// GPX in the browser (up to ~450 KB raw); the GPX stays the fallback.
 		var src = d.points || d.gpx;
 
+		// Start loading Leaflet now, in parallel with the track data.
+		var leafletReady = window.tsrLeaflet();
+
 		function draw( points ) {
 			setStatus( null );
-			// Unhide BEFORE drawing — Leaflet's invalidateSize/fitBounds
-			// need real dimensions, and a hidden container has none.
-			mapEl.hidden = false;
-			drawMap( points );
 			drawChart( points );
+			leafletReady.then( function () {
+				if ( modal.hidden || openTitle !== d.title ) {
+					return; // closed or another track opened meanwhile
+				}
+				// Unhide BEFORE drawing — Leaflet's invalidateSize/fitBounds
+				// need real dimensions, and a hidden container has none.
+				mapEl.hidden = false;
+				drawMap( points );
+			}, function () {
+				mapEl.hidden = true; // CDN blocked/offline: profile + stats still work
+			} );
 		}
 
 		if ( gpxCache[ src ] ) {
@@ -701,6 +712,18 @@
 	}
 
 	// ── Events ──────────────────────────────────────────────────────────────
+
+	// Head start: fetch Leaflet as soon as a track row is hovered or focused.
+	function warmLeaflet( ev ) {
+		if ( ev.target.closest && ev.target.closest( '.tsr-track[data-title]' ) ) {
+			document.removeEventListener( 'pointerover', warmLeaflet );
+			document.removeEventListener( 'focusin', warmLeaflet );
+			window.tsrLeaflet().catch( function () {} );
+		}
+	}
+	document.addEventListener( 'pointerover', warmLeaflet );
+	document.addEventListener( 'focusin', warmLeaflet );
+
 
 	document.addEventListener( 'click', function ( ev ) {
 		var closer = ev.target.closest( '[data-close]' );

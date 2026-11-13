@@ -107,39 +107,30 @@ add_filter( 'wp_resource_hints', static function ( array $urls, string $relation
 			'href'        => 'https://fonts.gstatic.com',
 			'crossorigin' => 'anonymous',
 		);
-		// Map pages fetch OSM tiles the moment a map first renders — warming
-		// the origin saves the DNS+TLS round trip on the first modal open.
-		if ( is_front_page() || is_page_template( 'page-traseta.php' ) ) {
-			$urls[] = array(
-				'href' => 'https://tile.openstreetmap.org',
-			);
-		}
+		// No map-tile preconnect (audit M19/L5): maps load only on demand, so
+		// a preconnect would open a third-party connection on every view.
 	}
 	return $urls;
 }, 10, 2 );
 
 // ── Leaflet map (front page + Трасета template) ─────────────────────────────
-
+//
+// Audit M19: Leaflet is no longer enqueued. js/tsr-leaflet.js (~1 KB) loads
+// its CSS + JS from cdnjs (with SRI) only when a map is needed — the home map
+// when it scrolls near the viewport, the /traseta/ map when a track modal
+// opens (or a track row is hovered/focused, to get a head start).
 add_action( 'wp_enqueue_scripts', static function (): void {
 	$is_traseta = is_page_template( 'page-traseta.php' );
 	if ( ! is_front_page() && ! $is_traseta ) {
 		return;
 	}
-	wp_enqueue_style(
-		'leaflet',
-		'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
-		array(),
-		'1.9.4'
-	);
-	// Deferred: 147 KB off the render-blocking path. Safe because the inline
-	// init in front-page.php goes through initTsrMap(), which falls back to
-	// DOMContentLoaded/load listeners when L is not yet defined — and deferred
-	// scripts always execute before DOMContentLoaded fires.
+	$dir = get_stylesheet_directory();
+	$uri = get_stylesheet_directory_uri();
 	wp_enqueue_script(
-		'leaflet',
-		'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
+		'tsr-leaflet',
+		$uri . '/js/tsr-leaflet.js',
 		array(),
-		'1.9.4',
+		(string) filemtime( $dir . '/js/tsr-leaflet.js' ),
 		array(
 			'in_footer' => false,
 			'strategy'  => 'defer',
@@ -147,14 +138,11 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	);
 
 	if ( $is_traseta ) {
-		// Must also be deferred: it checks `typeof L` at parse time, so a
-		// non-deferred footer script would run before deferred Leaflet and
-		// bail. WP keeps execution order for deferred dependency chains.
 		wp_enqueue_script(
 			'tsr-traseta-modal',
-			get_stylesheet_directory_uri() . '/js/traseta-modal.js',
-			array( 'leaflet' ),
-			wp_get_theme()->get( 'Version' ),
+			$uri . '/js/traseta-modal.js',
+			array( 'tsr-leaflet' ),
+			(string) filemtime( $dir . '/js/traseta-modal.js' ),
 			array(
 				'in_footer' => true,
 				'strategy'  => 'defer',

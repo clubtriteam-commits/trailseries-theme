@@ -819,15 +819,17 @@ get_header();
 		legend.addTo( map );
 	}
 
-	// If Leaflet loaded synchronously it's available now; otherwise wait for
-	// DOMContentLoaded (fires after deferred scripts) and window.load (fires
-	// after async scripts) so the map initialises regardless of how the parent
-	// theme outputs the <script> tag.
-	if ( typeof L !== 'undefined' ) {
-		initTsrMap();
+	// Audit M19: Leaflet + tiles load only when the map nears the viewport
+	// (js/tsr-leaflet.js, deferred — hence the DOMContentLoaded wait).
+	function start() {
+		if ( window.tsrLeafletWhenVisible ) {
+			window.tsrLeafletWhenVisible( document.getElementById( 'tsr-map' ), initTsrMap );
+		}
+	}
+	if ( window.tsrLeafletWhenVisible ) {
+		start();
 	} else {
-		document.addEventListener( 'DOMContentLoaded', initTsrMap );
-		window.addEventListener( 'load', initTsrMap );
+		document.addEventListener( 'DOMContentLoaded', start );
 	}
 }() );
 </script>
