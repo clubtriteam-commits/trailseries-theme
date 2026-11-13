@@ -332,7 +332,9 @@ final class TSR_CLI {
 			if ( '' === $label ) {
 				$label = trim( (string) ( $row['category_raw'] ?? '' ) );
 			}
-			$post_title = $row['page_title'] . ( '' !== $label ? ' — ' . $label : '' );
+			// trim(): WordPress stores titles trimmed; a page with no title
+			// would otherwise differ from its stored form by a leading space.
+			$post_title = trim( $row['page_title'] . ( '' !== $label ? ' — ' . $label : '' ) );
 			$meta       = $this->derive_section_meta(
 				(string) $row['page_title'],
 				$page_slug,
@@ -487,7 +489,9 @@ final class TSR_CLI {
 			// the run covers these meta-only writes (audit M3).
 			foreach ( $meta_new as $meta_key => $value ) {
 				if ( null === $value ) {
-					delete_post_meta( (int) $post_id, $meta_key );
+					if ( in_array( $meta_key, self::IMPORT_DELETABLE_META, true ) ) {
+						delete_post_meta( (int) $post_id, $meta_key );
+					}
 				} else {
 					update_post_meta( (int) $post_id, $meta_key, $value );
 				}
@@ -1008,7 +1012,8 @@ final class TSR_CLI {
 
 		return array(
 			'label'      => $label,
-			'km'         => null !== $km ? rtrim( rtrim( sprintf( '%.1f', $km ), '0' ), '.' ) : null,
+			// Two decimals: 10.75 km must not become 10.8 (one decimal did that).
+			'km'         => null !== $km ? rtrim( rtrim( sprintf( '%.2f', $km ), '0' ), '.' ) : null,
 			'cat'        => null !== $km ? $this->km_to_cat( $km ) : null,
 			'gender'     => $gender,
 			'season'     => null !== $season ? (string) $season : null,
@@ -1083,7 +1088,7 @@ final class TSR_CLI {
 
 		foreach ( array( '_tsr_season' => 'season', '_tsr_event_base' => 'event' ) as $key => $name ) {
 			$old = (string) get_post_meta( $post->ID, $key, true );
-			$new = (string) ( $meta_new[ $key ] ?? '' );
+			$new = (string) ( $meta_new[ $key ] ?? $old ); // Never deleted: underivable keeps the old value.
 			if ( $old !== $new ) {
 				$diff[] = sprintf( '%s: %s→%s', $name, '' !== $old ? $old : '∅', '' !== $new ? $new : '∅' );
 			}
@@ -1140,9 +1145,18 @@ final class TSR_CLI {
 	}
 
 	/**
+	 * Keys bulk-import may DELETE when the derivation yields nothing: distance,
+	 * category and gender come from the manifest, so a stale value there is
+	 * wrong by definition. Season and event name are only ever written, never
+	 * deleted — 143 sections from 2012–2016 carry a season that neither the
+	 * page title nor the slug contains (dry run 2026-11-13).
+	 */
+	private const IMPORT_DELETABLE_META = array( '_tsr_distance_km', '_tsr_distance_cat', '_tsr_gender' );
+
+	/**
 	 * The derived meta as post-meta key => value. A null value means "could not
-	 * be derived": callers that treat the derivation as authoritative
-	 * (bulk-import) delete the key; backfill-meta leaves it alone.
+	 * be derived": bulk-import deletes the key if it is in
+	 * IMPORT_DELETABLE_META and keeps it otherwise; backfill-meta leaves it alone.
 	 *
 	 * @param array{label: string, km: ?string, cat: ?string, gender: string, season: ?string, event_base: ?string} $meta
 	 * @return array<string, ?string>
