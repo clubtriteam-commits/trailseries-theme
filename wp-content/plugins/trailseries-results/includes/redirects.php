@@ -5,8 +5,11 @@
  * Auto-generated from migration/redirect-map.csv — do not edit manually.
  * Regenerate: python migration/generate_redirects.py
  *
- * 301 redirects: 92 rules
+ * 301 redirects: 91 rules
  * 410 gone:      50 rules
+ * prefix rules:  0 (from migration/redirect-prefixes.csv, 404 only)
+ *
+ * Behaviour (hook, singular gate, prefixes) is documented in the generator.
  *
  * @package trailseries-results
  */
@@ -22,6 +25,22 @@ add_action(
 		if ( '' === $path ) {
 			$path = '/';
 		}
+
+		// Legacy rules never hide current content (audit H7): if the request
+		// resolved to a real post, page, result or event, serve it.
+		if ( is_singular() && ! is_front_page() ) {
+			return;
+		}
+
+		$gone_response = static function (): void {
+			status_header( 410 );
+			nocache_headers();
+			wp_die(
+				esc_html__( 'This page has been permanently removed.', 'trailseries-results' ),
+				esc_html__( 'Gone', 'trailseries-results' ),
+				array( 'response' => 410 )
+			);
+		};
 
 		// ── 301 Redirects ────────────────────────────────────────────────────
 		$redirects = array(
@@ -57,7 +76,6 @@ add_action(
 			'/events/beglika-3' => '/calendar/',
 			'/events/birthday-run' => '/calendar/',
 			'/events/boyana-x-trail' => '/calendar/',
-			'/events/buhovo-half-marathon' => '/calendar/',
 			'/events/duathlon-buhovo' => '/calendar/',
 			'/events/golyam-sechko-run' => '/calendar/',
 			'/events/lyulin-trail-run' => '/calendar/',
@@ -179,13 +197,24 @@ add_action(
 		);
 
 		if ( isset( $gone[ $path ] ) ) {
-			status_header( 410 );
-			nocache_headers();
-			wp_die(
-				esc_html__( 'This page has been permanently removed.', 'trailseries-results' ),
-				esc_html__( 'Gone', 'trailseries-results' ),
-				array( 'response' => 410 )
-			);
+			$gone_response();
+		}
+
+		// ── Prefix fallbacks (only for requests that would 404) ──────────────
+		$prefixes = array(
+		);
+
+		if ( is_404() ) {
+			foreach ( $prefixes as [ $prefix, $status, $target ] ) {
+				if ( ! str_starts_with( $path . '/', $prefix ) ) {
+					continue;
+				}
+				if ( 410 === $status ) {
+					$gone_response();
+				}
+				wp_redirect( home_url( $target ), 301, 'TrailSeries' );
+				exit;
+			}
 		}
 	},
 	0   // before redirect_canonical (priority 1) and any theme hooks
