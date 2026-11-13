@@ -187,6 +187,46 @@ function tsr_season_label( int $year ): string {
 }
 
 /**
+ * Photo of a full-bleed home-page card as a real <img> (audit M18) instead
+ * of a CSS background: srcset lets phones and desktops pick a fitting
+ * sub-size (300/768/1024 …) and loading="lazy" keeps below-the-fold photos
+ * off the initial load. Decorative (alt=""): the card's title carries the
+ * meaning. The card CSS positions it under the gradient (object-fit: cover).
+ *
+ * @param int|WP_Post $post  Post whose featured image to show.
+ * @param string      $class CSS class of the <img>.
+ * @param string      $sizes `sizes` attribute — rendered card width.
+ * @return string HTML, or '' when the post has no featured image.
+ */
+function tsr_card_image( $post, string $class, string $sizes ): string {
+	$id = get_post_thumbnail_id( $post );
+	if ( ! $id ) {
+		return '';
+	}
+	return wp_get_attachment_image(
+		$id,
+		'large', // src fallback; WP falls back to the original when no 'large' exists
+		false,
+		array(
+			'class'    => $class,
+			'alt'      => '',
+			'sizes'    => $sizes,
+			'loading'  => 'lazy',
+			'decoding' => 'async',
+		)
+	);
+}
+
+/**
+ * New uploads: JPEG sub-sizes are written as WebP (audit M18; the server's
+ * Imagick supports it). Originals stay JPEG; existing uploads are untouched.
+ */
+add_filter( 'image_editor_output_format', static function ( array $formats ): array {
+	$formats['image/jpeg'] = 'image/webp';
+	return $formats;
+} );
+
+/**
  * Bulgarian date "8 ноември 2026" regardless of the site locale (the staging
  * site language is English, so wp_date( 'F' ) gives English month names).
  */

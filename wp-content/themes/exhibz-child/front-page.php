@@ -55,7 +55,7 @@ if ( post_type_exists( 'ajde_events' ) ) {
 			'start_ts'      => (int) get_post_meta( $tsr_id, 'evcal_srow', true ),
 			'time_ts'       => (int) get_post_meta( $tsr_id, '_evcal_etime', true ),
 			'location'      => (string) ( get_post_meta( $tsr_id, 'evcal_location_raw', true ) ?: '' ),
-			'thumbnail_url' => (string) ( get_the_post_thumbnail_url( $tsr_id, 'large' ) ?: '' ),
+			'image'         => tsr_card_image( $tsr_id, 'tsr-event-card__img', '(max-width: 768px) calc(100vw - 2.5rem), 380px' ),
 		);
 	}
 	wp_reset_postdata();
@@ -364,11 +364,9 @@ get_header();
 					$tsr_day        = date_i18n( 'j', $ev['start_ts'] );
 					$tsr_month      = date_i18n( 'M', $ev['start_ts'] );
 					$tsr_time       = $ev['time_ts'] > 0 ? date_i18n( 'H:i', $ev['time_ts'] ) . 'ч' : '';
-					$tsr_card_style = $ev['thumbnail_url']
-						? 'background-image:url(' . esc_url( $ev['thumbnail_url'] ) . ')'
-						: '';
 					?>
-					<article class="tsr-event-card"<?php echo $tsr_card_style ? ' style="' . $tsr_card_style . '"' : ''; ?>>
+					<article class="tsr-event-card">
+						<?php echo $ev['image']; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output. ?>
 						<a class="tsr-event-card__link"
 						   href="<?php echo esc_url( $ev['url'] ); ?>"
 						   aria-label="<?php echo esc_attr( $ev['title'] ); ?>"></a>
@@ -454,16 +452,12 @@ get_header();
 		<?php if ( ! empty( $tsr_news ) ) : ?>
 			<div class="tsr-grid">
 				<?php foreach ( $tsr_news as $news_post ) :
-					$tsr_thumb = get_the_post_thumbnail_url( $news_post, 'medium' );
+					// width/height + srcset from WP (audit M18) — the plain <img> had
+					// no dimensions (layout shift) and one fixed 300 px source.
+					$tsr_thumb = tsr_card_image( $news_post, 'tsr-card__thumb', '(max-width: 768px) calc(100vw - 2.5rem), 380px' );
 					?>
 					<article class="tsr-card">
-						<?php if ( $tsr_thumb ) : ?>
-							<img class="tsr-card__thumb"
-							     src="<?php echo esc_url( $tsr_thumb ); ?>"
-							     alt=""
-							     loading="lazy"
-							     decoding="async">
-						<?php endif; ?>
+						<?php echo $tsr_thumb; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output. ?>
 						<div class="tsr-card__body">
 							<p class="tsr-card__meta">
 								<?php echo esc_html( get_the_date( 'j F Y', $news_post ) ); ?>
@@ -521,11 +515,8 @@ get_header();
 			<div class="tsr-zero-viewport">
 				<div class="tsr-zero-track">
 					<?php foreach ( $tsr_zero as $tsr_zp ) :
-						// 'large' returns false when the source image is smaller than the
-						// 'large' threshold (WordPress never upscales) — 'full' always
-						// resolves, so it's the fallback rather than a second guess.
-						$tsr_z_thumb  = get_the_post_thumbnail_url( $tsr_zp, 'large' )
-							?: get_the_post_thumbnail_url( $tsr_zp, 'full' );
+						// <img> with srcset + lazy loading (audit M18), not a CSS background.
+						$tsr_z_img = tsr_card_image( $tsr_zp, 'tsr-zero-card__img', '(max-width: 768px) calc(100vw - 2.5rem), 380px' );
 						// A manual post_excerpt is used as-is by get_the_excerpt() — any
 						// literal shortcode markup in it (e.g. a leftover [quote] tag) is
 						// never stripped automatically, only auto-generated excerpts get
@@ -538,7 +529,8 @@ get_header();
 						// same date_i18n( 'F Y', ... ) pattern for month grouping).
 						$tsr_z_eyebrow = date_i18n( 'F Y', strtotime( $tsr_zp->post_date ) );
 						?>
-						<article class="tsr-zero-card"<?php echo $tsr_z_thumb ? ' style="background-image:url(' . esc_url( $tsr_z_thumb ) . ')"' : ''; ?>>
+						<article class="tsr-zero-card">
+							<?php echo $tsr_z_img; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output. ?>
 							<span class="tsr-zero-card__eyebrow"><?php echo esc_html( $tsr_z_eyebrow ); ?></span>
 							<div class="tsr-zero-card__body">
 								<h3 class="tsr-zero-card__title"><?php echo esc_html( get_the_title( $tsr_zp ) ); ?></h3>
