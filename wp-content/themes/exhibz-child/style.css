@@ -2648,6 +2648,34 @@ body.tsr-modal-open {
 	background: var(--tsr-blue-dk);
 }
 
+/* "Which runner?" list (audit H4) — several people match the search */
+.tsr-runner-choices {
+	list-style:    none;
+	margin:        0 0 2rem;
+	padding:       0;
+	columns:       2 18rem;
+	column-gap:    2rem;
+}
+
+.tsr-runner-choices li {
+	break-inside:  avoid;
+	padding:       0.15rem 0;
+}
+
+.tsr-runner-choices a {
+	display:       inline-block;
+	min-height:    24px; /* touch target, WCAG 2.5.8 (audit L17) */
+	padding:       0.2rem 0;
+	color:         var(--tsr-blue-dk);
+	font-weight:   700;
+}
+
+.tsr-runner-choices__count,
+.tsr-runner-choices__more {
+	color:         var(--tsr-muted);
+	font-size:     0.9rem;
+}
+
 /* Stats strip */
 .tsr-runner-stats {
 	display:       grid;

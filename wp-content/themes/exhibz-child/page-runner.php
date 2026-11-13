@@ -62,6 +62,36 @@ function tsr_guess_runner_gender( string $first_name ): string {
 $tsr_runner_query = trim( sanitize_text_field( wp_unslash( $_GET['runner'] ?? '' ) ) );
 $tsr_searching    = '' !== $tsr_runner_query;
 
+// Audit H4: a search needs at least 3 characters and two words (name and
+// surname) — a single letter used to match most of the database and render
+// it as one merged "profile". Search result pages are never indexed.
+const TSR_RUNNER_MAX_ROWS    = 500; // more matching rows than this → ask to refine
+const TSR_RUNNER_MAX_CHOICES = 50;  // names shown in the "which runner?" list
+
+$tsr_q_norm      = mb_strtolower( trim( (string) preg_replace( '/\s+/u', ' ', $tsr_runner_query ) ) );
+$tsr_query_error = '';
+if ( $tsr_searching ) {
+	if ( mb_strlen( $tsr_q_norm ) < 3 ) {
+		$tsr_query_error = 'Въведете поне 3 знака.';
+	} elseif ( count( explode( ' ', $tsr_q_norm ) ) < 2 ) {
+		$tsr_query_error = 'Въведете име и фамилия (поне две думи), например „Иван Иванов".';
+	}
+	add_filter(
+		'wp_robots',
+		static function ( array $robots ): array {
+			$robots['noindex'] = true;
+			if ( empty( $robots['nofollow'] ) ) { // staging (blog_public=0) already says nofollow
+				$robots['follow'] = true;
+			}
+			return $robots;
+		}
+	);
+}
+$tsr_do_search = $tsr_searching && '' === $tsr_query_error;
+$tsr_too_many  = false;
+$tsr_choices   = array(); // [ [ 'name' => display name, 'starts' => int ], … ] when several people match
+$tsr_more      = 0;       // choices beyond TSR_RUNNER_MAX_CHOICES
+
 // ── Data collection ───────────────────────────────────────────────────────────
 
 $tsr_seasons      = array(); // [ year (int) => [ entry, … ] ]
@@ -70,8 +100,8 @@ $tsr_total_fin    = 0;
 $tsr_best_place   = null;
 $tsr_first_year   = null;
 
-if ( $tsr_searching ) {
-	$tsr_q_lower = mb_strtolower( $tsr_runner_query );
+if ( $tsr_do_search ) {
+	$tsr_q_lower = $tsr_q_norm;
 
 	// Same ordered post list as before (IDs only, no meta priming), narrowed
 	// to the posts whose names can match: the cached name index answers that
@@ -148,7 +178,14 @@ if ( $tsr_searching ) {
 				: null;
 			$tsr_time   = (string) ( $tsr_row['finish_time'] ?? '' );
 
+			if ( count( $tsr_candidates ) >= TSR_RUNNER_MAX_ROWS ) {
+				$tsr_too_many = true;
+				break 2;
+			}
 			$tsr_candidates[] = array(
+				'fl'      => $tsr_fl,
+				'lf'      => $tsr_lf,
+				'full'    => trim( $tsr_fn . ' ' . $tsr_ln ),
 				'post_id' => $tsr_post->ID,
 				'hash'    => $tsr_post_hash[ $tsr_post->ID ] ?? null,
 				'gender'  => tsr_race_gender( $tsr_post ),
@@ -161,6 +198,36 @@ if ( $tsr_searching ) {
 				'status'  => $tsr_status,
 				'url'     => get_permalink( $tsr_post ),
 			);
+		}
+	}
+
+	// Audit H4: an exact full-name match (either order) wins — that is how
+	// the event-page record links and the choice list below reach a profile.
+	// Otherwise, several different names → let the visitor choose instead of
+	// merging different people into one profile.
+	if ( $tsr_too_many ) {
+		$tsr_candidates = array();
+	}
+	$tsr_exact = array_values( array_filter(
+		$tsr_candidates,
+		static fn( array $c ): bool => $c['fl'] === $tsr_q_lower || $c['lf'] === $tsr_q_lower
+	) );
+	if ( array() !== $tsr_exact ) {
+		$tsr_candidates = $tsr_exact;
+	} else {
+		$tsr_people = array();
+		foreach ( $tsr_candidates as $tsr_c ) {
+			$tsr_people[ $tsr_c['fl'] ] ??= array( 'name' => $tsr_c['full'], 'starts' => 0 );
+			++$tsr_people[ $tsr_c['fl'] ]['starts'];
+		}
+		if ( count( $tsr_people ) > 1 ) {
+			usort(
+				$tsr_people,
+				static fn( array $a, array $b ): int => array( $b['starts'], $a['name'] ) <=> array( $a['starts'], $b['name'] )
+			);
+			$tsr_choices    = array_slice( $tsr_people, 0, TSR_RUNNER_MAX_CHOICES );
+			$tsr_more       = max( 0, count( $tsr_people ) - TSR_RUNNER_MAX_CHOICES );
+			$tsr_candidates = array();
 		}
 	}
 
@@ -256,10 +323,39 @@ get_header();
 
 		<?php if ( $tsr_searching ) : ?>
 
-			<?php if ( empty( $tsr_seasons ) ) : ?>
+			<?php if ( '' !== $tsr_query_error ) : ?>
 
 				<div class="tsr-notice tsr-notice--info">
-					<p>Не е намерен бегач с имена „<?php echo esc_html( $tsr_runner_query ); ?>" в базата с резултати. Проверете правописа или опитайте само с фамилното име.</p>
+					<p><?php echo esc_html( $tsr_query_error ); ?></p>
+				</div>
+
+			<?php elseif ( $tsr_too_many ) : ?>
+
+				<div class="tsr-notice tsr-notice--info">
+					<p>Твърде много съвпадения за „<?php echo esc_html( $tsr_runner_query ); ?>". Въведете пълните име и фамилия.</p>
+				</div>
+
+			<?php elseif ( array() !== $tsr_choices ) : ?>
+
+				<div class="tsr-notice tsr-notice--info">
+					<p>Няколко бегачи отговарят на „<?php echo esc_html( $tsr_runner_query ); ?>". Изберете:</p>
+				</div>
+				<ul class="tsr-runner-choices">
+					<?php foreach ( $tsr_choices as $tsr_choice ) : ?>
+						<li>
+							<a href="<?php echo esc_url( add_query_arg( 'runner', rawurlencode( $tsr_choice['name'] ), get_permalink() ) ); ?>"><?php echo esc_html( $tsr_choice['name'] ); ?></a>
+							<span class="tsr-runner-choices__count">— <?php echo esc_html( (string) $tsr_choice['starts'] ); ?>&nbsp;старт<?php echo 1 !== $tsr_choice['starts'] ? 'а' : ''; ?></span>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+				<?php if ( $tsr_more > 0 ) : ?>
+					<p class="tsr-runner-choices__more">… и още <?php echo esc_html( (string) $tsr_more ); ?>. Уточнете търсенето.</p>
+				<?php endif; ?>
+
+			<?php elseif ( empty( $tsr_seasons ) ) : ?>
+
+				<div class="tsr-notice tsr-notice--info">
+					<p>Не е намерен бегач с имена „<?php echo esc_html( $tsr_runner_query ); ?>" в базата с резултати. Проверете правописа и въведете името така, както е в протокола.</p>
 				</div>
 
 			<?php else : ?>
