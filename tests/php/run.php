@@ -55,6 +55,7 @@ foreach ( array(
 	'includes/class-repository.php',
 	'includes/class-section-meta.php',
 	'includes/class-prune-rules.php',
+	'includes/class-upload-match.php',
 ) as $file ) {
 	require TSR_TEST_PLUGIN . $file;
 }

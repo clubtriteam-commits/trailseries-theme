@@ -148,7 +148,7 @@ final class TSR_Admin_Upload {
 		}
 		unset( $section );
 
-		self::resolve_slugs( $fields['event_name'], $sections );
+		$match = self::resolve_slugs( $fields['event_name'], (int) $fields['season'], $sections );
 
 		set_transient(
 			self::transient_key(),
@@ -156,7 +156,7 @@ final class TSR_Admin_Upload {
 			HOUR_IN_SECONDS
 		);
 
-		self::render_preview( $fields, $sections, $skipped );
+		self::render_preview( $fields, $sections, $skipped, $match );
 	}
 
 	/**
@@ -177,6 +177,16 @@ final class TSR_Admin_Upload {
 		}
 		if ( $season < 2012 || $season > 2100 ) {
 			return 'Невалиден сезон (очаква се година 2012–2100).';
+		}
+		// Audit M14: a wrong year in the form would file the results under
+		// the wrong season.
+		$title_year = tsr_title_year( $event_name );
+		if ( null !== $title_year && $title_year !== $season ) {
+			return sprintf(
+				'Сезонът (%d) не съвпада с годината в името на събитието (%d). Коригирайте едното от двете.',
+				$season,
+				$title_year
+			);
 		}
 
 		if ( $is_xlsx ) {
@@ -606,7 +616,7 @@ final class TSR_Admin_Upload {
 		return array(
 			'label'    => $label,
 			'km'       => $km,
-			'cat'      => self::km_to_cat( $km ),
+			'cat'      => TSR_Section_Meta::km_to_cat( $km ),
 			'rows'     => $rows,
 			'warnings' => $warnings,
 			'errors'   => $errors,
@@ -695,23 +705,6 @@ final class TSR_Admin_Upload {
 		return $raw;
 	}
 
-	/**
-	 * Same distance→category boundaries as the CLI backfill:
-	 * <8 short · 8–13.9 medium · 14–20.9 long · 21+ bonus.
-	 */
-	private static function km_to_cat( float $km ): string {
-		if ( $km < 8 ) {
-			return 'short';
-		}
-		if ( $km < 14 ) {
-			return 'medium';
-		}
-		if ( $km < 21 ) {
-			return 'long';
-		}
-		return 'bonus';
-	}
-
 	// ── Shared: validation, slugs, preview ───────────────────────────────────
 
 	/**
@@ -728,41 +721,79 @@ final class TSR_Admin_Upload {
 	}
 
 	/**
-	 * Assign a slug to every section following the site's hub pattern: the
-	 * first section of a NEW event gets the bare "{event-slug}-results" hub
-	 * slug; every other section gets "-{category-slug}" appended. Writes
+	 * Assign a slug to every section (audit H6). The rules live in
+	 * TSR_Upload_Match::assign() (pure, unit-tested): a re-upload matches the
+	 * event's existing posts of the same season by category label and updates
+	 * them — hub included — instead of creating "{base}-{label}" duplicates;
+	 * a hub slug owned by another season is a blocking conflict. Writes
 	 * 'slug', 'existing_id' and 'is_hub_head' into each section.
 	 *
 	 * @param list<array<string,mixed>> $sections Modified in place.
+	 * @return array{leftovers: list<array{id: int, slug: string, label: string}>, conflict: ?string}
 	 */
-	private static function resolve_slugs( string $event_name, array &$sections ): void {
-		$base       = sanitize_title( $event_name ) . '-results';
-		$bare_taken = null !== get_page_by_path( $base, OBJECT, TSR_Post_Types::POST_TYPE );
+	private static function resolve_slugs( string $event_name, int $season, array &$sections ): array {
+		global $wpdb;
+		$base = sanitize_title( $event_name ) . '-results';
 
-		foreach ( $sections as &$section ) {
-			if ( ! $bare_taken ) {
-				$slug                   = $base;
-				$section['is_hub_head'] = true;
-				$bare_taken             = true;
-			} else {
-				$slug                   = sanitize_title( $base . '-' . sanitize_title( $section['label'] ) );
-				$section['is_hub_head'] = false;
-			}
-			$existing               = get_page_by_path( $slug, OBJECT, TSR_Post_Types::POST_TYPE );
-			$section['slug']        = $slug;
-			$section['existing_id'] = $existing instanceof WP_Post ? $existing->ID : 0;
+		$rows   = $wpdb->get_results( $wpdb->prepare(
+			"SELECT ID, post_name, post_title FROM {$wpdb->posts}
+			  WHERE post_type = %s AND post_status NOT IN ( 'trash', 'auto-draft', 'inherit' )
+			    AND ( post_name = %s OR post_name LIKE %s )",
+			TSR_Post_Types::POST_TYPE,
+			$base,
+			$wpdb->esc_like( $base ) . '-%'
+		) );
+		$family = array();
+		foreach ( $rows as $r ) {
+			$family[] = array(
+				'id'     => (int) $r->ID,
+				'slug'   => (string) $r->post_name,
+				'label'  => TSR_Section_Meta::title_category_suffix( (string) $r->post_title ),
+				'season' => (string) get_post_meta( (int) $r->ID, '_tsr_season', true ),
+			);
+		}
+
+		$input = array();
+		foreach ( $sections as $section ) {
+			$input[] = array(
+				'label'     => (string) $section['label'],
+				'candidate' => sanitize_title( $base . '-' . sanitize_title( (string) $section['label'] ) ),
+			);
+		}
+		$result = TSR_Upload_Match::assign( $base, $season, $input, $family );
+
+		foreach ( $sections as $i => &$section ) {
+			$assigned               = $result['sections'][ $i ] ?? array( 'slug' => '', 'existing_id' => 0, 'is_hub_head' => false );
+			$section['slug']        = $assigned['slug'];
+			$section['existing_id'] = $assigned['existing_id'];
+			$section['is_hub_head'] = $assigned['is_hub_head'];
 		}
 		unset( $section );
+
+		return array( 'leftovers' => $result['leftovers'], 'conflict' => $result['conflict'] );
 	}
 
 	/**
 	 * @param list<array<string,mixed>> $sections
 	 * @param list<string>              $skipped
+	 * @param array{leftovers: list<array{id: int, slug: string, label: string}>, conflict: ?string} $match
 	 */
-	private static function render_preview( array $fields, array $sections, array $skipped ): void {
+	private static function render_preview( array $fields, array $sections, array $skipped, array $match ): void {
 		$total_rows   = array_sum( array_map( static fn( array $s ): int => count( $s['rows'] ), $sections ) );
 		$total_warn   = array_sum( array_map( static fn( array $s ): int => count( $s['warnings'] ), $sections ) );
-		$total_errors = array_sum( array_map( static fn( array $s ): int => count( $s['errors'] ), $sections ) );
+		$total_errors = array_sum( array_map( static fn( array $s ): int => count( $s['errors'] ), $sections ) )
+			+ ( null !== $match['conflict'] ? 1 : 0 );
+		if ( null !== $match['conflict'] ) {
+			self::notice( 'error', $match['conflict'] );
+		}
+		foreach ( $match['leftovers'] as $left ) {
+			self::notice( 'warning', sprintf(
+				'Публикация %d ("%s", категория "%s") е от това събитие и сезон, но я няма в новия файл — остава непроменена. Изтрийте я ръчно, ако категорията е отпаднала.',
+				$left['id'],
+				$left['slug'],
+				$left['label']
+			) );
+		}
 		$has_existing = array() !== array_filter( $sections, static fn( array $s ): bool => $s['existing_id'] > 0 );
 
 		self::notice(
@@ -793,10 +824,10 @@ final class TSR_Admin_Upload {
 			echo '</p>';
 
 			if ( $section['existing_id'] > 0 ) {
-				self::notice( 'warning', sprintf(
-					'Публикация със слъг "%s" вече съществува (ID %d).',
-					$section['slug'],
-					$section['existing_id']
+				self::notice( 'info', sprintf(
+					'Съществуваща публикация за тази категория (ID %d, слъг "%s") — ще бъде обновена.',
+					$section['existing_id'],
+					$section['slug']
 				) );
 			}
 			foreach ( $section['errors'] as $e ) {
@@ -837,8 +868,8 @@ final class TSR_Admin_Upload {
 		echo '<form method="post">';
 		wp_nonce_field( self::NONCE_CONFIRM );
 		if ( $has_existing ) {
-			echo '<p><label><input type="radio" name="tsr_mode" value="update" checked> Презапиши съществуващите публикации (резултатите и мета се заменят)</label><br>';
-			echo '<label><input type="radio" name="tsr_mode" value="create"> Създай нови публикации (слъговете получават суфикс)</label></p>';
+			echo '<p><label><input type="radio" name="tsr_mode" value="update" checked> Обнови съществуващите публикации (резултатите и мета се заменят) — правилният избор при коригиран файл</label><br>';
+			echo '<label><input type="radio" name="tsr_mode" value="create"> Създай нови публикации (дубликати със суфикс — бегачите ще се броят два пъти в класирането)</label></p>';
 		} else {
 			echo '<input type="hidden" name="tsr_mode" value="create">';
 		}
@@ -867,10 +898,6 @@ final class TSR_Admin_Upload {
 		$fields   = $payload['fields'];
 		$sections = $payload['sections'];
 		$mode     = ( $_POST['tsr_mode'] ?? '' ) === 'update' ? 'update' : 'create';
-
-		// Same event-base derivation as the CLI backfill: strip the year tick
-		// ("Baba Marta Run'27" → "Baba Marta Run").
-		$event_base = trim( (string) preg_replace( "/['’]\\s*\\d{2}\$/u", '', $fields['event_name'] ) );
 
 		foreach ( $sections as $section ) {
 			try {
@@ -911,11 +938,29 @@ final class TSR_Admin_Upload {
 				continue;
 			}
 
-			$km_str = rtrim( rtrim( sprintf( '%.1f', (float) $section['km'] ), '0' ), '.' );
-			update_post_meta( $post_id, '_tsr_season', (string) $fields['season'] );
-			update_post_meta( $post_id, '_tsr_distance_cat', (string) $section['cat'] );
-			update_post_meta( $post_id, '_tsr_distance_km', $km_str );
-			update_post_meta( $post_id, '_tsr_event_base', $event_base );
+			// Same derivation as bulk-import (TSR_Section_Meta, audit M14/B4):
+			// event name via the shared heuristics, gender incl. the relay/kids
+			// rules, km kept to two decimals. The season is the form's (checked
+			// against the year in the event name in read_fields()).
+			$meta = TSR_Section_Meta::meta_writes( TSR_Section_Meta::derive(
+				$post_title,
+				(string) $section['slug'],
+				(string) $section['label'],
+				(string) $section['km'],
+				'',
+				array()
+			) );
+			$meta['_tsr_season'] = (string) $fields['season'];
+			foreach ( $meta as $meta_key => $value ) {
+				if ( null === $value ) {
+					if ( in_array( $meta_key, TSR_Section_Meta::IMPORT_DELETABLE_META, true ) ) {
+						delete_post_meta( $post_id, $meta_key );
+					}
+				} else {
+					update_post_meta( $post_id, $meta_key, $value );
+				}
+			}
+			do_action( 'tsr_results_updated', $post_id ); // meta written after save (M3).
 
 			self::notice( 'success', sprintf(
 				'%s: записани %d реда в публикация %d (слъг "%s"). <a href="%s">Виж</a> · <a href="%s">Редактирай</a>',
