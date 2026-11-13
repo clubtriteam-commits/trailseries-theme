@@ -96,6 +96,15 @@ LAP_COLUMN = re.compile(r"^lap[\s_]?\d*(?:[.,]\d+)?(?:\s*km)?$", re.IGNORECASE)
 # A cell that can only be part of a category label — a distance or a
 # gender/age-group word. A row made ENTIRELY of such cells is a category row
 # even when they are spread across columns ("(empty) | Мъже | (empty) | 5км").
+# A loose text line (outside tables) counts as a section label only when the
+# WHOLE line is one: optional distance, then optional gender/age group, nothing
+# else ("16.7км Мъже", "5.2 км Жени", "Деца"). Prose never matches.
+LOOSE_CATEGORY = re.compile(
+    r"^(?=\S)(?:\d+(?:[.,]\d+)?\s*(?:км|km|м(?![а-я])|m)\.?\s*)?"
+    r"(?:мъже|жени|момчета|момичета|деца|юноши|девойки|kids|men|women|boys|girls)?$",
+    re.IGNORECASE,
+)
+
 CATEGORY_TOKEN = re.compile(
     r"^(?:\d+(?:[.,]\d+)?\s*(?:км|km|м(?![а-я])|m)"
     r"|мъже|жени|момчета|момичета|деца|юноши|девойки"
@@ -244,7 +253,14 @@ def normalize_time(text: str) -> tuple[str | None, str | None]:
 
 
 class RowStream(HTMLParser):
-    """Emit ('heading', text) and ('row', [(text, colspan), ...]) in order."""
+    """Emit ('heading', text), ('loose', text) and ('row', [(text, colspan), ...]) in order.
+
+    'loose' is the last non-empty line of plain text outside any table and
+    heading, emitted when a <table> opens. Some pages label tables with a bare
+    text line ("11.5км Мъже") instead of a heading or a category row
+    (iran-run-results); the extractor accepts it only if the whole line is a
+    category (LOOSE_CATEGORY).
+    """
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -254,11 +270,20 @@ class RowStream(HTMLParser):
         self._cell: list[str] | None = None
         self._cell_colspan = 1
         self._heading: list[str] | None = None
+        self._loose: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attr = dict(attrs)
+        if tag in ("br", "p", "div") and not self._table_depth:
+            self._loose.append("\n")
         if tag == "table":
             self._flush_row()
+            if not self._table_depth:
+                lines = [clean(x) for x in "".join(self._loose).split("\n")]
+                lines = [x for x in lines if x]
+                if lines:
+                    self.events.append(("loose", lines[-1]))
+                self._loose = []
             self._table_depth += 1
         elif tag == "tr" and self._table_depth:
             self._flush_row()
@@ -296,12 +321,17 @@ class RowStream(HTMLParser):
             if text:
                 self.events.append(("heading", text))
             self._heading = None
+            self._loose = []
+        elif tag in ("p", "div") and not self._table_depth:
+            self._loose.append("\n")
 
     def handle_data(self, data: str) -> None:
         if self._cell is not None:
             self._cell.append(data)
         if self._heading is not None:
             self._heading.append(data)
+        elif not self._table_depth:
+            self._loose.append(data)
 
     def close(self) -> None:
         super().close()
@@ -346,6 +376,9 @@ class Section:
         # Data rows seen before a mapping could be established; replayed once
         # inference succeeds on a later row, or flushed at end of page.
         self.pending_rows: list[list[str]] = []
+        # Category came from a bare text line outside the table (never
+        # passed on to later sections).
+        self.from_loose = False
 
 
 class PageExtractor:
@@ -362,10 +395,19 @@ class PageExtractor:
         sections: list[Section] = []
         current: Section | None = None
         pending_category = ""
+        pending_loose = ""
 
         for kind, payload in stream.events:
             if kind == "heading":
                 pending_category = str(payload)
+                continue
+            if kind == "loose":
+                # Only ever used to START a section where rows would otherwise
+                # run on into the previous one (a header-less table after a
+                # bare text label, iran-run-results). Sections that begin at
+                # a header row keep their old raw category, so occurrence
+                # numbers — and the overrides keyed on them — never shift.
+                pending_loose = str(payload) if LOOSE_CATEGORY.match(str(payload)) else ""
                 continue
 
             cells: list[tuple[str, int]] = payload  # type: ignore[assignment]
@@ -385,9 +427,22 @@ class PageExtractor:
                 continue
 
             # Category label split across cells: "(empty) | Мъже | (empty) | 5км".
-            # Every non-empty cell must be a distance or gender/age-group token.
-            if len(non_empty) <= 2 and all(CATEGORY_TOKEN.match(t) for t in non_empty):
-                pending_category = " ".join(non_empty)
+            # Every non-empty cell must be a distance or gender/age-group token;
+            # surrounding dashes/colons are punctuation ("5км -" | "жени",
+            # buhovo-26-may), not part of the token.
+            # One stray column word may share the row ("5км -" | "мъже" |
+            # "точки", buhovo-26-may repeats a header cell on its category rows).
+            # (A distance like "6км" is also a column word — keep it as a token.)
+            stripped = [t.strip(" -–—:.") for t in non_empty]
+            tokens = [t for t in stripped if CATEGORY_TOKEN.match(t) or not is_column_word(t)]
+            # A token may also be one whole cell that is a complete category
+            # ("17.7км Мъже" | "Точки", ranking-7-hills-run).
+            if (
+                1 <= len(tokens) <= 2
+                and len(non_empty) - len(tokens) <= 1
+                and all(t and (CATEGORY_TOKEN.match(t) or LOOSE_CATEGORY.match(t)) for t in tokens)
+            ):
+                pending_category = " ".join(tokens)
                 continue
 
             column_words = sum(1 for t in non_empty if is_column_word(t))
@@ -403,11 +458,35 @@ class PageExtractor:
                     # above a combined full-name column
                     pending_category = texts[1]
                     category_position = 1
-                current = self._new_section(pending_category or (current.category if current else ""))
+                inherited_category = current.category if current and not current.from_loose else ""
+                current = self._new_section(pending_category or inherited_category)
                 self._map_columns(current, texts, category_position)
                 sections.append(current)
                 pending_category = ""
+                pending_loose = ""
                 continue
+
+            if pending_loose and current is not None and not pending_category:
+                # Header-less table after a bare text label: new section with
+                # the label; column mapping as for an inherited section.
+                loose = self._new_section(pending_loose)
+                loose.from_loose = True
+                if current.columns:
+                    loose.parent_mapping = (
+                        list(current.columns),
+                        list(current.split_labels),
+                        list(current.split_positions),
+                        list(current.headers),
+                        current.has_time_column,
+                    )
+                else:
+                    loose.parent_mapping = current.parent_mapping
+                sections.append(loose)
+                current = loose
+                pending_loose = ""
+                self._parse_data_row(current, texts)
+                continue
+            pending_loose = ""
 
             if current is None:
                 # data before any header row — parse via headerless inference
@@ -418,18 +497,28 @@ class PageExtractor:
                 pending_category = ""
                 self._parse_data_row(current, texts)
                 continue
-            if pending_category and current.columns:
+            if pending_category and (
+                current.columns or current.parent_mapping is not None or current.pending_rows or current.rows
+            ):
                 # A category row appeared mid-stream with no column-header row
                 # after it (kids sections, september-run-2). The new section's
                 # layout may differ from the previous one — data-driven
                 # inference gets first shot; the previous mapping is fallback.
+                # The previous section may itself still be waiting on an
+                # inherited mapping (its rows buffered): pass that on, or two
+                # categories run together (buhovo-26-may: men's rows ended up
+                # under "5км жени").
                 inherited = self._new_section(pending_category)
                 inherited.parent_mapping = (
-                    list(current.columns),
-                    list(current.split_labels),
-                    list(current.split_positions),
-                    list(current.headers),
-                    current.has_time_column,
+                    (
+                        list(current.columns),
+                        list(current.split_labels),
+                        list(current.split_positions),
+                        list(current.headers),
+                        current.has_time_column,
+                    )
+                    if current.columns
+                    else current.parent_mapping
                 )
                 sections.append(inherited)
                 current = inherited
@@ -437,11 +526,77 @@ class PageExtractor:
             self._parse_data_row(current, texts)
 
         for section in sections:
-            self._flush_pending(section)
+            if section.columns or section.parent_mapping is not None:
+                self._flush_pending(section)
+        # Sections that never got a mapping of their own (header-less table
+        # whose rows all failed inference, e.g. ranking-7-hills-run, where
+        # every category's first row also carries a points column) borrow
+        # the first mapping established elsewhere on the same page instead
+        # of dropping their rows. Row-width checks still apply per row.
+        page_mapping = next((s for s in sections if s.columns), None)
+        for section in sections:
+            if not section.columns and section.parent_mapping is None:
+                if page_mapping is not None and section.pending_rows:
+                    # Borrowed mapping: only rows that start with a place
+                    # number are results; anything else (a title line such
+                    # as "МЪЖЕ | 7 Hills Run - Hardcore Edition") stays out.
+                    for row in section.pending_rows:
+                        if not (row and row[0].strip().isdigit()):
+                            section.issues.append(f"row without any usable column mapping excluded: {row[:4]}...")
+                    section.pending_rows = [r for r in section.pending_rows if r and r[0].strip().isdigit()]
+                if page_mapping is not None and section.pending_rows:
+                    section.parent_mapping = (
+                        list(page_mapping.columns),
+                        list(page_mapping.split_labels),
+                        list(page_mapping.split_positions),
+                        list(page_mapping.headers),
+                        page_mapping.has_time_column,
+                    )
+                    section.issues.append("column mapping taken from another section of the same page")
+                self._flush_pending(section)
+
+        sections = [part for s in sections for part in self._split_at_place_restarts(s)]
 
         # Keep header-only sections too: a mapped section with zero rows is a
         # standings table (or a bug) and must surface in the manifest, not vanish.
         return [s for s in sections if s.rows or s.issues or s.columns]
+
+    @staticmethod
+    def _split_at_place_restarts(section: Section) -> list[Section]:
+        """Split a section where the place numbering starts again at 1.
+
+        Some pages put several categories in one table with no category row
+        between them; the only separator is the place column restarting
+        (buhovo-26-may, malak-sechko-run-ranking, simeonovo-run18-results).
+        Each restart begins a new section whose raw category is
+        "<category> [restart N]", so occurrence numbers of real headings —
+        and the overrides keyed on them — never shift. Rows without a place
+        (DNF…) stay with the segment they follow. Labels for the new
+        sections come from category-overrides.csv, as for any heading.
+        """
+        parts = [section]
+        best = 0
+        for row in section.rows:
+            place = row.get("place")
+            if isinstance(place, int) and place == 1 and best > 1:
+                part = Section(f"{section.category} [restart {len(parts) + 1}]".strip())
+                for attr in ("columns", "split_labels", "split_positions", "dropped", "headers",
+                             "has_time_column", "category_column", "mapping_inferred"):
+                    setattr(part, attr, getattr(section, attr))
+                part.issues.append(
+                    f"split from [{section.category or 'no category'}] at a place restart "
+                    "(numbering began again at 1)"
+                )
+                parts.append(part)
+                best = 0
+            if isinstance(place, int):
+                best = max(best, place)
+            if parts[-1] is not section:
+                parts[-1].rows.append(row)
+        if len(parts) > 1:
+            first_rows = len(section.rows) - sum(len(p.rows) for p in parts[1:])
+            section.rows = section.rows[:first_rows]
+        return parts
 
     def _flush_pending(self, section: Section) -> None:
         """Resolve rows buffered while no mapping existed for the section.
@@ -935,7 +1090,9 @@ def main() -> int:
             # via an override can free up the original fallback name, letting
             # a still-unresolved LATER occurrence slide through silently
             # under a clean-looking name. See AUDIT-category-mislabeling.md.
-            unverified_repeat = occurrence > 1 and not override
+            # An empty, header-only section (no rows, no file) has nothing
+            # to label — no collision warning for it.
+            unverified_repeat = occurrence > 1 and not override and bool(section.rows)
             if unverified_repeat:
                 issue_lines.append(
                     f"{page_slug} [{raw or 'no category'}] occurrence {occurrence}: "
