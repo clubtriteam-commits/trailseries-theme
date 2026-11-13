@@ -1167,8 +1167,9 @@ final class TSR_CLI {
 	 *              "NN km" in the label (or in the page title when the section
 	 *              has no label). Never from the slug: sanitize_title() and the
 	 *              Python slugify turn "11.5km" into "11-5km" / "115km" (B4).
-	 *   gender   — manifest gender → category map → МЪЖЕ / ЖЕНИ in the label
-	 *              (both present → mixed). 'M', 'F', 'mixed' or '' (unknown).
+	 *   gender   — relay/team label (щафета, отбор, relay, team) → mixed;
+	 *              else manifest gender → category map → МЪЖЕ / ЖЕНИ in the
+	 *              label (both present → mixed). 'M', 'F', 'mixed' or ''.
 	 *   season / event_base — from the PAGE title and slug only, never from the
 	 *              label: override labels such as "Крайно класиране" must not
 	 *              leak into the year or the event name.
@@ -1200,6 +1201,12 @@ final class TSR_CLI {
 		$gender = in_array( trim( $manifest_gender ), $valid, true ) ? trim( $manifest_gender ) : '';
 		if ( '' === $gender && null !== $mapped && in_array( $mapped['gender'], $valid, true ) ) {
 			$gender = $mapped['gender'];
+		}
+		// Relay / team sections list teams, not runners: never in the
+		// individual standings, whatever gender the label names
+		// ("ЩАФЕТА - ЖЕНИ" is a women's relay, still not individual results).
+		if ( '' !== $label && preg_match( '/щафет|отбор|relay|team/iu', $label ) ) {
+			$gender = 'mixed';
 		}
 		if ( '' === $gender && '' !== $label ) {
 			$upper = mb_strtoupper( $label, 'UTF-8' );
