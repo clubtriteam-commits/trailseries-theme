@@ -55,7 +55,9 @@
 	// Critical visual properties are inlined (not left to style.css alone) so
 	// the marker renders correctly even if the stylesheet hasn't deployed —
 	// Leaflet only guarantees position:absolute/left/top via its own CSS.
-	var hoverIcon = L.divIcon( {
+	// Built on first use: Leaflet is loaded on demand (audit M19), so L does
+	// not exist when this file runs.
+	var hoverIconOpts = {
 		className: 'tsr-hover-marker-wrap',
 		html:
 			'<span class="tsr-hover-marker" style="display:block;position:relative;width:16px;height:16px;' +
@@ -66,12 +68,12 @@
 			'transform:translate(-50%,-50%);"></span></span>',
 		iconSize:   [ 16, 16 ],
 		iconAnchor: [ 8, 8 ]
-	} );
+	};
 	// Discreet per-km distance reference — deliberately much quieter than
 	// the hover marker (small, low-opacity, no permanent label; "N км"
 	// shows in a tooltip on hover only). Styles inlined for the same
 	// pre-stylesheet-load resilience as hoverIcon above.
-	var kmIcon = L.divIcon( {
+	var kmIconOpts = {
 		className: 'tsr-km-marker-wrap',
 		html:
 			'<span class="tsr-km-marker" style="display:block;width:7px;height:7px;' +
@@ -79,7 +81,9 @@
 			'box-sizing:border-box;"></span>',
 		iconSize:   [ 7, 7 ],
 		iconAnchor: [ 3.5, 3.5 ]
-	} );
+	};
+	var hoverIcon = null;
+	var kmIcon    = null;
 	var gpxCache   = {}; // url → parsed points [{lat, lon, ele, dist}]
 	var lastFocus  = null;
 	var chartState = null; // geometry + points needed to map hover x → track point
@@ -379,6 +383,9 @@
 	}
 
 	function ensureHoverMarker() {
+		if ( ! map ) {
+			return null; // map not drawn yet (Leaflet still loading or blocked)
+		}
 		if ( ! hoverMarker ) {
 			hoverMarker = L.marker( [ 0, 0 ], {
 				icon:         hoverIcon,
@@ -477,6 +484,8 @@
 
 	function drawMap( points ) {
 		if ( ! map ) {
+			hoverIcon = L.divIcon( hoverIconOpts );
+			kmIcon    = L.divIcon( kmIconOpts );
 			map = L.map( 'tsr-modal-map', { scrollWheelZoom: false } );
 			L.tileLayer( 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 				maxZoom: 17,
