@@ -594,7 +594,7 @@ function tsr_results_index(): array {
 	if ( null !== $index ) {
 		return $index;
 	}
-	$key    = 'tsr_index_g' . tsr_cache_gen();
+	$key    = 'tsr_index2_g' . tsr_cache_gen(); // v2: + series season (audit H1)
 	$cached = get_transient( $key );
 	if ( is_array( $cached ) ) {
 		$index = $cached;
@@ -608,11 +608,12 @@ function tsr_results_index(): array {
 		        MAX( CASE WHEN m.meta_key = '_tsr_event_base'   THEN m.meta_value END ) AS event_base,
 		        MAX( CASE WHEN m.meta_key = '_tsr_distance_km'  THEN m.meta_value END ) AS km,
 		        MAX( CASE WHEN m.meta_key = '_tsr_gender'       THEN m.meta_value END ) AS gender,
-		        MAX( CASE WHEN m.meta_key = '_tsr_names_sha256' THEN m.meta_value END ) AS hash
+		        MAX( CASE WHEN m.meta_key = '_tsr_names_sha256' THEN m.meta_value END ) AS hash,
+		        MAX( CASE WHEN m.meta_key = '_tsr_series_season' THEN m.meta_value END ) AS series
 		   FROM {$wpdb->posts} p
 		   LEFT JOIN {$wpdb->postmeta} m
 		          ON m.post_id = p.ID
-		         AND m.meta_key IN ( '_tsr_season', '_tsr_event_base', '_tsr_distance_km', '_tsr_gender', '_tsr_names_sha256' )
+		         AND m.meta_key IN ( '_tsr_season', '_tsr_event_base', '_tsr_distance_km', '_tsr_gender', '_tsr_names_sha256', '_tsr_series_season' )
 		  WHERE p.post_type = 'ts_result' AND p.post_status = 'publish'
 		  GROUP BY p.ID, p.post_name"
 	);
@@ -625,6 +626,10 @@ function tsr_results_index(): array {
 			'km'         => (string) $row->km,
 			'gender'     => (string) $row->gender,
 			'hash'       => (string) $row->hash,
+			// Season the race counts for (audit H1): the stored series season
+			// for 2012–2020 races, the race year from 2021 on; '' = none
+			// (not a series race, or no year at all).
+			'series'     => (string) ( TSR_Series_Seasons::season_key( (string) $row->season, (string) $row->series ) ?? '' ),
 		);
 	}
 	set_transient( $key, $index, 12 * HOUR_IN_SECONDS );

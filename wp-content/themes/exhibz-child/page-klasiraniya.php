@@ -44,10 +44,12 @@ get_header();
 // ~980 queries per view even when the standings themselves were cached.
 $season_years = array();
 foreach ( tsr_results_index() as $tsr_entry ) {
-	if ( '' === $tsr_entry['season'] ) {
+	// Series season (audit H1): 2012–2020 races count for the October-to-
+	// October season they belong to, not their calendar year.
+	if ( '' === $tsr_entry['series'] ) {
 		continue;
 	}
-	$season_years[ (int) $tsr_entry['season'] ] = true;
+	$season_years[ (int) $tsr_entry['series'] ] = true;
 }
 krsort( $season_years );
 $available_seasons = array_keys( $season_years );
@@ -132,18 +134,16 @@ $tsr_need_compute   = ! is_array( $tsr_standings_hit );
  */
 $standings = array( 'm' => array(), 'f' => array() );
 
-$race_posts = ! $tsr_need_compute ? array() : get_posts(
+$tsr_season_ids = array_keys( array_filter(
+	tsr_results_index(),
+	static fn( array $e ): bool => (string) $current_season === $e['series']
+) );
+$race_posts = ( ! $tsr_need_compute || array() === $tsr_season_ids ) ? array() : get_posts(
 	array(
 		'post_type'   => 'ts_result',
 		'numberposts' => -1,
 		'post_status' => 'publish',
-		'meta_query'  => array(
-			array(
-				'key'     => '_tsr_season',
-				'value'   => (string) $current_season,
-				'compare' => '=',
-			),
-		),
+		'post__in'    => $tsr_season_ids,
 	)
 );
 
@@ -330,7 +330,7 @@ $tsr_open_tab = ( isset( $_GET['pol'] ) && 'f' === $_GET['pol'] ) ? 'f' : 'm';
 // phpcs:enable WordPress.Security.NonceVerification
 
 $tsr_race_count = count( array_unique( array_filter( array_map(
-	static fn( array $e ): string => (string) $current_season === $e['season'] ? $e['event_base'] : '',
+	static fn( array $e ): string => (string) $current_season === $e['series'] ? $e['event_base'] : '',
 	tsr_results_index()
 ) ) ) );
 

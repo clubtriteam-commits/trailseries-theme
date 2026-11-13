@@ -65,7 +65,13 @@ foreach ( $all_posts as $post ) {
 	// Year: _tsr_season meta first (most authoritative), then title heuristics,
 	// then slug heuristics, 0 = "Без година".
 	// NEVER use post_date — it is the import date, not the race year.
-	$season_meta = $tsr_index[ $post->ID ]['season'] ?? '';
+	// Series season first (audit H1: 2012–2020 races belong to their October-
+	// to-October season), then the race year — a non-series race (`none`)
+	// is still listed, under its race year.
+	$season_meta = $tsr_index[ $post->ID ]['series'] ?? '';
+	if ( '' === $season_meta ) {
+		$season_meta = $tsr_index[ $post->ID ]['season'] ?? '';
+	}
 	$year_key    = ( '' !== (string) $season_meta )
 		? (int) $season_meta
 		: ( tsr_title_year( $post->post_title )
@@ -82,7 +88,26 @@ foreach ( $all_posts as $post ) {
 		continue;
 	}
 
-	$grouped[ $year_key ][ $event_name ][] = $post;
+	// Keyed by name + race year: season 8 (Oct 2019 – Dec 2020) holds two
+	// editions of Birthday/Cactus/Christmas Run, which must stay apart.
+	$tsr_race_year = (int) ( $tsr_index[ $post->ID ]['season'] ?? 0 );
+	$grouped[ $year_key ][ $event_name . "" . $tsr_race_year ][] = $post;
+}
+
+// Display names: plain event name, or "Name 2019" / "Name 2020" when the
+// same race appears twice in one season. $tsr_event_base_of maps the
+// display name back to the event name (event-page link, calendar dates).
+$tsr_event_base_of = array();
+foreach ( $grouped as $tsr_y => $tsr_by_key ) {
+	$tsr_name_count = array_count_values( array_map( static fn( string $k ): string => explode( "", $k )[0], array_keys( $tsr_by_key ) ) );
+	$tsr_named      = array();
+	foreach ( $tsr_by_key as $tsr_k => $tsr_posts ) {
+		[ $tsr_name, $tsr_ry ] = explode( "", $tsr_k );
+		$tsr_display           = ( $tsr_name_count[ $tsr_name ] > 1 && '0' !== $tsr_ry ) ? $tsr_name . ' ' . $tsr_ry : $tsr_name;
+		$tsr_named[ $tsr_display ]           = array_merge( $tsr_named[ $tsr_display ] ?? array(), $tsr_posts );
+		$tsr_event_base_of[ $tsr_display ] = $tsr_name;
+	}
+	$grouped[ $tsr_y ] = $tsr_named;
 }
 
 // Sort years newest-first. Year key 0 ("Без година") is the lowest, so it
@@ -243,8 +268,9 @@ $tsr_dist_rows = static function ( array $posts ) use ( $tsr_rindex ): array {
 						$primary = array_shift( $cats );
 					}
 					$sections = tsr_sort_results_indexed( array_merge( array( $primary ), $cats ) );
-					$race_ts  = $tsr_dates[ $event_name ] ?? 0;
-					$ev_slug  = sanitize_title( $event_name );
+					$tsr_base = $tsr_event_base_of[ $event_name ] ?? $event_name;
+					$race_ts  = $tsr_dates[ $tsr_base ] ?? 0;
+					$ev_slug  = sanitize_title( $tsr_base );
 					?>
 					<article class="tsr-race-card">
 						<header class="tsr-race-card__head">
