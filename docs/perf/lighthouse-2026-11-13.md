@@ -31,7 +31,8 @@ Findings and what happened to them:
   (4.0:1), orange `#e05c1e` (3.67:1). Needs ≥ 4.5:1 → audit L19.
 - **`/traseta/` track rows**: `<li role="button">` (35×: role not allowed on
   `li`, list with non-`li` children, visible text missing from the
-  `aria-label`), 5 labels under 12 px → audit L20.
+  `aria-label`), 5 labels under 12 px → audit L20, fixed the same day
+  (re-run: accessibility 96, best practices 100; only contrast left).
 - Not acted on (small): unminified CSS (a few KiB, skipped by decision),
   `uses-responsive-images` on the logo (13.5 KB, its sub-size is larger),
   `/traseta/` DOM 2,430 (35 track rows with stats).
