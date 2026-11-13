@@ -72,3 +72,91 @@ comment says "training-agent-deploy" but it works for this repo too — same cPa
 **Not yet checked:** whether cPanel's web UI (Git Version Control page) has a working "Deploy
 HEAD Commit" button despite the UAPI CLI being broken. If so, that would replace step 3 above.
 Worth checking before assuming manual `cp` is the permanent answer.
+
+## Model routing (which Claude model to use)
+
+Recommend the best model for value (quality per unit of usage), not the most capable model.
+
+Two driving rules:
+1. Sonnet 5.5 is the default for almost all work; Haiku 5.5 takes bulk and mechanical work.
+2. Opus 5.5 and Fable 5.2 are escalations: deliberate, rare and short. Use them for the hard
+   decision, then drop back down.
+
+Model IDs: claude-haiku-5-5, claude-sonnet-5-5, claude-opus-5-5, claude-fable-5-2. Tier order,
+cheapest to most capable and most limited: Haiku, Sonnet, Opus, Fable.
+
+Do not quote prices, benchmark scores or plan limits from memory. They change. Check the pricing
+page at docs.claude.com and the usage screen (/usage in Claude Code) when the numbers matter.
+
+### Decision matrix
+
+| Lane | Use when | Model | Note |
+|---|---|---|---|
+| Bulk and lookup | read logs, grep and inventory files, extract fields, reformat, summarize known text, status checks, simple scripts | Haiku 5.5 | Read-only and mechanical. If the result is ambiguous, rerun on Sonnet. |
+| Code (default) | implement, iterate, refactor, bugfix, agentic multi-file work, write tests, planning, task breakdown, everyday reasoning | Sonnet 5.5 | The default lane. Start here unless a rule below says otherwise. |
+| Design (UI/UX) | frontend design, layout, typography, color, HTML/CSS/component prototypes | Sonnet 5.5 (iterate), then Opus 5.5 (polish) | Iterate cheaply, polish once. |
+| Presentation and docs | polished docs, PDF, slides, mixed text, charts and images | Sonnet 5.5 | Use Opus 5.5 for long, multi-source or high-stakes reports. |
+| Routine review | second opinion on a normal change: correctness, edge cases, tests, API misuse | Sonnet 5.5 | Do not pay for Opus on routine diffs. |
+| Escalation | auth, payments, data migration, concurrency, infra, Kubernetes, security, architecture design, a hard problem Sonnet failed on twice | Opus 5.5 (default), then Fable 5.2 (critical) | Fable for high blast radius or irreversible work, a first audit of a whole codebase, or a decision that gates a launch. |
+
+### Escalation protocol
+
+- Say why in one line before switching, for example: Escalating to Opus because this touches auth.
+- Give the stronger model a compact brief (goal, current state, constraints, key files) instead of
+  making it rediscover context. Write plans and audits to a file in the repo so the handoff
+  survives a lost session.
+- Use the stronger model for planning, diagnosis and review. Switch back to Sonnet for execution.
+- Failure rule: if Sonnet fails the same task twice with the same kind of error, escalate to Opus.
+  If Opus fails once on a critical task, go to Fable.
+- Do not escalate for formatting, renames, boilerplate, tests that follow an existing pattern, or
+  doc edits.
+- Do not ping-pong between models every few turns. Batch the hard work, because switching can
+  discard cached context.
+
+### How to switch (Claude Code)
+
+- /model claude-sonnet-5-5 (or another ID above). Typing /model alone opens the picker.
+- Always read the confirmation line (Set model to ...). A later /model command overrides an
+  earlier one silently. A wrong name returns "Model ... not found".
+- If a model is missing, run claude update. Close other Claude Code instances first (terminal and
+  VS Code at the same time can block the update). If it is still missing, the plan may not
+  include it. Use the next tier down.
+- Subagents: pin exploratory and bulk subagents to Haiku or Sonnet. Do not spawn an Opus or Fable
+  subagent for work Sonnet can do.
+- Advisor: if your Claude Code build offers it, let Sonnet execute while a stronger model
+  reviews. That is cheaper than running the whole session on Opus.
+
+### Usage-limit awareness
+
+- Before a large Opus or Fable job (full audit, repo-wide refactor), check the usage screen.
+- When a limit is hit, keep going on read-only and preparation work with Haiku or Sonnet if the
+  plan allows it, and queue the escalation task for after the reset.
+- Map before you read: have Haiku inventory the repo, then give the stronger model only the files
+  that matter.
+
+### Layers: what does what
+
+| | This guide | Workspace UI | Session persistence |
+|---|---|---|---|
+| Main job | choose the best-value model | visual workspace for sessions, diffs, review (VS Code or Cursor extension, Claude desktop app) | keep sessions alive and resumable |
+| Decides the model? | Yes | No, you configure it | No, it runs what you start |
+| Runs the agent? | No | Yes | Yes |
+| Survives a disconnect? | No | History is kept | Yes: claude --continue or claude --resume locally; Claude Code on the web, or tmux on a server for always-on work |
+| Remote or multiple agents | No | Limited | Strong fit |
+
+If the user also runs OpenCode with other providers, the same lane structure applies there with
+that provider's models. This guide covers the Claude lineup only.
+
+### Anti-patterns
+
+- Running a whole session on Fable or Opus out of habit.
+- Downgrading to save usage on security, data-migration or launch-gating decisions.
+- Escalating because a task is long, when it is only repetitive.
+- Quoting prices or limits from memory.
+
+### Answer format
+
+When asked which model to use, reply in two or three lines: the lane, the model, the reason, and
+the exact /model command.
+
+Keep the matrix current. When new models ship, update the lane table and the IDs.
