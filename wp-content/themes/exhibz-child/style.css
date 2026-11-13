@@ -1274,6 +1274,8 @@ h1, h2, h3, h4, h5, h6 {
 	width:      100%;
 	display:    block;
 	margin-top: 2rem;
+	isolation:  isolate; /* keep Leaflet's z-index 400–1000 panes/controls under the sticky header */
+	background: var(--tsr-navy); /* shown until the map loads on scroll (audit M19) */
 }
 
 /* Custom pin markers */
