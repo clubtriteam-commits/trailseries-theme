@@ -1,0 +1,2 @@
+old_url,reason
+https://trailseries.bg/news/,"News post (Новини след The Cactus Run) with one podium table of 25 rows, identical in the old site's WXR and on staging. The extractor split it into 6 three-row sections, so the manifest expects results tables that were never meant to be imported. Checked 2026-11-13."

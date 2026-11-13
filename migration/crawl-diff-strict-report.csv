@@ -304,7 +304,7 @@ https://trailseries.bg/maliovitsa-skyrun-2/,https://stg.trailseries.bg/maliovits
 https://trailseries.bg/maliovitsa-skyrun-4-%d0%b0%d0%b2%d0%b3%d1%83%d1%81%d1%82/,https://stg.trailseries.bg/maliovitsa-skyrun-4-%d0%b0%d0%b2%d0%b3%d1%83%d1%81%d1%82/,200,200,PASS,4,4,93,93,
 https://trailseries.bg/maliovitsa-skyrun-photos/,https://stg.trailseries.bg/maliovitsa-skyrun-photos/,410,410,PASS,,,,,
 https://trailseries.bg/maliovitsa-skyrun/,https://stg.trailseries.bg/maliovitsa-skyrun/,200,200,PASS,,,,,
-https://trailseries.bg/news/,https://stg.trailseries.bg/news/,200,200,FAIL,6,0,18,0,"results mismatch: rendered 0 tables / 0 rows, manifest 6 / 18"
+https://trailseries.bg/news/,https://stg.trailseries.bg/news/,200,200,EXCEPTION,6,0,18,0,"results mismatch: rendered 0 tables / 0 rows, manifest 6 / 18 [accepted exception: News post (Новини след The Cactus Run) with one podium table of 25 rows, identical in the old site's WXR and on staging. The extractor split it into 6 three-row sections, so the manifest expects results tables that were never meant to be imported. Checked 2026-11-13.]"
 https://trailseries.bg/obbverticalrun/,https://stg.trailseries.bg/obbverticalrun/,200,200,PASS,,,,,
 https://trailseries.bg/overal-ranking/,https://stg.trailseries.bg/overal-ranking/,301,301,PASS,,,,,→ https://stg.trailseries.bg/klasiraniya/
 https://trailseries.bg/overal-ranking/%d0%b3%d0%b5%d0%bd%d0%b5%d1%80%d0%b0%d0%bb%d0%bd%d0%be-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,https://stg.trailseries.bg/overal-ranking/%d0%b3%d0%b5%d0%bd%d0%b5%d1%80%d0%b0%d0%bb%d0%bd%d0%be-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,301,301,PASS,,,,,→ https://stg.trailseries.bg/klasiraniya/

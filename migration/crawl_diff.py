@@ -21,6 +21,11 @@ staging host and checks that the response matches the expected status:
 
 Transient 429/502/503/504 responses and timeouts are retried with backoff.
 
+Accepted exceptions (ADR-003 rule 4: "an intentional, documented exception")
+live in migration/crawl-diff-exceptions.csv (old_url,reason). In strict mode a
+failing row listed there is reported as EXCEPTION and does not fail the run;
+a listed row that passes is flagged so the stale entry can be removed.
+
 Usage:
     python migration/crawl_diff.py [options]
 
@@ -56,6 +61,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 REDIRECT_MAP = REPO_ROOT / "migration" / "redirect-map.csv"
 DEFAULT_REPORT = REPO_ROOT / "migration" / "crawl-diff-report.csv"
 DEFAULT_STRICT_REPORT = REPO_ROOT / "migration" / "crawl-diff-strict-report.csv"
+EXCEPTIONS = REPO_ROOT / "migration" / "crawl-diff-exceptions.csv"
 
 DEFAULT_HOST        = "stg.trailseries.bg"
 DEFAULT_CONCURRENCY = 4    # the host answers 429 above a few parallel requests
@@ -435,13 +441,29 @@ def main() -> None:
 
     results.sort(key=lambda r: r["old_url"])
 
+    if args.strict and EXCEPTIONS.exists():
+        exc = {path_key(r["old_url"]): r["reason"]
+               for r in csv.DictReader(EXCEPTIONS.open(encoding="utf-8-sig"))}
+        for r in results:
+            reason = exc.get(path_key(r["old_url"]))
+            if reason is None:
+                continue
+            if r["pass_fail"] == "FAIL":
+                r["pass_fail"] = "EXCEPTION"
+                r["notes"] = f"{r['notes']} [accepted exception: {reason}]"
+            elif r["pass_fail"] == "PASS":
+                r["notes"] = (r["notes"] + " " if r["notes"] else "") + (
+                    "[listed as exception but passes; remove it from crawl-diff-exceptions.csv]")
+
     by_status: dict[int, dict[str, int]] = {}
     for r in results:
         exp = r["expected_status"]
-        by_status.setdefault(exp, {"PASS": 0, "FAIL": 0, "ERROR": 0})
+        by_status.setdefault(exp, {"PASS": 0, "FAIL": 0, "ERROR": 0, "EXCEPTION": 0})
         pf = r["pass_fail"]
         if pf == "PASS":
             by_status[exp]["PASS"] += 1
+        elif pf == "EXCEPTION":
+            by_status[exp]["EXCEPTION"] += 1
         elif pf == "FAIL":
             by_status[exp]["FAIL"] += 1
         else:
@@ -450,16 +472,18 @@ def main() -> None:
     total_pass  = sum(v["PASS"]  for v in by_status.values())
     total_fail  = sum(v["FAIL"]  for v in by_status.values())
     total_error = sum(v["ERROR"] for v in by_status.values())
+    total_exc   = sum(v["EXCEPTION"] for v in by_status.values())
 
-    print(f"\nSummary: {total_pass} PASS  {total_fail} FAIL  {total_error} ERROR/SKIP",
-          file=sys.stderr)
+    print(f"\nSummary: {total_pass} PASS  {total_fail} FAIL  {total_error} ERROR/SKIP"
+          + (f"  {total_exc} EXCEPTION" if total_exc else ""), file=sys.stderr)
     for exp_status in sorted(by_status):
         d = by_status[exp_status]
-        n_exp = d["PASS"] + d["FAIL"] + d["ERROR"]
+        n_exp = d["PASS"] + d["FAIL"] + d["ERROR"] + d["EXCEPTION"]
         print(
             f"  expect-{exp_status}: {d['PASS']}/{n_exp} pass"
             + (f"  {d['FAIL']} fail" if d["FAIL"] else "")
-            + (f"  {d['ERROR']} error" if d["ERROR"] else ""),
+            + (f"  {d['ERROR']} error" if d["ERROR"] else "")
+            + (f"  {d['EXCEPTION']} exception" if d["EXCEPTION"] else ""),
             file=sys.stderr,
         )
 
