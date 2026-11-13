@@ -991,33 +991,25 @@ def load_overrides(path: str) -> dict[tuple[str, str, int], str]:
     return overrides
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--xml", default="migration/data/raw/runbgtrailseries.WordPress.2026-07-02.xml")
-    parser.add_argument("--pages", default="migration/results-page-list.csv")
-    parser.add_argument("--category-map", default="migration/category-map.csv")
-    parser.add_argument("--overrides", default="migration/category-overrides.csv")
-    # slug -> display title, for legacy pages that have no title at all (the
-    # manifest's page_title becomes the post title prefix and feeds the event
-    # name and season). Kept out of results-page-list.csv, which is generated.
-    parser.add_argument("--titles", default="migration/page-title-overrides.csv")
-    parser.add_argument("--out-dir", default="migration/data/canonical")
-    args = parser.parse_args()
+def extract_items(
+    items: list,
+    page_list: dict[tuple[str, str], dict],
+    category_map: dict[str, tuple[str, str]],
+    overrides: dict[tuple[str, str, int], str],
+    title_overrides: dict[str, str],
+) -> tuple[list[dict], list["Section"], list[str], dict[str, int]]:
+    """The per-page pipeline shared by the extractor and verify_names.py.
 
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    category_map = load_category_map(args.category_map)
-    overrides = load_overrides(args.overrides)
-    title_overrides: dict[str, str] = {}
-    if Path(args.titles).exists():
-        with open(args.titles, encoding="utf-8-sig") as f:
-            title_overrides = {r["slug"]: r["display_title"] for r in csv.DictReader(f)}
-    with open(args.pages, encoding="utf-8-sig") as f:
-        page_list = {(r["page_title"], r["slug"]): r for r in csv.DictReader(f)}
-
+    Walks WXR <item>s in order (several exports may be concatenated — e.g. the
+    July snapshot plus a later delta export), applies category-overrides
+    (labels and __DROP__), page-title overrides and file naming exactly as the
+    canonical files were produced. Returns the manifest rows (with the file
+    name a section is / would be written to), the parallel list of Section
+    objects, the issue lines and counters. Writes nothing.
+    """
     extractor = PageExtractor(category_map)
     manifest: list[dict] = []
+    sections_out: list[Section] = []
     issue_lines: list[str] = []
     used_names: set[str] = set()
     processed_items: set[tuple[str, str]] = set()
@@ -1026,7 +1018,7 @@ def main() -> int:
     occurrence_counts: dict[tuple[str, str], int] = defaultdict(int)
     dropped = written = skipped_oos = 0
 
-    for item in ET.parse(args.xml).getroot().findall("./channel/item"):
+    for item in items:
         post_type = item.findtext("wp:post_type", "", NS)
         status = item.findtext("wp:status", "", NS)
         if post_type not in POST_TYPES or status in SKIP_STATUSES:
@@ -1123,19 +1115,12 @@ def main() -> int:
 
             file_name = ""
             if section.rows:
-                data = {
-                    "schema_version": SCHEMA_VERSION,
-                    "split_labels": section.split_labels,
-                    "rows": section.rows,
-                }
                 file_name = f"{name}.json"
-                (out_dir / file_name).write_text(
-                    json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
-                )
                 written += 1
             elif not section.has_time_column and section.columns:
                 section.issues.insert(0, "no finish-time column — standings/points table, not extracted")
 
+            sections_out.append(section)
             manifest.append(
                 {
                     "file": file_name,
@@ -1156,6 +1141,67 @@ def main() -> int:
             )
             for issue in section.issues:
                 issue_lines.append(f"{page_slug} [{raw or 'no category'}]: {issue}")
+
+    return manifest, sections_out, issue_lines, {
+        "written": written, "dropped": dropped, "skipped_oos": skipped_oos,
+    }
+
+
+DEFAULT_XML = [
+    "migration/data/raw/runbgtrailseries.WordPress.2026-07-02.xml",
+    "migration/data/raw/runbgtrailseries.WordPress.2026-11-13.xml",  # races published after July
+]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument(
+        "--xml", action="append", default=None,
+        help="WXR export (repeatable: later exports for pages published after the first)",
+    )
+    parser.add_argument("--pages", default="migration/results-page-list.csv")
+    parser.add_argument("--category-map", default="migration/category-map.csv")
+    parser.add_argument("--overrides", default="migration/category-overrides.csv")
+    # slug -> display title, for legacy pages that have no title at all (the
+    # manifest's page_title becomes the post title prefix and feeds the event
+    # name and season). Kept out of results-page-list.csv, which is generated.
+    parser.add_argument("--titles", default="migration/page-title-overrides.csv")
+    parser.add_argument("--out-dir", default="migration/data/canonical")
+    args = parser.parse_args()
+    if not args.xml:
+        args.xml = list(DEFAULT_XML)
+
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    category_map = load_category_map(args.category_map)
+    overrides = load_overrides(args.overrides)
+    title_overrides: dict[str, str] = {}
+    if Path(args.titles).exists():
+        with open(args.titles, encoding="utf-8-sig") as f:
+            title_overrides = {r["slug"]: r["display_title"] for r in csv.DictReader(f)}
+    with open(args.pages, encoding="utf-8-sig") as f:
+        page_list = {(r["page_title"], r["slug"]): r for r in csv.DictReader(f)}
+
+    items = [
+        item
+        for xml_path in args.xml
+        for item in ET.parse(xml_path).getroot().findall("./channel/item")
+    ]
+    manifest, sections, issue_lines, stats = extract_items(
+        items, page_list, category_map, overrides, title_overrides
+    )
+    written, dropped, skipped_oos = stats["written"], stats["dropped"], stats["skipped_oos"]
+    for row, section in zip(manifest, sections):
+        if row["file"]:
+            data = {
+                "schema_version": SCHEMA_VERSION,
+                "split_labels": section.split_labels,
+                "rows": section.rows,
+            }
+            (out_dir / row["file"]).write_text(
+                json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+            )
 
     with open(out_dir / "_manifest.csv", "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=list(manifest[0].keys()))

@@ -1,0 +1,26 @@
+{
+ "note": "Invented names only. sha256 computed by migration/extract_canonical_results.py names_sha256(); TSR_Repository::names_hash() must produce the same.",
+ "rows": [
+  {
+   "first_name": "Иван",
+   "last_name": "Тестов"
+  },
+  {
+   "first_name": "Мария Примерна",
+   "last_name": ""
+  },
+  {
+   "first_name": "Anna-Lena",
+   "last_name": "O'Test"
+  },
+  {
+   "first_name": "José",
+   "last_name": "Ñandú"
+  },
+  {
+   "first_name": "Team Пробна щафета !",
+   "last_name": ""
+  }
+ ],
+ "sha256": "52579c20cd4ba2d01e1a7c1fbcce1e92db0160254ec74414f1e656cbe8a9c4a4"
+}

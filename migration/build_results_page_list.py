@@ -180,10 +180,19 @@ def dedupe_keep_order(values: list[str]) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--xml", default="migration/data/raw/runbgtrailseries.WordPress.2026-07-02.xml")
+    parser.add_argument(
+        "--xml", action="append", default=None,
+        help="WXR export (repeatable). The committed list was built from the July "
+             "snapshot plus the 2026-11-13 export (races published after July).",
+    )
     parser.add_argument("--inventory", default="migration/url-inventory.csv")
     parser.add_argument("--out", default="migration/results-page-list.csv")
     args = parser.parse_args()
+    if not args.xml:
+        args.xml = [
+            "migration/data/raw/runbgtrailseries.WordPress.2026-07-02.xml",
+            "migration/data/raw/runbgtrailseries.WordPress.2026-11-13.xml",
+        ]
 
     inventory: dict[str, dict[str, str]] = {}
     with open(args.inventory, encoding="utf-8-sig") as f:
@@ -191,7 +200,7 @@ def main() -> int:
             inventory[normalize_url(row["url"])] = row
 
     rows: list[dict[str, object]] = []
-    for item in ET.parse(args.xml).getroot().findall("./channel/item"):
+    for item in [i for x in args.xml for i in ET.parse(x).getroot().findall("./channel/item")]:
         post_type = item.findtext("wp:post_type", "", NS)
         status = item.findtext("wp:status", "", NS)
         if post_type not in POST_TYPES or status in SKIP_STATUSES:

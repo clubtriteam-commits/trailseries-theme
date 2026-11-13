@@ -55,6 +55,8 @@ register_activation_hook( __FILE__, static function (): void {
 register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	require TSR_PLUGIN_DIR . 'includes/class-section-meta.php';
+	require TSR_PLUGIN_DIR . 'includes/class-prune-rules.php';
 	require TSR_PLUGIN_DIR . 'includes/class-cli.php';
 	TSR_CLI::register();
 }
