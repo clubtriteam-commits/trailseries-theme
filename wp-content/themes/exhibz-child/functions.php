@@ -226,6 +226,77 @@ add_filter( 'image_editor_output_format', static function ( array $formats ): ar
 	return $formats;
 } );
 
+/** Short Bulgarian month name ("ян", "февр", … ) for date badges. */
+function tsr_bg_month_short( int $month ): string {
+	$m = array( 1 => 'ян', 'февр', 'март', 'апр', 'май', 'юни', 'юли', 'авг', 'септ', 'окт', 'ноем', 'дек' );
+	return $m[ $month ] ?? '';
+}
+
+/**
+ * Distance labels of a race ("6 км", "13 км", …) from data/tracks.json:
+ * the nominal distance in each current track's name, shortest first. Tracks
+ * whose nominal distances are within 1 km (variants of one course) show
+ * once; at most four labels.
+ *
+ * @return list<string>
+ */
+function tsr_event_distance_labels( string $event_base ): array {
+	if ( '' === $event_base ) {
+		return array();
+	}
+	$kms = array();
+	foreach ( tsr_tracks_events() as $event ) {
+		if ( 0 !== strcasecmp( (string) ( $event['name'] ?? '' ), $event_base ) ) {
+			continue;
+		}
+		foreach ( (array) ( $event['tracks'] ?? array() ) as $track ) {
+			if ( 'current' !== tsr_track_status( $track ) ) {
+				continue;
+			}
+			$label = (string) ( $track['variant'] ?? $track['title'] ?? '' );
+			if ( preg_match( '/(\d+(?:[.,]\d+)?)\s*(?:км|km)/iu', $label, $m ) ) {
+				$kms[] = (float) str_replace( ',', '.', $m[1] );
+			} elseif ( ! empty( $track['distance_km'] ) ) {
+				$kms[] = round( (float) $track['distance_km'] );
+			}
+		}
+	}
+	sort( $kms );
+	$out  = array();
+	$last = null;
+	foreach ( $kms as $km ) {
+		if ( null !== $last && $km - $last < 1.0 ) {
+			continue;
+		}
+		$last  = $km;
+		$out[] = str_replace( '.', ',', rtrim( rtrim( number_format( $km, 1, '.', '' ), '0' ), '.' ) ) . ' км';
+	}
+	return array_slice( $out, 0, 4 );
+}
+
+/**
+ * URL of the published results of a race edition (its hub page), or ''.
+ * Matched on `_tsr_event_base` + race year via the results index.
+ */
+function tsr_event_results_url( string $event_base, int $year ): string {
+	if ( '' === $event_base ) {
+		return '';
+	}
+	$ids = array();
+	foreach ( tsr_results_index() as $id => $entry ) {
+		if ( (string) $year === $entry['season'] && 0 === strcasecmp( $entry['event_base'], $event_base ) ) {
+			$ids[] = $id;
+		}
+	}
+	foreach ( $ids as $id ) {
+		$post = get_post( $id );
+		if ( $post instanceof WP_Post && null === tsr_hub_head_for( $post ) ) {
+			return (string) get_permalink( $post );
+		}
+	}
+	return array() !== $ids ? (string) get_permalink( $ids[0] ) : '';
+}
+
 /**
  * Bulgarian date "8 ноември 2026" regardless of the site locale (the staging
  * site language is English, so wp_date( 'F' ) gives English month names).
