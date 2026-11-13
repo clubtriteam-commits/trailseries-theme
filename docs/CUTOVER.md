@@ -26,7 +26,11 @@ WP-CLI is `php ~/wp-cli.phar`. Placeholders below:
 1. Phase 1 data work, in this order: B3+B4 (titles, distance, gender), M4 prune
    (exclude `news__*.json` — podium tables of a news post; a `news` hub would
    collide with post 4811), `wp tsr bulk-import --force` from
-   `canonical_fixed`, M3 cache flush.
+   `canonical_fixed`, M3 cache flush, then **H1 seasons**:
+   `wp tsr apply-seasons --file=/home/trailser/tsr-data/migration/series-seasons.csv`
+   (dry run first with `--dry-run`; a second run must report "Would change 0"). Re-run it
+   after **every** bulk import — the importer writes the race year from titles and does not
+   know the 2012–2020 season split.
 2. ~~M16: import the 5 missing posts~~ Done 2026-11-13 (`/1539/` is a 301 to `/1539-2/`, see audit M16).
 3. ~~Delete the stub page `/event-directory/`~~ Not a stub: page 1566 is EventON's "Events" page (`[add_eventon]`); keep it. The map 301s `/event-directory/` to `/calendar/` regardless.
 4. Strict crawl diff, locally, with a copy of the manifest kept outside the repo:
@@ -65,7 +69,8 @@ races** have taken place on the old site, plus any news.
    their manifest rows to its `_manifest.csv`; merge the three new page rows
    into `results-page-list.csv` and commit it.
 5. Import them (`wp tsr bulk-import` with `TSR_DATA_DIR` or
-   `--manifest`/`--json-dir`), and import new news posts with their exact slugs.
+   `--manifest`/`--json-dir`), then `wp tsr apply-seasons` (see A1), and import new news
+   posts with their exact slugs.
    New race landing pages go into `migration/event-pages-list.csv` and through
    `import-event-pages.php` (copy the list to `tsr-data/migration/` first; run
    with `wp eval-file … --use-include`, plain eval rejects the script's
