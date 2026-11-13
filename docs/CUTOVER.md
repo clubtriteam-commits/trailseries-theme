@@ -125,9 +125,23 @@ new site after launch.
    to `31536000` after a week of clean HTTPS; no `includeSubDomains`/`preload`),
    `X-Frame-Options SAMEORIGIN`, `Cross-Origin-Opener-Policy
    same-origin-allow-popups`, `X-Content-Type-Options nosniff`,
-   `Referrer-Policy strict-origin-when-cross-origin` — and, once M6 is done,
-   `Cache-Control "public, max-age=31536000, immutable"` for versioned
-   CSS/JS/fonts (L16). Then `php ~/wp-cli.phar rewrite flush`.
+   `Referrer-Policy strict-origin-when-cross-origin` — plus the "TSR
+   performance" block (deflate + mod_expires) and the "TSR cache" block (L16),
+   both copied verbatim from the staging `.htaccess`, after "TSR performance":
+   ```
+   # BEGIN TSR cache - versioned CSS/JS never change under the same URL (audit L16, 2026-11-13)
+   # WordPress adds ?ver= (theme assets: file mtime), so a changed file gets a new URL.
+   <IfModule mod_headers.c>
+   <If "%{QUERY_STRING} =~ /(^|&)ver=/ && %{REQUEST_URI} =~ /\.(css|js)$/">
+   Header set Cache-Control "public, max-age=31536000, immutable"
+   Header unset Expires
+   </If>
+   </IfModule>
+   # END TSR cache
+   ```
+   Check: `curl -sI "https://trailseries.bg/wp-content/themes/exhibz-child/style.css?ver=1"`
+   shows `Cache-Control: public, max-age=31536000, immutable`.
+   Then `php ~/wp-cli.phar rewrite flush`.
 9. **Switch**: point the trailseries.bg document root at `NEW` (cPanel →
    Domains). Keep `OLD` untouched.
 10. Clear any CDN/host cache if one is in front (audit question 10 — none seen
