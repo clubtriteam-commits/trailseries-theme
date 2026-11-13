@@ -32,9 +32,11 @@ require TSR_PLUGIN_DIR . 'includes/class-repository.php';
 require TSR_PLUGIN_DIR . 'includes/class-renderer.php';
 require TSR_PLUGIN_DIR . 'includes/class-post-types.php';
 require TSR_PLUGIN_DIR . 'includes/template-functions.php';
+require TSR_PLUGIN_DIR . 'includes/class-routing.php';
 require TSR_PLUGIN_DIR . 'includes/redirects.php';
 
 add_action( 'init', array( TSR_Post_Types::class, 'register' ) );
+TSR_Routing::init();
 
 if ( is_admin() ) {
 	require TSR_PLUGIN_DIR . 'includes/class-admin-upload.php';

@@ -7,9 +7,10 @@ declare( strict_types=1 );
  * - ts_race:    the race a result belongs to (e.g. "Vitosha Run").
  * - ts_season:  the season/year (e.g. "2024").
  *
- * NOTE on rewrite slugs (see docs/decisions/ADR-003): the slug below is a
- * placeholder until the legacy URL inventory is complete. Permalinks must end
- * up byte-identical to the old site's URLs — do not "improve" slugs.
+ * NOTE on URLs (see docs/decisions/ADR-003): ts_result posts are served at
+ * /{post_name}/, byte-identical to the old site. That is done by
+ * TSR_Routing (class-routing.php), not by the rewrite slug below — do not
+ * "improve" slugs.
  *
  * @package trailseries-results
  */
@@ -41,11 +42,12 @@ final class TSR_Post_Types {
 				'show_in_rest' => true,
 				'menu_icon'    => 'dashicons-list-view',
 				'supports'     => array( 'title', 'editor' ),
-				// Empty slug = no URL prefix: posts live at /{post_name}/ (ADR-003).
-				// The built-in archive is disabled — an auto-archive with empty slug
-				// would resolve to '/' and conflict with the front page.
+				// Public URLs are /{post_name}/ via TSR_Routing (ADR-003). An empty
+				// slug here would NOT achieve that: core replaces it with the post
+				// type name. So the CPT's own rules stay under /ts_result/ and only
+				// serve as a fallback that redirect_canonical 301s to the root URL.
 				'rewrite'      => array(
-					'slug'       => '',
+					'slug'       => 'ts_result',
 					'with_front' => false,
 				),
 			)
