@@ -341,7 +341,6 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 			'evcal_cal_default',
 			'evo_font_icons',
 			'eventon_dynamic_styles',
-			'evo_single_event', // single events use single-ajde_events.php
 		) as $tsr_handle ) {
 			wp_dequeue_style( $tsr_handle );
 		}

@@ -3629,8 +3629,7 @@ a.tsr-partner-card:hover {
 }
 
 .tsr-ev-fact__link {
-	display:     block;
-	width:       fit-content;
+	display:     inline-block;
 	margin-top:  0.4rem;
 	min-height:  24px;
 	font-size:   0.9rem;
