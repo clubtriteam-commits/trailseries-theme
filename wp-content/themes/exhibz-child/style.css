@@ -3796,3 +3796,16 @@ h1, h2, h3, h4, h5, h6 {
 		transform: none;
 	}
 }
+
+/* Calendar section titles on the light page (they were white, coloured only
+   through .tsr-prose-section, which the card layout no longer uses) */
+.tsr-cal-upcoming .tsr-cal-section__title,
+.tsr-cal-past .tsr-cal-section__title {
+	margin:    0 0 1rem;
+	font-size: 1.5rem;
+	color:     var(--tsr-navy);
+}
+
+.tsr-cal-count {
+	margin-top: 0;
+}
