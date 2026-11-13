@@ -33,6 +33,13 @@ WP-CLI is `php ~/wp-cli.phar`. Placeholders below:
    `python -X utf8 migration/crawl_diff.py --strict --manifest <copy of tsr-data/migration/data/canonical_fixed/_manifest.csv>`
    Must end with **0 FAIL, 0 ERROR**. Exceptions only from
    `migration/crawl-diff-exceptions.csv`.
+5. SEO code fixes deployed and verified on staging (audit B6, approved
+   2026-11-13): home page canonical (`show_on_front=posts` gives none today);
+   `noindex` on runner search pages (H4); `/sitemap.xml` served without the
+   slash redirect (L14); core sitemap off with a one-to-one 301
+   `/wp-sitemap.xml` → `/sitemap.xml/` (M7 — the old site's `robots.txt`
+   advertises `/wp-sitemap.xml`); `robots.txt` lists the custom sitemap.
+   Also M6 (`filemtime()` JS versions) before the 1-year cache headers in C8.
 
 ## B. Content delta since 2026-07-02 (three races so far)
 
@@ -103,14 +110,24 @@ new site after launch.
 6. **URLs**: `php ~/wp-cli.phar search-replace 'https://stg.trailseries.bg' 'https://trailseries.bg' --skip-columns=guid --precise --dry-run`,
    check the counts, then run it without `--dry-run`. Repeat for
    `//stg.trailseries.bg` and the bare `stg.trailseries.bg` only if the dry run
-   shows leftovers.
+   shows leftovers. Then clear everything cached with staging URLs:
+   `php ~/wp-cli.phar transient delete tsr_sitemap_xml` and
+   `php ~/wp-cli.phar eval 'tsr_flush_result_caches();'`.
 7. **Settings that differ from staging**:
    - `php ~/wp-cli.phar option update blog_public 1` — staging is `0`; launching
-     with it would de-index the site.
+     with it would de-index the site. This is the only thing blocking indexing
+     on staging (meta `noindex`; no robots.txt or header rule), so it must be
+     the last database change before C9, and it is checked again in D3.
    - admin user: new strong password (`wp user update TSadmin --user_pass=…`).
 8. **.htaccess**: the "TSR security" block (`RedirectMatch 404` for
-   `/migration` and `.git`) at the top, above the WordPress block; then
-   `php ~/wp-cli.phar rewrite flush`.
+   `/migration` and `.git`) at the top, above the WordPress block, plus the
+   headers from audit L18 — `Strict-Transport-Security "max-age=300"` (raise
+   to `31536000` after a week of clean HTTPS; no `includeSubDomains`/`preload`),
+   `X-Frame-Options SAMEORIGIN`, `Cross-Origin-Opener-Policy
+   same-origin-allow-popups`, `X-Content-Type-Options nosniff`,
+   `Referrer-Policy strict-origin-when-cross-origin` — and, once M6 is done,
+   `Cache-Control "public, max-age=31536000, immutable"` for versioned
+   CSS/JS/fonts (L16). Then `php ~/wp-cli.phar rewrite flush`.
 9. **Switch**: point the trailseries.bg document root at `NEW` (cPanel →
    Domains). Keep `OLD` untouched.
 10. Clear any CDN/host cache if one is in front (audit question 10 — none seen
@@ -123,13 +140,22 @@ new site after launch.
    — must match the last staging run (0 FAIL). Commit the report as
    `migration/crawl-diff-production-report.csv`.
 2. `curl -sI https://trailseries.bg/migration/` and `/.git/HEAD` → `404`.
-3. `https://trailseries.bg/robots.txt` does not say `Disallow: /`; view source
-   of `/` has no `noindex`.
+3. Indexing (B6): on `/`, `/rezultati/` and one results page — no
+   `<meta name='robots' content='noindex…'>`, no `X-Robots-Tag` header,
+   canonical on `https://trailseries.bg/…`; `robots.txt` has no `Disallow: /`
+   and lists `https://trailseries.bg/sitemap.xml`; sitemap URLs are on the
+   production host; `/wp-sitemap.xml` 301s to `/sitemap.xml/`; `http://` and
+   `www.` URLs 301 to `https://trailseries.bg/`.
+   Then close staging: HTTP auth on `stg.trailseries.bg` (cPanel → Directory
+   Privacy), or at least `Header set X-Robots-Tag "noindex, nofollow"` in its
+   `.htaccess` — it holds the same content as production.
 4. Spot-check by hand: front page, `/rezultati/`, one results page per season,
    `/klasiraniya/`, `/calendar/`, one EventON event, one news post with images,
    a 301 (`/all-seasons-rankings/`) and a 410 (`/feedback/`).
-5. Submit `https://trailseries.bg/sitemap.xml/` in Search Console (note L14:
-   `/sitemap.xml` currently 301s to the slash form).
+5. Search Console: submit `https://trailseries.bg/sitemap.xml`, run URL
+   inspection on five sample URLs (home, `/rezultati/`, a results page, a news
+   post, an event page), then watch coverage and 404s daily (ADR-003 rule 6,
+   section F).
 
 ## E. Rollback
 
@@ -149,8 +175,7 @@ or a broken front page.
   `redirect-map.csv`, regenerate with `generate_redirects.py`, deploy.
 - Old site: keep `OLD` and `BAK` for at least 3 months, then archive offline
   and delete from the server (personal data).
-- Turn staging off or put it behind HTTP auth, so two copies of the site are
-  not public.
+- Staging stays closed (D3); turn it off once it is no longer needed.
 
 ## Open before this can run
 
