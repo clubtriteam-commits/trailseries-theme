@@ -15,8 +15,9 @@ declare( strict_types=1 );
  *   Posts win over results on a clash, so existing news URLs never change.
  * - `post_type_link`: permalinks (and therefore canonical tags, the sitemap
  *   and redirect_canonical) use /{post_name}/, not /ts_result/{post_name}/.
- *   Requests for the old /ts_result/… form still resolve via the CPT rules
- *   and are 301'd to the root URL by redirect_canonical.
+ *   Requests for the /ts_result/… form still resolve via the CPT rules;
+ *   redirect_base() 301s them to the root URL (core's redirect_canonical
+ *   does not, it would serve both URLs with 200).
  *
  * @package trailseries-results
  */
@@ -36,6 +37,26 @@ final class TSR_Routing {
 		// a legacy URL that does not resolve exactly must show up as a 404 in
 		// the crawl diff and the logs, not land silently on a sibling page.
 		add_filter( 'do_redirect_guess_404_permalink', '__return_false' );
+		add_action( 'template_redirect', array( self::class, 'redirect_base' ), 1 );
+	}
+
+	/**
+	 * 301 /ts_result/{slug}/ to /{slug}/ so each result has one URL.
+	 * Embeds, feeds and previews are left alone.
+	 */
+	public static function redirect_base(): void {
+		if ( ! is_singular( TSR_Post_Types::POST_TYPE ) || is_embed() || is_feed() || is_preview() ) {
+			return;
+		}
+		$path = (string) parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_PATH );
+		if ( ! str_starts_with( $path, '/' . TSR_Post_Types::POST_TYPE . '/' ) ) {
+			return;
+		}
+		$target = get_permalink();
+		if ( is_string( $target ) && '' !== $target && ! str_contains( $target, '/' . TSR_Post_Types::POST_TYPE . '/' ) ) {
+			wp_safe_redirect( $target, 301, 'TrailSeries' );
+			exit;
+		}
 	}
 
 	/**
