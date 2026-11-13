@@ -30,7 +30,7 @@ https://trailseries.bg/%d0%be%d0%b1%d0%b1-vertical-run-results/,https://stg.trai
 https://trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2022/,https://stg.trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2022/,200,200,PASS,,,,,
 https://trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2023/,https://stg.trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2023/,200,200,PASS,,,,,
 https://trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2024/,https://stg.trailseries.bg/%d0%bf%d0%be%d0%b1%d0%b5%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d0%b8-%d0%b7%d0%b0-%d1%81%d0%b5%d0%b7%d0%be%d0%bd-2024/,200,200,PASS,,,,,
-https://trailseries.bg/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-palakaria23-results/,https://stg.trailseries.bg/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-palakaria23-results/,200,200,FAIL,5,5,62,82,"results mismatch: rendered 5 tables / 82 rows, manifest 5 / 62"
+https://trailseries.bg/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-palakaria23-results/,https://stg.trailseries.bg/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-palakaria23-results/,200,200,PASS,5,5,62,62,
 https://trailseries.bg/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-palakaria24-ranking/,https://stg.trailseries.bg/%d0%bf%d0%be%d0%bb%d1%83%d0%bc%d0%b0%d1%80%d0%b0%d1%82%d0%be%d0%bd-palakaria24-ranking/,200,200,PASS,4,4,59,59,
 https://trailseries.bg/%d0%bf%d1%80%d0%b8%d0%b7%d1%8c%d0%be%d1%80%d0%b8%d1%82%d0%b5-%d0%be%d1%82-golyamsechkorun-19-01-2014/,https://stg.trailseries.bg/%d0%bf%d1%80%d0%b8%d0%b7%d1%8c%d0%be%d1%80%d0%b8%d1%82%d0%b5-%d0%be%d1%82-golyamsechkorun-19-01-2014/,200,200,PASS,,,,,
 https://trailseries.bg/%d0%bf%d1%80%d0%be%d0%b1%d0%bb%d0%b5%d0%bc-%d1%81-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b0%d1%86%d0%b8%d0%b8%d1%82%d0%b5-%d0%b2-drace-bg/,https://stg.trailseries.bg/%d0%bf%d1%80%d0%be%d0%b1%d0%bb%d0%b5%d0%bc-%d1%81-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b0%d1%86%d0%b8%d0%b8%d1%82%d0%b5-%d0%b2-drace-bg/,200,200,PASS,,,,,
@@ -68,20 +68,20 @@ https://trailseries.bg/41-%d1%80%d0%b5%d0%b3%d0%b8%d1%81%d1%82%d1%80%d0%b8%d1%80
 https://trailseries.bg/50-%d0%bd%d0%b0%d0%bc%d0%b0%d0%bb%d0%b5%d0%bd%d0%b8%d1%8f-%d0%b2-sls/,https://stg.trailseries.bg/50-%d0%bd%d0%b0%d0%bc%d0%b0%d0%bb%d0%b5%d0%bd%d0%b8%d1%8f-%d0%b2-sls/,200,404,FAIL,,,,,"expected 200 at the same path, got 404"
 https://trailseries.bg/7-hills-run-2017/,https://stg.trailseries.bg/7-hills-run-2017/,200,200,PASS,,,,,
 https://trailseries.bg/7-hills-run-2018/,https://stg.trailseries.bg/7-hills-run-2018/,200,200,PASS,,,,,
-https://trailseries.bg/7-hills-run-2024-ranking/,https://stg.trailseries.bg/7-hills-run-2024-ranking/,200,200,FAIL,8,8,94,101,"results mismatch: rendered 8 tables / 101 rows, manifest 8 / 94"
+https://trailseries.bg/7-hills-run-2024-ranking/,https://stg.trailseries.bg/7-hills-run-2024-ranking/,200,200,PASS,8,8,94,94,
 https://trailseries.bg/7-hills-run/,https://stg.trailseries.bg/7-hills-run/,200,200,PASS,,,,,
-https://trailseries.bg/7-hills-run15-ranking/,https://stg.trailseries.bg/7-hills-run15-ranking/,200,200,FAIL,6,6,89,111,"results mismatch: rendered 6 tables / 111 rows, manifest 6 / 89"
+https://trailseries.bg/7-hills-run15-ranking/,https://stg.trailseries.bg/7-hills-run15-ranking/,200,200,PASS,6,6,89,89,
 https://trailseries.bg/7-hills-run15/,https://stg.trailseries.bg/7-hills-run15/,200,200,PASS,,,,,
 https://trailseries.bg/7-hills-run16/,https://stg.trailseries.bg/7-hills-run16/,200,200,PASS,,,,,
 https://trailseries.bg/7-hills-run19/,https://stg.trailseries.bg/7-hills-run19/,200,200,PASS,,,,,
-https://trailseries.bg/7-hills-run21-results/,https://stg.trailseries.bg/7-hills-run21-results/,200,200,FAIL,8,8,98,109,"results mismatch: rendered 8 tables / 109 rows, manifest 8 / 98"
+https://trailseries.bg/7-hills-run21-results/,https://stg.trailseries.bg/7-hills-run21-results/,200,200,PASS,8,8,98,98,
 https://trailseries.bg/7-hills-run21/,https://stg.trailseries.bg/7-hills-run21/,200,200,PASS,,,,,
 https://trailseries.bg/7-hills-run22-results/,https://stg.trailseries.bg/7-hills-run22-results/,200,200,PASS,8,8,46,46,
 https://trailseries.bg/7-hills-run22/,https://stg.trailseries.bg/7-hills-run22/,200,200,PASS,,,,,
 https://trailseries.bg/7-hills-run23-results/,https://stg.trailseries.bg/7-hills-run23-results/,200,200,PASS,8,8,107,107,
 https://trailseries.bg/7-hills-run23/,https://stg.trailseries.bg/7-hills-run23/,200,200,PASS,,,,,
 https://trailseries.bg/7-hills-run24/,https://stg.trailseries.bg/7-hills-run24/,200,200,PASS,,,,,
-https://trailseries.bg/7-hills-run25-results/,https://stg.trailseries.bg/7-hills-run25-results/,200,200,FAIL,8,8,78,83,"results mismatch: rendered 8 tables / 83 rows, manifest 8 / 78"
+https://trailseries.bg/7-hills-run25-results/,https://stg.trailseries.bg/7-hills-run25-results/,200,200,PASS,8,8,78,78,
 https://trailseries.bg/7-hills-run25/,https://stg.trailseries.bg/7-hills-run25/,200,200,PASS,,,,,
 https://trailseries.bg/7-hills-run26-ranking/,https://stg.trailseries.bg/7-hills-run26-ranking/,200,200,PASS,7,7,34,34,
 https://trailseries.bg/7-hills-run26/,https://stg.trailseries.bg/7-hills-run26/,200,200,PASS,,,,,
@@ -95,9 +95,9 @@ https://trailseries.bg/all-seasons-rankings/,https://stg.trailseries.bg/all-seas
 https://trailseries.bg/baba-marta-run-2017-results/,https://stg.trailseries.bg/baba-marta-run-2017-results/,200,200,PASS,7,7,145,145,
 https://trailseries.bg/baba-marta-run-2017/,https://stg.trailseries.bg/baba-marta-run-2017/,200,200,PASS,,,,,
 https://trailseries.bg/baba-marta-run-2019/,https://stg.trailseries.bg/baba-marta-run-2019/,200,200,PASS,,,,,
-https://trailseries.bg/baba-marta-run-ranking/,https://stg.trailseries.bg/baba-marta-run-ranking/,200,200,FAIL,8,8,247,283,"results mismatch: rendered 8 tables / 283 rows, manifest 8 / 247"
+https://trailseries.bg/baba-marta-run-ranking/,https://stg.trailseries.bg/baba-marta-run-ranking/,200,200,PASS,8,8,247,247,
 https://trailseries.bg/baba-marta-run-ranking15/,https://stg.trailseries.bg/baba-marta-run-ranking15/,200,200,PASS,7,7,152,152,
-https://trailseries.bg/baba-marta-run-results-2016/,https://stg.trailseries.bg/baba-marta-run-results-2016/,200,200,FAIL,6,6,98,131,"results mismatch: rendered 6 tables / 131 rows, manifest 6 / 98"
+https://trailseries.bg/baba-marta-run-results-2016/,https://stg.trailseries.bg/baba-marta-run-results-2016/,200,200,PASS,6,6,98,98,
 https://trailseries.bg/baba-marta-run/,https://stg.trailseries.bg/baba-marta-run/,200,200,PASS,,,,,
 https://trailseries.bg/baba-marta-run14/,https://stg.trailseries.bg/baba-marta-run14/,200,200,PASS,,,,,
 https://trailseries.bg/baba-marta-run15/,https://stg.trailseries.bg/baba-marta-run15/,200,200,PASS,,,,,
@@ -110,9 +110,9 @@ https://trailseries.bg/baba-marta-run21-results/,https://stg.trailseries.bg/baba
 https://trailseries.bg/baba-marta-run21/,https://stg.trailseries.bg/baba-marta-run21/,200,200,PASS,,,,,
 https://trailseries.bg/baba-marta-run22-results/,https://stg.trailseries.bg/baba-marta-run22-results/,200,200,PASS,6,6,110,110,
 https://trailseries.bg/baba-marta-run22/,https://stg.trailseries.bg/baba-marta-run22/,200,200,PASS,,,,,
-https://trailseries.bg/baba-marta-run23-results/,https://stg.trailseries.bg/baba-marta-run23-results/,200,200,FAIL,6,6,126,137,"results mismatch: rendered 6 tables / 137 rows, manifest 6 / 126"
+https://trailseries.bg/baba-marta-run23-results/,https://stg.trailseries.bg/baba-marta-run23-results/,200,200,PASS,6,6,126,126,
 https://trailseries.bg/baba-marta-run23/,https://stg.trailseries.bg/baba-marta-run23/,200,200,PASS,,,,,
-https://trailseries.bg/baba-marta-run24-ranking/,https://stg.trailseries.bg/baba-marta-run24-ranking/,200,200,FAIL,6,6,164,210,"results mismatch: rendered 6 tables / 210 rows, manifest 6 / 164"
+https://trailseries.bg/baba-marta-run24-ranking/,https://stg.trailseries.bg/baba-marta-run24-ranking/,200,200,PASS,6,6,164,164,
 https://trailseries.bg/baba-marta-run24/,https://stg.trailseries.bg/baba-marta-run24/,200,200,PASS,,,,,
 https://trailseries.bg/baba-marta-run25-results/,https://stg.trailseries.bg/baba-marta-run25-results/,200,200,PASS,6,6,129,129,
 https://trailseries.bg/baba-marta-run25/,https://stg.trailseries.bg/baba-marta-run25/,200,200,PASS,,,,,
@@ -125,7 +125,7 @@ https://trailseries.bg/birthday-run-3-results/,https://stg.trailseries.bg/birthd
 https://trailseries.bg/birthday-run-3/,https://stg.trailseries.bg/birthday-run-3/,200,200,PASS,,,,,
 https://trailseries.bg/birthday-run-4-ranking/,https://stg.trailseries.bg/birthday-run-4-ranking/,200,200,PASS,7,7,124,124,
 https://trailseries.bg/birthday-run-4-years-trail-series/,https://stg.trailseries.bg/birthday-run-4-years-trail-series/,200,200,PASS,,,,,
-https://trailseries.bg/birthday-run-results/,https://stg.trailseries.bg/birthday-run-results/,200,200,FAIL,4,4,54,112,"results mismatch: rendered 4 tables / 112 rows, manifest 4 / 54"
+https://trailseries.bg/birthday-run-results/,https://stg.trailseries.bg/birthday-run-results/,200,200,PASS,4,4,54,54,
 https://trailseries.bg/birthday-run-zheleznitsa/,https://stg.trailseries.bg/birthday-run-zheleznitsa/,200,200,PASS,,,,,
 https://trailseries.bg/birthday-run17-results/,https://stg.trailseries.bg/birthday-run17-results/,200,200,PASS,6,6,104,104,
 https://trailseries.bg/birthday-run17/,https://stg.trailseries.bg/birthday-run17/,200,200,PASS,,,,,
@@ -134,32 +134,32 @@ https://trailseries.bg/birthday-run18/,https://stg.trailseries.bg/birthday-run18
 https://trailseries.bg/birthday-run19-ranking/,https://stg.trailseries.bg/birthday-run19-ranking/,200,200,PASS,6,6,74,74,
 https://trailseries.bg/birthday-run19/,https://stg.trailseries.bg/birthday-run19/,200,200,PASS,,,,,
 https://trailseries.bg/birthday-run2-results/,https://stg.trailseries.bg/birthday-run2-results/,200,200,PASS,8,8,138,138,
-https://trailseries.bg/birthday-run20-results/,https://stg.trailseries.bg/birthday-run20-results/,200,200,FAIL,6,6,74,86,"results mismatch: rendered 6 tables / 86 rows, manifest 6 / 74"
+https://trailseries.bg/birthday-run20-results/,https://stg.trailseries.bg/birthday-run20-results/,200,200,PASS,6,6,74,74,
 https://trailseries.bg/birthday-run20/,https://stg.trailseries.bg/birthday-run20/,200,200,PASS,,,,,
-https://trailseries.bg/birthday-run21-results/,https://stg.trailseries.bg/birthday-run21-results/,200,200,FAIL,6,6,74,89,"results mismatch: rendered 6 tables / 89 rows, manifest 6 / 74"
+https://trailseries.bg/birthday-run21-results/,https://stg.trailseries.bg/birthday-run21-results/,200,200,PASS,6,6,74,74,
 https://trailseries.bg/birthday-run21/,https://stg.trailseries.bg/birthday-run21/,200,200,PASS,,,,,
-https://trailseries.bg/birthday-run22-2-results/,https://stg.trailseries.bg/birthday-run22-2-results/,200,200,FAIL,6,6,55,66,"results mismatch: rendered 6 tables / 66 rows, manifest 6 / 55"
+https://trailseries.bg/birthday-run22-2-results/,https://stg.trailseries.bg/birthday-run22-2-results/,200,200,PASS,6,6,55,55,
 https://trailseries.bg/birthday-run22/,https://stg.trailseries.bg/birthday-run22/,200,200,PASS,,,,,
-https://trailseries.bg/birthday-run23-results/,https://stg.trailseries.bg/birthday-run23-results/,200,200,FAIL,6,6,50,59,"results mismatch: rendered 6 tables / 59 rows, manifest 6 / 50"
+https://trailseries.bg/birthday-run23-results/,https://stg.trailseries.bg/birthday-run23-results/,200,200,PASS,6,6,50,50,
 https://trailseries.bg/birthday-run23/,https://stg.trailseries.bg/birthday-run23/,200,200,PASS,,,,,
-https://trailseries.bg/birthday-run24-ranking/,https://stg.trailseries.bg/birthday-run24-ranking/,200,200,FAIL,6,6,52,59,"results mismatch: rendered 6 tables / 59 rows, manifest 6 / 52"
+https://trailseries.bg/birthday-run24-ranking/,https://stg.trailseries.bg/birthday-run24-ranking/,200,200,PASS,6,6,52,52,
 https://trailseries.bg/birthday-run24/,https://stg.trailseries.bg/birthday-run24/,200,200,PASS,,,,,
 https://trailseries.bg/boyana-x-trail/,https://stg.trailseries.bg/boyana-x-trail/,200,200,PASS,,,,,
-https://trailseries.bg/boyana-x-trails-results/,https://stg.trailseries.bg/boyana-x-trails-results/,200,200,FAIL,4,4,61,84,"results mismatch: rendered 4 tables / 84 rows, manifest 4 / 61"
-https://trailseries.bg/boyana-x-trails21-results/,https://stg.trailseries.bg/boyana-x-trails21-results/,200,200,FAIL,4,4,45,60,"results mismatch: rendered 4 tables / 60 rows, manifest 4 / 45"
+https://trailseries.bg/boyana-x-trails-results/,https://stg.trailseries.bg/boyana-x-trails-results/,200,200,PASS,4,4,61,61,
+https://trailseries.bg/boyana-x-trails21-results/,https://stg.trailseries.bg/boyana-x-trails21-results/,200,200,PASS,4,4,45,45,
 https://trailseries.bg/boyana-x-trails21/,https://stg.trailseries.bg/boyana-x-trails21/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-26-may/,https://stg.trailseries.bg/buhovo-26-may/,200,200,PASS,2,2,67,67,
 https://trailseries.bg/buhovo-half-marathon/,https://stg.trailseries.bg/buhovo-half-marathon/,200,200,PASS,,,,,
-https://trailseries.bg/buhovo-half-marathon25-results/,https://stg.trailseries.bg/buhovo-half-marathon25-results/,200,200,FAIL,4,4,60,73,"results mismatch: rendered 4 tables / 73 rows, manifest 4 / 60"
+https://trailseries.bg/buhovo-half-marathon25-results/,https://stg.trailseries.bg/buhovo-half-marathon25-results/,200,200,PASS,4,4,60,60,
 https://trailseries.bg/buhovo-half-marathon26-results/,https://stg.trailseries.bg/buhovo-half-marathon26-results/,200,200,PASS,4,4,46,46,
 https://trailseries.bg/buhovo-half-marathon26/,https://stg.trailseries.bg/buhovo-half-marathon26/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-run-2-0/,https://stg.trailseries.bg/buhovo-run-2-0/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-run-2/,https://stg.trailseries.bg/buhovo-run-2/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-run/,https://stg.trailseries.bg/buhovo-run/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-run14/,https://stg.trailseries.bg/buhovo-run14/,200,200,PASS,,,,,
-https://trailseries.bg/buhovo-run15-ranking/,https://stg.trailseries.bg/buhovo-run15-ranking/,200,200,FAIL,7,7,65,75,"results mismatch: rendered 7 tables / 75 rows, manifest 7 / 65"
+https://trailseries.bg/buhovo-run15-ranking/,https://stg.trailseries.bg/buhovo-run15-ranking/,200,200,PASS,7,7,65,65,
 https://trailseries.bg/buhovorun-ranking-2014/,https://stg.trailseries.bg/buhovorun-ranking-2014/,200,200,PASS,6,6,61,61,
-https://trailseries.bg/cactus-run-10-11-2013/,https://stg.trailseries.bg/cactus-run-10-11-2013/,200,200,FAIL,8,8,230,248,"results mismatch: rendered 8 tables / 248 rows, manifest 8 / 230"
+https://trailseries.bg/cactus-run-10-11-2013/,https://stg.trailseries.bg/cactus-run-10-11-2013/,200,200,PASS,8,8,230,230,
 https://trailseries.bg/cactus-run-2016-ranking/,https://stg.trailseries.bg/cactus-run-2016-ranking/,200,200,PASS,6,6,180,180,
 https://trailseries.bg/cactus-run18-ranking/,https://stg.trailseries.bg/cactus-run18-ranking/,200,200,FAIL,6,7,205,211,"results mismatch: rendered 7 tables / 211 rows, manifest 6 / 205"
 https://trailseries.bg/calendar/,https://stg.trailseries.bg/calendar/,200,200,PASS,,,,,
@@ -212,7 +212,7 @@ https://trailseries.bg/feedback/,https://stg.trailseries.bg/feedback/,410,410,PA
 https://trailseries.bg/golyam-sechko-run-17/,https://stg.trailseries.bg/golyam-sechko-run-17/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-sechko-run-2016/,https://stg.trailseries.bg/golyam-sechko-run-2016/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-sechko-run-2019/,https://stg.trailseries.bg/golyam-sechko-run-2019/,200,200,PASS,,,,,
-https://trailseries.bg/golyam-sechko-run-2020-results/,https://stg.trailseries.bg/golyam-sechko-run-2020-results/,200,200,FAIL,6,6,133,167,"results mismatch: rendered 6 tables / 167 rows, manifest 6 / 133"
+https://trailseries.bg/golyam-sechko-run-2020-results/,https://stg.trailseries.bg/golyam-sechko-run-2020-results/,200,200,PASS,6,6,133,133,
 https://trailseries.bg/golyam-sechko-run/,https://stg.trailseries.bg/golyam-sechko-run/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-sechko-run15/,https://stg.trailseries.bg/golyam-sechko-run15/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-sechko-run16-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,https://stg.trailseries.bg/golyam-sechko-run16-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,200,200,PASS,8,8,99,99,
@@ -221,21 +221,21 @@ https://trailseries.bg/golyam-sechko-run18-ranking/,https://stg.trailseries.bg/g
 https://trailseries.bg/golyam-sechko-run18/,https://stg.trailseries.bg/golyam-sechko-run18/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-sechko-run19-ranking/,https://stg.trailseries.bg/golyam-sechko-run19-ranking/,200,200,PASS,6,6,121,121,
 https://trailseries.bg/golyam-sechko-run20/,https://stg.trailseries.bg/golyam-sechko-run20/,200,200,PASS,,,,,
-https://trailseries.bg/golyam-sechko-run21-results/,https://stg.trailseries.bg/golyam-sechko-run21-results/,200,200,FAIL,6,6,150,196,"results mismatch: rendered 6 tables / 196 rows, manifest 6 / 150"
+https://trailseries.bg/golyam-sechko-run21-results/,https://stg.trailseries.bg/golyam-sechko-run21-results/,200,200,PASS,6,6,150,150,
 https://trailseries.bg/golyam-sechko-run21/,https://stg.trailseries.bg/golyam-sechko-run21/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-sechko-run22-results/,https://stg.trailseries.bg/golyam-sechko-run22-results/,200,200,PASS,6,6,125,125,
 https://trailseries.bg/golyam-sechko-run22/,https://stg.trailseries.bg/golyam-sechko-run22/,200,200,PASS,,,,,
-https://trailseries.bg/golyam-sechko-run23-ranking/,https://stg.trailseries.bg/golyam-sechko-run23-ranking/,200,200,FAIL,6,6,138,175,"results mismatch: rendered 6 tables / 175 rows, manifest 6 / 138"
+https://trailseries.bg/golyam-sechko-run23-ranking/,https://stg.trailseries.bg/golyam-sechko-run23-ranking/,200,200,PASS,6,6,138,138,
 https://trailseries.bg/golyam-sechko-run23/,https://stg.trailseries.bg/golyam-sechko-run23/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-sechko-run24-ranking/,https://stg.trailseries.bg/golyam-sechko-run24-ranking/,200,200,PASS,6,6,118,118,
 https://trailseries.bg/golyam-sechko-run24/,https://stg.trailseries.bg/golyam-sechko-run24/,200,200,PASS,,,,,
-https://trailseries.bg/golyam-sechko-run25-ranking/,https://stg.trailseries.bg/golyam-sechko-run25-ranking/,200,200,FAIL,6,6,114,119,"results mismatch: rendered 6 tables / 119 rows, manifest 6 / 114"
+https://trailseries.bg/golyam-sechko-run25-ranking/,https://stg.trailseries.bg/golyam-sechko-run25-ranking/,200,200,PASS,6,6,114,114,
 https://trailseries.bg/golyam-sechko-run25/,https://stg.trailseries.bg/golyam-sechko-run25/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-sechko-run26-results/,https://stg.trailseries.bg/golyam-sechko-run26-results/,200,200,PASS,6,6,109,109,
 https://trailseries.bg/golyam-sechko-run26/,https://stg.trailseries.bg/golyam-sechko-run26/,200,200,PASS,,,,,
 https://trailseries.bg/golyam-secko-run15-ranking/,https://stg.trailseries.bg/golyam-secko-run15-ranking/,200,200,PASS,8,8,129,129,
-https://trailseries.bg/golyamsechkorun-04-results/,https://stg.trailseries.bg/golyamsechkorun-04-results/,200,200,FAIL,8,8,178,219,"results mismatch: rendered 8 tables / 219 rows, manifest 8 / 178"
-https://trailseries.bg/heat-stroke-run-14-07-2013/,https://stg.trailseries.bg/heat-stroke-run-14-07-2013/,200,200,FAIL,6,6,83,108,"results mismatch: rendered 6 tables / 108 rows, manifest 6 / 83"
+https://trailseries.bg/golyamsechkorun-04-results/,https://stg.trailseries.bg/golyamsechkorun-04-results/,200,200,PASS,8,8,178,178,
+https://trailseries.bg/heat-stroke-run-14-07-2013/,https://stg.trailseries.bg/heat-stroke-run-14-07-2013/,200,200,PASS,6,6,83,83,
 https://trailseries.bg/heat-stroke-run-gallery/,https://stg.trailseries.bg/heat-stroke-run-gallery/,410,410,PASS,,,,,
 https://trailseries.bg/heat-stroke-run/,https://stg.trailseries.bg/heat-stroke-run/,200,200,PASS,,,,,
 https://trailseries.bg/ignitesofia/,https://stg.trailseries.bg/ignitesofia/,200,200,PASS,,,,,
@@ -245,7 +245,7 @@ https://trailseries.bg/iran-run-2017/,https://stg.trailseries.bg/iran-run-2017/,
 https://trailseries.bg/iran-run-2018/,https://stg.trailseries.bg/iran-run-2018/,200,200,PASS,,,,,
 https://trailseries.bg/iran-run-2019/,https://stg.trailseries.bg/iran-run-2019/,200,200,PASS,,,,,
 https://trailseries.bg/iran-run-results/,https://stg.trailseries.bg/iran-run-results/,200,200,PASS,2,2,108,108,
-https://trailseries.bg/iran-run-results15/,https://stg.trailseries.bg/iran-run-results15/,200,200,FAIL,8,8,92,107,"results mismatch: rendered 8 tables / 107 rows, manifest 8 / 92"
+https://trailseries.bg/iran-run-results15/,https://stg.trailseries.bg/iran-run-results15/,200,200,PASS,8,8,92,92,
 https://trailseries.bg/iran-run-results16/,https://stg.trailseries.bg/iran-run-results16/,200,200,PASS,8,8,141,141,
 https://trailseries.bg/iran-run/,https://stg.trailseries.bg/iran-run/,200,200,PASS,,,,,
 https://trailseries.bg/iran-run17-ranking/,https://stg.trailseries.bg/iran-run17-ranking/,200,200,PASS,6,6,83,83,
@@ -261,11 +261,11 @@ https://trailseries.bg/lyulin-trail-run-2017/,https://stg.trailseries.bg/lyulin-
 https://trailseries.bg/lyulin-trail-run-2025-%d1%81-%d0%bd%d0%be%d0%b2%d0%b0-%d0%b4%d0%b0%d1%82%d0%b0/,https://stg.trailseries.bg/lyulin-trail-run-2025-%d1%81-%d0%bd%d0%be%d0%b2%d0%b0-%d0%b4%d0%b0%d1%82%d0%b0/,200,200,PASS,,,,,
 https://trailseries.bg/lyulin-trail-run/,https://stg.trailseries.bg/lyulin-trail-run/,200,200,PASS,,,,,
 https://trailseries.bg/lyulin-trail-run17-results/,https://stg.trailseries.bg/lyulin-trail-run17-results/,200,200,PASS,6,6,74,74,
-https://trailseries.bg/lyulin-trail-run18-ranking/,https://stg.trailseries.bg/lyulin-trail-run18-ranking/,200,200,FAIL,8,8,102,128,"results mismatch: rendered 8 tables / 128 rows, manifest 8 / 102"
+https://trailseries.bg/lyulin-trail-run18-ranking/,https://stg.trailseries.bg/lyulin-trail-run18-ranking/,200,200,PASS,8,8,102,102,
 https://trailseries.bg/lyulin-trail-run18/,https://stg.trailseries.bg/lyulin-trail-run18/,200,200,PASS,,,,,
 https://trailseries.bg/lyulin-trail-run19-ranking/,https://stg.trailseries.bg/lyulin-trail-run19-ranking/,200,200,PASS,6,6,118,118,
 https://trailseries.bg/lyulin-trail-run19/,https://stg.trailseries.bg/lyulin-trail-run19/,200,200,PASS,,,,,
-https://trailseries.bg/lyulin-trail-run20-ranking/,https://stg.trailseries.bg/lyulin-trail-run20-ranking/,200,200,FAIL,6,6,88,108,"results mismatch: rendered 6 tables / 108 rows, manifest 6 / 88"
+https://trailseries.bg/lyulin-trail-run20-ranking/,https://stg.trailseries.bg/lyulin-trail-run20-ranking/,200,200,PASS,6,6,88,88,
 https://trailseries.bg/lyulin-trail-run20/,https://stg.trailseries.bg/lyulin-trail-run20/,200,200,PASS,,,,,
 https://trailseries.bg/lyulin-trail-run21-results/,https://stg.trailseries.bg/lyulin-trail-run21-results/,200,200,PASS,6,6,59,59,
 https://trailseries.bg/lyulin-trail-run21/,https://stg.trailseries.bg/lyulin-trail-run21/,200,200,PASS,,,,,
@@ -275,24 +275,24 @@ https://trailseries.bg/lyulin-trail-run23-results/,https://stg.trailseries.bg/ly
 https://trailseries.bg/lyulin-trail-run23/,https://stg.trailseries.bg/lyulin-trail-run23/,200,200,PASS,,,,,
 https://trailseries.bg/lyulin-trail-run24-ranking/,https://stg.trailseries.bg/lyulin-trail-run24-ranking/,200,200,PASS,6,6,56,56,
 https://trailseries.bg/lyulin-trail-run24/,https://stg.trailseries.bg/lyulin-trail-run24/,200,200,PASS,,,,,
-https://trailseries.bg/lyulin-trail-run25-results/,https://stg.trailseries.bg/lyulin-trail-run25-results/,200,200,FAIL,6,6,72,76,"results mismatch: rendered 6 tables / 76 rows, manifest 6 / 72"
+https://trailseries.bg/lyulin-trail-run25-results/,https://stg.trailseries.bg/lyulin-trail-run25-results/,200,200,PASS,6,6,72,72,
 https://trailseries.bg/lyulin-trail-run25/,https://stg.trailseries.bg/lyulin-trail-run25/,200,200,PASS,,,,,
 https://trailseries.bg/lyulin-trail-run26-ranking/,https://stg.trailseries.bg/lyulin-trail-run26-ranking/,200,200,PASS,6,6,80,80,
 https://trailseries.bg/lyulin-trail-run26/,https://stg.trailseries.bg/lyulin-trail-run26/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run-2015/,https://stg.trailseries.bg/malak-sechko-run-2015/,200,200,PASS,,,,,
-https://trailseries.bg/malak-sechko-run-ranking/,https://stg.trailseries.bg/malak-sechko-run-ranking/,200,200,FAIL,2,2,183,16,"results mismatch: rendered 2 tables / 16 rows, manifest 2 / 183"
+https://trailseries.bg/malak-sechko-run-ranking/,https://stg.trailseries.bg/malak-sechko-run-ranking/,200,200,PASS,2,2,183,183,
 https://trailseries.bg/malak-sechko-run-ranking16/,https://stg.trailseries.bg/malak-sechko-run-ranking16/,200,200,PASS,8,8,145,145,
 https://trailseries.bg/malak-sechko-run/,https://stg.trailseries.bg/malak-sechko-run/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run16/,https://stg.trailseries.bg/malak-sechko-run16/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run17-results/,https://stg.trailseries.bg/malak-sechko-run17-results/,200,200,PASS,6,6,138,138,
 https://trailseries.bg/malak-sechko-run17/,https://stg.trailseries.bg/malak-sechko-run17/,200,200,PASS,,,,,
-https://trailseries.bg/malak-sechko-run18-ranking/,https://stg.trailseries.bg/malak-sechko-run18-ranking/,200,200,PASS,7,7,168,168,
+https://trailseries.bg/malak-sechko-run18-ranking/,https://stg.trailseries.bg/malak-sechko-run18-ranking/,200,200,FAIL,7,8,168,181,"results mismatch: rendered 8 tables / 181 rows, manifest 7 / 168"
 https://trailseries.bg/malak-sechko-run18/,https://stg.trailseries.bg/malak-sechko-run18/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run19-ranking/,https://stg.trailseries.bg/malak-sechko-run19-ranking/,200,200,PASS,6,6,158,158,
 https://trailseries.bg/malak-sechko-run19/,https://stg.trailseries.bg/malak-sechko-run19/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run20-results/,https://stg.trailseries.bg/malak-sechko-run20-results/,200,200,PASS,6,6,155,155,
 https://trailseries.bg/malak-sechko-run20/,https://stg.trailseries.bg/malak-sechko-run20/,200,200,PASS,,,,,
-https://trailseries.bg/malak-sechko-run21-results/,https://stg.trailseries.bg/malak-sechko-run21-results/,200,200,FAIL,6,6,105,143,"results mismatch: rendered 6 tables / 143 rows, manifest 6 / 105"
+https://trailseries.bg/malak-sechko-run21-results/,https://stg.trailseries.bg/malak-sechko-run21-results/,200,200,PASS,6,6,105,105,
 https://trailseries.bg/malak-sechko-run21/,https://stg.trailseries.bg/malak-sechko-run21/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run22-results/,https://stg.trailseries.bg/malak-sechko-run22-results/,200,200,PASS,6,6,175,175,
 https://trailseries.bg/malak-sechko-run22/,https://stg.trailseries.bg/malak-sechko-run22/,200,200,PASS,,,,,
@@ -302,7 +302,7 @@ https://trailseries.bg/malak-sechko-run24-results/,https://stg.trailseries.bg/ma
 https://trailseries.bg/malak-sechko-run24/,https://stg.trailseries.bg/malak-sechko-run24/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run25-results/,https://stg.trailseries.bg/malak-sechko-run25-results/,200,200,PASS,6,6,98,98,
 https://trailseries.bg/malak-sechko-run25/,https://stg.trailseries.bg/malak-sechko-run25/,200,200,PASS,,,,,
-https://trailseries.bg/malak-sechko-run26-results/,https://stg.trailseries.bg/malak-sechko-run26-results/,200,200,PASS,6,6,86,86,
+https://trailseries.bg/malak-sechko-run26-results/,https://stg.trailseries.bg/malak-sechko-run26-results/,200,200,FAIL,6,7,86,113,"results mismatch: rendered 7 tables / 113 rows, manifest 6 / 86"
 https://trailseries.bg/malak-sechko-run26/,https://stg.trailseries.bg/malak-sechko-run26/,200,200,PASS,,,,,
 https://trailseries.bg/maliovitsa-skyrun-2/,https://stg.trailseries.bg/maliovitsa-skyrun-2/,200,200,PASS,,,,,
 https://trailseries.bg/maliovitsa-skyrun-4-%d0%b0%d0%b2%d0%b3%d1%83%d1%81%d1%82/,https://stg.trailseries.bg/maliovitsa-skyrun-4-%d0%b0%d0%b2%d0%b3%d1%83%d1%81%d1%82/,200,200,PASS,4,4,93,93,
@@ -333,7 +333,7 @@ https://trailseries.bg/palakaria-ranking/,https://stg.trailseries.bg/palakaria-r
 https://trailseries.bg/palakaria/,https://stg.trailseries.bg/palakaria/,200,200,PASS,,,,,
 https://trailseries.bg/palakaria16-results/,https://stg.trailseries.bg/palakaria16-results/,200,200,PASS,6,6,50,50,
 https://trailseries.bg/palakaria19-ranking/,https://stg.trailseries.bg/palakaria19-ranking/,200,200,PASS,7,7,83,83,
-https://trailseries.bg/palakaria22-results/,https://stg.trailseries.bg/palakaria22-results/,200,200,FAIL,4,4,30,37,"results mismatch: rendered 4 tables / 37 rows, manifest 4 / 30"
+https://trailseries.bg/palakaria22-results/,https://stg.trailseries.bg/palakaria22-results/,200,200,PASS,4,4,30,30,
 https://trailseries.bg/palakaria23/,https://stg.trailseries.bg/palakaria23/,200,200,PASS,,,,,
 https://trailseries.bg/pancharevo-night-run-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,https://stg.trailseries.bg/pancharevo-night-run-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b5/,200,200,PASS,6,6,102,102,
 https://trailseries.bg/pancharevo-night-run-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b516/,https://stg.trailseries.bg/pancharevo-night-run-%d0%ba%d0%bb%d0%b0%d1%81%d0%b8%d1%80%d0%b0%d0%bd%d0%b516/,200,200,PASS,6,6,99,99,
@@ -343,12 +343,12 @@ https://trailseries.bg/pancharevo-night-run-2017/,https://stg.trailseries.bg/pan
 https://trailseries.bg/pancharevo-night-run-2018-%d1%89%d0%b0%d1%84%d0%b5%d1%82%d0%b0/,https://stg.trailseries.bg/pancharevo-night-run-2018-%d1%89%d0%b0%d1%84%d0%b5%d1%82%d0%b0/,200,200,PASS,,,,,
 https://trailseries.bg/pancharevo-night-run-2019-relay/,https://stg.trailseries.bg/pancharevo-night-run-2019-relay/,200,200,PASS,,,,,
 https://trailseries.bg/pancharevo-night-run/,https://stg.trailseries.bg/pancharevo-night-run/,200,200,PASS,,,,,
-https://trailseries.bg/pancharevo-night-run17-ranking/,https://stg.trailseries.bg/pancharevo-night-run17-ranking/,200,200,FAIL,6,6,124,168,"results mismatch: rendered 6 tables / 168 rows, manifest 6 / 124"
+https://trailseries.bg/pancharevo-night-run17-ranking/,https://stg.trailseries.bg/pancharevo-night-run17-ranking/,200,200,PASS,6,6,124,124,
 https://trailseries.bg/pancharevo-night-run18-ranking/,https://stg.trailseries.bg/pancharevo-night-run18-ranking/,200,200,FAIL,2,5,45,63,"results mismatch: rendered 5 tables / 63 rows, manifest 2 / 45"
 https://trailseries.bg/pancharevo-night-run19-ranking/,https://stg.trailseries.bg/pancharevo-night-run19-ranking/,200,200,FAIL,2,5,35,58,"results mismatch: rendered 5 tables / 58 rows, manifest 2 / 35"
 https://trailseries.bg/pancharevo-night-run21-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://stg.trailseries.bg/pancharevo-night-run21-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,200,200,PASS,2,2,5,5,
 https://trailseries.bg/pasare-results/,https://stg.trailseries.bg/pasare-results/,200,200,PASS,4,4,111,111,
-https://trailseries.bg/pasarel-run-16-06/,https://stg.trailseries.bg/pasarel-run-16-06/,200,200,FAIL,6,6,87,91,"results mismatch: rendered 6 tables / 91 rows, manifest 6 / 87"
+https://trailseries.bg/pasarel-run-16-06/,https://stg.trailseries.bg/pasarel-run-16-06/,200,200,PASS,6,6,87,87,
 https://trailseries.bg/pasarel-run-2/,https://stg.trailseries.bg/pasarel-run-2/,200,200,PASS,,,,,
 https://trailseries.bg/pasarel-run/,https://stg.trailseries.bg/pasarel-run/,200,200,PASS,,,,,
 https://trailseries.bg/plovdiv-hills/,https://stg.trailseries.bg/plovdiv-hills/,200,200,PASS,,,,,
@@ -357,7 +357,7 @@ https://trailseries.bg/ranking-7-hills-run/,https://stg.trailseries.bg/ranking-7
 https://trailseries.bg/registration/,https://stg.trailseries.bg/registration/,410,410,PASS,,,,,
 https://trailseries.bg/registration/notsuccessful/,https://stg.trailseries.bg/registration/notsuccessful/,410,410,PASS,,,,,
 https://trailseries.bg/registration/successful/,https://stg.trailseries.bg/registration/successful/,410,410,PASS,,,,,
-https://trailseries.bg/results-iran-run15/,https://stg.trailseries.bg/results-iran-run15/,200,200,FAIL,8,8,92,107,"results mismatch: rendered 8 tables / 107 rows, manifest 8 / 92"
+https://trailseries.bg/results-iran-run15/,https://stg.trailseries.bg/results-iran-run15/,200,200,PASS,8,8,92,92,
 https://trailseries.bg/rossignol-navliza-v-planinskoto-byagane/,https://stg.trailseries.bg/rossignol-navliza-v-planinskoto-byagane/,200,200,PASS,,,,,
 https://trailseries.bg/runbg-trail-series-%d0%bf%d0%b0%d0%bd%d1%87%d0%b0%d1%80%d0%b5%d0%b2%d0%be/,https://stg.trailseries.bg/runbg-trail-series-%d0%bf%d0%b0%d0%bd%d1%87%d0%b0%d1%80%d0%b5%d0%b2%d0%be/,200,200,PASS,,,,,
 https://trailseries.bg/running-zone-challenge/,https://stg.trailseries.bg/running-zone-challenge/,200,200,PASS,,,,,
@@ -371,25 +371,25 @@ https://trailseries.bg/sabitia/the-christmas-run-2016/,https://stg.trailseries.b
 https://trailseries.bg/sabitia/vladaya/,https://stg.trailseries.bg/sabitia/vladaya/,200,200,PASS,,,,,
 https://trailseries.bg/sabitia/zheleznitsa-2-0/,https://stg.trailseries.bg/sabitia/zheleznitsa-2-0/,200,200,PASS,,,,,
 https://trailseries.bg/sabitia/zheleznitsa-2-0/jordan-petrov/,https://stg.trailseries.bg/sabitia/zheleznitsa-2-0/jordan-petrov/,410,410,PASS,,,,,
-https://trailseries.bg/september-run-2/,https://stg.trailseries.bg/september-run-2/,200,200,FAIL,7,7,74,97,"results mismatch: rendered 7 tables / 97 rows, manifest 7 / 74"
+https://trailseries.bg/september-run-2/,https://stg.trailseries.bg/september-run-2/,200,200,PASS,7,7,74,74,
 https://trailseries.bg/september-run/,https://stg.trailseries.bg/september-run/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run-2016/,https://stg.trailseries.bg/simeonovo-run-2016/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run-2017/,https://stg.trailseries.bg/simeonovo-run-2017/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run-2018/,https://stg.trailseries.bg/simeonovo-run-2018/,200,200,PASS,,,,,
-https://trailseries.bg/simeonovo-run-ranking/,https://stg.trailseries.bg/simeonovo-run-ranking/,200,200,FAIL,7,8,148,189,"results mismatch: rendered 8 tables / 189 rows, manifest 7 / 148"
+https://trailseries.bg/simeonovo-run-ranking/,https://stg.trailseries.bg/simeonovo-run-ranking/,200,200,FAIL,7,8,148,152,"results mismatch: rendered 8 tables / 152 rows, manifest 7 / 148"
 https://trailseries.bg/simeonovo-run-ranking14/,https://stg.trailseries.bg/simeonovo-run-ranking14/,200,200,PASS,2,2,163,163,
 https://trailseries.bg/simeonovo-run/,https://stg.trailseries.bg/simeonovo-run/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run15/,https://stg.trailseries.bg/simeonovo-run15/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run16-ranking/,https://stg.trailseries.bg/simeonovo-run16-ranking/,200,200,PASS,7,7,126,126,
 https://trailseries.bg/simeonovo-run17-results/,https://stg.trailseries.bg/simeonovo-run17-results/,200,200,PASS,6,6,90,90,
-https://trailseries.bg/simeonovo-run18-results/,https://stg.trailseries.bg/simeonovo-run18-results/,200,200,PASS,6,6,156,156,
+https://trailseries.bg/simeonovo-run18-results/,https://stg.trailseries.bg/simeonovo-run18-results/,200,200,FAIL,6,7,156,193,"results mismatch: rendered 7 tables / 193 rows, manifest 6 / 156"
 https://trailseries.bg/simeonovo-run19-ranking/,https://stg.trailseries.bg/simeonovo-run19-ranking/,200,200,PASS,6,6,90,90,
 https://trailseries.bg/simeonovo-run19/,https://stg.trailseries.bg/simeonovo-run19/,200,200,PASS,,,,,
-https://trailseries.bg/simeonovo-run20-results/,https://stg.trailseries.bg/simeonovo-run20-results/,200,200,FAIL,6,6,96,124,"results mismatch: rendered 6 tables / 124 rows, manifest 6 / 96"
+https://trailseries.bg/simeonovo-run20-results/,https://stg.trailseries.bg/simeonovo-run20-results/,200,200,PASS,6,6,96,96,
 https://trailseries.bg/simeonovo-run20/,https://stg.trailseries.bg/simeonovo-run20/,200,200,PASS,,,,,
-https://trailseries.bg/simeonovo-run21-results/,https://stg.trailseries.bg/simeonovo-run21-results/,200,200,FAIL,6,6,58,79,"results mismatch: rendered 6 tables / 79 rows, manifest 6 / 58"
+https://trailseries.bg/simeonovo-run21-results/,https://stg.trailseries.bg/simeonovo-run21-results/,200,200,PASS,6,6,58,58,
 https://trailseries.bg/simeonovo-run21/,https://stg.trailseries.bg/simeonovo-run21/,200,200,PASS,,,,,
-https://trailseries.bg/simeonovo-run23-results/,https://stg.trailseries.bg/simeonovo-run23-results/,200,200,FAIL,6,6,103,118,"results mismatch: rendered 6 tables / 118 rows, manifest 6 / 103"
+https://trailseries.bg/simeonovo-run23-results/,https://stg.trailseries.bg/simeonovo-run23-results/,200,200,PASS,6,6,103,103,
 https://trailseries.bg/simeonovo-run23/,https://stg.trailseries.bg/simeonovo-run23/,200,200,PASS,,,,,
 https://trailseries.bg/snimki/,https://stg.trailseries.bg/snimki/,410,410,PASS,,,,,
 https://trailseries.bg/snimki/baba-marta-run/,https://stg.trailseries.bg/snimki/baba-marta-run/,410,410,PASS,,,,,
@@ -415,38 +415,38 @@ https://trailseries.bg/the-cactus-run-2014/,https://stg.trailseries.bg/the-cactu
 https://trailseries.bg/the-cactus-run-2015/,https://stg.trailseries.bg/the-cactus-run-2015/,200,200,PASS,,,,,
 https://trailseries.bg/the-cactus-run-2016/,https://stg.trailseries.bg/the-cactus-run-2016/,200,200,PASS,,,,,
 https://trailseries.bg/the-cactus-run-2017/,https://stg.trailseries.bg/the-cactus-run-2017/,200,200,PASS,,,,,
-https://trailseries.bg/the-cactus-run-results14/,https://stg.trailseries.bg/the-cactus-run-results14/,200,200,FAIL,8,8,236,249,"results mismatch: rendered 8 tables / 249 rows, manifest 8 / 236"
+https://trailseries.bg/the-cactus-run-results14/,https://stg.trailseries.bg/the-cactus-run-results14/,200,200,PASS,8,8,236,236,
 https://trailseries.bg/the-cactus-run/,https://stg.trailseries.bg/the-cactus-run/,200,200,PASS,,,,,
-https://trailseries.bg/the-cactus-run15-results/,https://stg.trailseries.bg/the-cactus-run15-results/,200,200,FAIL,6,7,184,220,"results mismatch: rendered 7 tables / 220 rows, manifest 6 / 184"
+https://trailseries.bg/the-cactus-run15-results/,https://stg.trailseries.bg/the-cactus-run15-results/,200,200,FAIL,6,7,184,195,"results mismatch: rendered 7 tables / 195 rows, manifest 6 / 184"
 https://trailseries.bg/the-cactus-run17-ranking/,https://stg.trailseries.bg/the-cactus-run17-ranking/,200,200,PASS,6,6,190,190,
 https://trailseries.bg/the-cactus-run18/,https://stg.trailseries.bg/the-cactus-run18/,200,200,PASS,,,,,
-https://trailseries.bg/the-cactus-run19-results/,https://stg.trailseries.bg/the-cactus-run19-results/,200,200,FAIL,6,6,244,306,"results mismatch: rendered 6 tables / 306 rows, manifest 6 / 244"
+https://trailseries.bg/the-cactus-run19-results/,https://stg.trailseries.bg/the-cactus-run19-results/,200,200,PASS,6,6,244,244,
 https://trailseries.bg/the-cactus-run19/,https://stg.trailseries.bg/the-cactus-run19/,200,200,PASS,,,,,
-https://trailseries.bg/the-cactus-run20-ranking/,https://stg.trailseries.bg/the-cactus-run20-ranking/,200,200,FAIL,6,6,177,226,"results mismatch: rendered 6 tables / 226 rows, manifest 6 / 177"
+https://trailseries.bg/the-cactus-run20-ranking/,https://stg.trailseries.bg/the-cactus-run20-ranking/,200,200,PASS,6,6,177,177,
 https://trailseries.bg/the-cactus-run20/,https://stg.trailseries.bg/the-cactus-run20/,200,200,PASS,,,,,
 https://trailseries.bg/the-cactus-run2025/,https://stg.trailseries.bg/the-cactus-run2025/,200,200,PASS,,,,,
 https://trailseries.bg/the-cactus-run21-results/,https://stg.trailseries.bg/the-cactus-run21-results/,200,200,PASS,6,6,212,212,
 https://trailseries.bg/the-cactus-run21/,https://stg.trailseries.bg/the-cactus-run21/,200,200,PASS,,,,,
-https://trailseries.bg/the-cactus-run22-ranking/,https://stg.trailseries.bg/the-cactus-run22-ranking/,200,200,FAIL,6,6,192,254,"results mismatch: rendered 6 tables / 254 rows, manifest 6 / 192"
+https://trailseries.bg/the-cactus-run22-ranking/,https://stg.trailseries.bg/the-cactus-run22-ranking/,200,200,PASS,6,6,192,192,
 https://trailseries.bg/the-cactus-run22/,https://stg.trailseries.bg/the-cactus-run22/,200,200,PASS,,,,,
-https://trailseries.bg/the-cactus-run23-results/,https://stg.trailseries.bg/the-cactus-run23-results/,200,200,FAIL,6,6,269,299,"results mismatch: rendered 6 tables / 299 rows, manifest 6 / 269"
+https://trailseries.bg/the-cactus-run23-results/,https://stg.trailseries.bg/the-cactus-run23-results/,200,200,PASS,6,6,269,269,
 https://trailseries.bg/the-cactus-run23/,https://stg.trailseries.bg/the-cactus-run23/,200,200,PASS,,,,,
-https://trailseries.bg/the-cactus-run24-results/,https://stg.trailseries.bg/the-cactus-run24-results/,200,200,FAIL,6,6,283,332,"results mismatch: rendered 6 tables / 332 rows, manifest 6 / 283"
+https://trailseries.bg/the-cactus-run24-results/,https://stg.trailseries.bg/the-cactus-run24-results/,200,200,PASS,6,6,283,283,
 https://trailseries.bg/the-cactus-run24/,https://stg.trailseries.bg/the-cactus-run24/,200,200,PASS,,,,,
 https://trailseries.bg/the-cactus-run25-results/,https://stg.trailseries.bg/the-cactus-run25-results/,200,200,PASS,6,6,231,231,
 https://trailseries.bg/the-cactus-run26-results/,https://stg.trailseries.bg/the-cactus-run26-results/,200,200,PASS,6,6,215,215,
 https://trailseries.bg/the-cactus-run26/,https://stg.trailseries.bg/the-cactus-run26/,200,200,PASS,,,,,
-https://trailseries.bg/the-chrismas-run19-ranking/,https://stg.trailseries.bg/the-chrismas-run19-ranking/,200,200,PASS,6,6,178,178,
+https://trailseries.bg/the-chrismas-run19-ranking/,https://stg.trailseries.bg/the-chrismas-run19-ranking/,200,200,FAIL,6,7,178,220,"results mismatch: rendered 7 tables / 220 rows, manifest 6 / 178"
 https://trailseries.bg/the-christmas-run-2014/,https://stg.trailseries.bg/the-christmas-run-2014/,200,200,PASS,,,,,
 https://trailseries.bg/the-christmas-run-2015/,https://stg.trailseries.bg/the-christmas-run-2015/,200,200,PASS,,,,,
 https://trailseries.bg/the-christmas-run-2017-klasirane/,https://stg.trailseries.bg/the-christmas-run-2017-klasirane/,200,200,PASS,6,6,114,114,
 https://trailseries.bg/the-christmas-run-2017/,https://stg.trailseries.bg/the-christmas-run-2017/,200,200,PASS,,,,,
 https://trailseries.bg/the-christmas-run-2025/,https://stg.trailseries.bg/the-christmas-run-2025/,200,200,PASS,,,,,
-https://trailseries.bg/the-christmas-run-ranking14/,https://stg.trailseries.bg/the-christmas-run-ranking14/,200,200,FAIL,6,6,130,178,"results mismatch: rendered 6 tables / 178 rows, manifest 6 / 130"
+https://trailseries.bg/the-christmas-run-ranking14/,https://stg.trailseries.bg/the-christmas-run-ranking14/,200,200,PASS,6,6,130,130,
 https://trailseries.bg/the-christmas-run-ranking23/,https://stg.trailseries.bg/the-christmas-run-ranking23/,200,200,PASS,6,6,192,192,
 https://trailseries.bg/the-christmas-run18-ranking/,https://stg.trailseries.bg/the-christmas-run18-ranking/,200,200,PASS,6,6,135,135,
 https://trailseries.bg/the-christmas-run19/,https://stg.trailseries.bg/the-christmas-run19/,200,200,PASS,,,,,
-https://trailseries.bg/the-christmas-run20-results/,https://stg.trailseries.bg/the-christmas-run20-results/,200,200,FAIL,6,6,167,186,"results mismatch: rendered 6 tables / 186 rows, manifest 6 / 167"
+https://trailseries.bg/the-christmas-run20-results/,https://stg.trailseries.bg/the-christmas-run20-results/,200,200,PASS,6,6,167,167,
 https://trailseries.bg/the-christmas-run20/,https://stg.trailseries.bg/the-christmas-run20/,200,200,PASS,,,,,
 https://trailseries.bg/the-christmas-run21-results/,https://stg.trailseries.bg/the-christmas-run21-results/,200,200,PASS,6,6,152,152,
 https://trailseries.bg/the-christmas-run21/,https://stg.trailseries.bg/the-christmas-run21/,200,200,PASS,,,,,
@@ -455,13 +455,13 @@ https://trailseries.bg/the-christmas-run22/,https://stg.trailseries.bg/the-chris
 https://trailseries.bg/the-christmas-run23/,https://stg.trailseries.bg/the-christmas-run23/,200,200,PASS,,,,,
 https://trailseries.bg/the-christmas-run24-results/,https://stg.trailseries.bg/the-christmas-run24-results/,200,200,PASS,6,6,124,124,
 https://trailseries.bg/the-christmas-run24/,https://stg.trailseries.bg/the-christmas-run24/,200,200,PASS,,,,,
-https://trailseries.bg/the-christmas-run25-results/,https://stg.trailseries.bg/the-christmas-run25-results/,200,200,FAIL,6,6,177,204,"results mismatch: rendered 6 tables / 204 rows, manifest 6 / 177"
+https://trailseries.bg/the-christmas-run25-results/,https://stg.trailseries.bg/the-christmas-run25-results/,200,200,PASS,6,6,177,177,
 https://trailseries.bg/thechristmasrun-%d1%81%d1%82%d0%b0%d1%80%d1%82%d0%be%d0%b2-%d1%81%d0%bf%d0%b8%d1%81%d1%8a%d0%ba/,https://stg.trailseries.bg/thechristmasrun-%d1%81%d1%82%d0%b0%d1%80%d1%82%d0%be%d0%b2-%d1%81%d0%bf%d0%b8%d1%81%d1%8a%d0%ba/,200,200,PASS,,,,,
-https://trailseries.bg/thechristmasrun/,https://stg.trailseries.bg/thechristmasrun/,200,200,FAIL,8,8,171,173,"results mismatch: rendered 8 tables / 173 rows, manifest 8 / 171"
+https://trailseries.bg/thechristmasrun/,https://stg.trailseries.bg/thechristmasrun/,200,200,PASS,8,8,171,171,
 https://trailseries.bg/trail-series-edna-ot-8-partnership-2026/,https://stg.trailseries.bg/trail-series-edna-ot-8-partnership-2026/,200,200,PASS,,,,,
 https://trailseries.bg/vladaya-eco-run-ranking-2014/,https://stg.trailseries.bg/vladaya-eco-run-ranking-2014/,200,200,PASS,2,2,148,148,
 https://trailseries.bg/vladaya-eco-run/,https://stg.trailseries.bg/vladaya-eco-run/,200,200,PASS,,,,,
-https://trailseries.bg/xmas-run-15-results/,https://stg.trailseries.bg/xmas-run-15-results/,200,200,FAIL,6,6,145,159,"results mismatch: rendered 6 tables / 159 rows, manifest 6 / 145"
+https://trailseries.bg/xmas-run-15-results/,https://stg.trailseries.bg/xmas-run-15-results/,200,200,PASS,6,6,145,145,
 https://trailseries.bg/xmas-run16-results/,https://stg.trailseries.bg/xmas-run16-results/,200,200,PASS,6,6,129,129,
 https://trailseries.bg/xmas-run18/,https://stg.trailseries.bg/xmas-run18/,200,200,PASS,,,,,
 https://trailseries.bg/zero-to-hero-%d1%81-%d0%b1%d0%b5%d0%bd%d0%b4%d0%b6%d0%b0%d0%bc%d0%b8%d0%bd-%d0%ba%d0%b5%d0%b9%d0%bd/,https://stg.trailseries.bg/zero-to-hero-%d1%81-%d0%b1%d0%b5%d0%bd%d0%b4%d0%b6%d0%b0%d0%bc%d0%b8%d0%bd-%d0%ba%d0%b5%d0%b9%d0%bd/,200,200,PASS,,,,,
