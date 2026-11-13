@@ -4,6 +4,8 @@
 
 ## 1. Compound files — need row-level splitting, not just relabeling
 
+**Resolved 2026-11-13** — `extract_canonical_results.py` splits at place restarts and reads bare text labels / inline category rows; all five below (plus `ranking-7-hills-run`, `simeonovo-run-ranking14`, `vladaya-eco-run-ranking-2014` and several kids' podiums) now extract as separate, labelled sections. See docs/AUDIT-2026-11.md, M15.
+
 A single "-N" file contains rows from **two or more** genuinely different categories, concatenated (sometimes with place-numbering flattened/restarted mid-file). A `category-overrides.csv` entry can only rename a whole file; these need actual row-range splitting logic (new script feature) before they can be resolved.
 
 - `malak-sechko-run18-ranking__жени-4.json` (occurrence 4, raw "жени") — rows 1-8 = girls' kids race, rows 9-13 (renumbered from place 1) = boys' kids race.
@@ -12,6 +14,8 @@ A single "-N" file contains rows from **two or more** genuinely different catego
 - `buhovo-26-may__all.json` / `__all-2.json` — women's and men's tables concatenated with **continuous renumbering** (a man's real place 1 shows as place 14 in the file). Needs both a split AND place renumbering, not just a relabel.
 
 ## 2. Low-confidence — needs re-verification against the live page before writing an override
+
+**Resolved 2026-11-13** — lyulin-trail-run-класиране and malak-sechko-run22-results labelled from each edition's own event page; xmas-run16-results from source headings + surnames (category-overrides.csv notes).
 
 - `lyulin-trail-run-класиране__all.json` through `__all-6.json` (6 files) — the auditing agent could not confirm exact Bulgarian heading text (it paraphrased "Elite/Junior/Youth divisions" rather than quoting the page). Gender/order is plausible but not page-confirmed; re-fetch with an explicit instruction to quote raw heading text verbatim before trusting a label here.
 - `malak-sechko-run22-results__all.json` through `__all-6.json` (6 files) — the live page shows no heading text at all above any table; the agent's suggested labels (19КМ/13КМ/6КМ × М/Ж, by analogy with other years of this race) are a guess, not a page-confirmed reading.
