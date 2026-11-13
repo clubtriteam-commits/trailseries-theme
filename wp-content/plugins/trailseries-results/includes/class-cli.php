@@ -54,12 +54,18 @@ final class TSR_CLI {
 	 * A candidate is an in-scope post whose slug bulk-import does NOT derive
 	 * from the current manifest.
 	 *
-	 * Each candidate is classified by its stored names hash:
-	 *   DUPLICATE — the same table is stored in an expected post of the page.
-	 *   STALE     — matches no manifest section of the page: an older version
-	 *               of data the page now gets from the manifest.
-	 *   UNIQUE    — matches a manifest section that no expected post holds;
-	 *               trashing it would lose data. Never trashed automatically.
+	 * Each candidate is classified against the expected posts of its page:
+	 *   DUPLICATE — same names hash as an expected post: the identical table
+	 *               is already shown. Trashable.
+	 *   OLD       — ≥ 90 % of its runner names appear in ONE expected post: an
+	 *               earlier extraction of a section the page still has.
+	 *               Trashable.
+	 *   EXTRA     — anything else: a table the current manifest does not
+	 *               have at all (e.g. relay and kids' sections that the August
+	 *               re-extraction lost and that were re-created by hand on
+	 *               2026-08-22). Never trashed automatically — fix the
+	 *               manifest instead, or pass --ids after manual review.
+	 * A names hash alone cannot tell OLD from EXTRA; the name overlap can.
 	 *
 	 * ## OPTIONS
 	 *
@@ -73,12 +79,12 @@ final class TSR_CLI {
 	 * : Only pages whose slug contains this string.
 	 *
 	 * [--trash]
-	 * : Move DUPLICATE and STALE candidates to the trash (reversible).
+	 * : Move DUPLICATE and OLD candidates to the trash (reversible).
 	 *   Without it the command only lists.
 	 *
 	 * [--ids=<ids>]
 	 * : With --trash: only these post IDs (comma-separated); may include
-	 *   UNIQUE candidates after manual review.
+	 *   EXTRA candidates after manual review.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -110,7 +116,6 @@ final class TSR_CLI {
 
 		// Expected stored slugs, derived exactly as bulk_import() does.
 		$expected        = array(); // stored slug => page slug
-		$page_hashes     = array(); // page slug => list of manifest names hashes
 		$bare_slug_given = array();
 		foreach ( $rows as $row ) {
 			if ( empty( $row['file'] ) || in_array( $row['slug'], $excluded, true ) ) {
@@ -120,7 +125,6 @@ final class TSR_CLI {
 			$post_slug = $this->derive_post_slug( $page_slug, $row['file'], $bare_slug_given );
 			$bare_slug_given[ $page_slug ] = true;
 			$expected[ sanitize_title( $post_slug ) ] = $page_slug;
-			$page_hashes[ $page_slug ][]              = (string) ( $row['names_sha256'] ?? '' );
 		}
 		$pages = array();
 		foreach ( array_unique( array_values( $expected ) ) as $page_slug ) {
@@ -137,9 +141,9 @@ final class TSR_CLI {
 			TSR_Post_Types::POST_TYPE
 		) );
 
-		// Group in-scope posts by page; expected posts' hashes per page.
+		// Group in-scope posts by page; expected posts per page.
 		$candidates   = array();
-		$held_by_page = array(); // page slug => hashes stored in expected posts
+		$held_by_page = array(); // page slug => list of [post ID, names hash]
 		foreach ( $all as $p ) {
 			$page = null;
 			foreach ( $pages as $stored_page => $page_slug ) {
@@ -153,51 +157,68 @@ final class TSR_CLI {
 			}
 			$hash = (string) get_post_meta( (int) $p->ID, TSR_Repository::NAMES_HASH_KEY, true );
 			if ( isset( $expected[ $p->post_name ] ) ) {
-				$held_by_page[ $page ][] = $hash;
+				$held_by_page[ $page ][] = array( (int) $p->ID, $hash );
 			} else {
 				$candidates[] = array( 'post' => $p, 'page' => $page, 'hash' => $hash );
 			}
 		}
 
 		$trashable = array();
-		$counts    = array( 'DUPLICATE' => 0, 'STALE' => 0, 'UNIQUE' => 0 );
+		$counts    = array( 'DUPLICATE' => 0, 'OLD' => 0, 'EXTRA' => 0 );
 		foreach ( $candidates as $c ) {
-			$held     = $held_by_page[ $c['page'] ] ?? array();
-			$manifest = $page_hashes[ $c['page'] ] ?? array();
-			if ( '' !== $c['hash'] && in_array( $c['hash'], $held, true ) ) {
-				$class = 'DUPLICATE';
-			} elseif ( '' !== $c['hash'] && in_array( $c['hash'], $manifest, true ) ) {
-				$class = 'UNIQUE';
-			} else {
-				$class = 'STALE';
+			$held  = $held_by_page[ $c['page'] ] ?? array();
+			$set   = TSR_Repository::load( (int) $c['post']->ID );
+			$names = null !== $set ? $this->row_names( $set ) : array();
+			$best  = 0.0;
+			$match = 0;
+			$class = 'EXTRA';
+			foreach ( $held as [ $held_id, $held_hash ] ) {
+				if ( '' !== $c['hash'] && $c['hash'] === $held_hash ) {
+					$class = 'DUPLICATE';
+					$match = $held_id;
+					break;
+				}
+				$held_set = TSR_Repository::load( $held_id );
+				if ( null === $held_set || array() === $names ) {
+					continue;
+				}
+				$overlap = count( array_intersect( $names, $this->row_names( $held_set ) ) ) / count( $names );
+				if ( $overlap > $best ) {
+					$best  = $overlap;
+					$match = $held_id;
+				}
+			}
+			if ( 'EXTRA' === $class && $best >= 0.9 ) {
+				$class = 'OLD';
 			}
 			++$counts[ $class ];
-			$set  = TSR_Repository::load( (int) $c['post']->ID );
 			WP_CLI::log( sprintf(
-				'%-9s [%d]  %-55s rows=%-4s %s  page=%s',
+				'%-9s [%d]  %-55s rows=%-4s %s  best=[%d] %3d%%  page=%s',
 				$class,
 				$c['post']->ID,
 				urldecode( $c['post']->post_name ),
-				null !== $set ? (string) count( $set->rows() ) : '?',
+				(string) count( $names ),
 				substr( $c['post']->post_date, 0, 10 ),
+				$match,
+				'DUPLICATE' === $class ? 100 : (int) round( $best * 100 ),
 				$c['page']
 			) );
-			if ( null !== $only_ids ? in_array( (int) $c['post']->ID, $only_ids, true ) : 'UNIQUE' !== $class ) {
+			if ( null !== $only_ids ? in_array( (int) $c['post']->ID, $only_ids, true ) : 'EXTRA' !== $class ) {
 				$trashable[] = (int) $c['post']->ID;
 			}
 		}
 
 		WP_CLI::log( sprintf(
-			'Pages in scope: %d. Candidates: %d (DUPLICATE %d, STALE %d, UNIQUE %d).',
+			'Pages in scope: %d. Candidates: %d (DUPLICATE %d, OLD %d, EXTRA %d — EXTRA is never trashed without --ids).',
 			count( $pages ),
 			count( $candidates ),
 			$counts['DUPLICATE'],
-			$counts['STALE'],
-			$counts['UNIQUE']
+			$counts['OLD'],
+			$counts['EXTRA']
 		) );
 
 		if ( ! $do_trash ) {
-			WP_CLI::success( 'Listed only. Re-run with --trash to move DUPLICATE and STALE candidates to the trash.' );
+			WP_CLI::success( 'Listed only. Re-run with --trash to move DUPLICATE and OLD candidates to the trash.' );
 			return;
 		}
 		if ( null !== $only_ids && count( $trashable ) !== count( $only_ids ) ) {
@@ -1335,6 +1356,20 @@ final class TSR_CLI {
 	 * page title nor the slug contains (dry run 2026-11-13).
 	 */
 	private const IMPORT_DELETABLE_META = array( '_tsr_distance_km', '_tsr_distance_cat', '_tsr_gender' );
+
+	/**
+	 * Runner names of a result set as "first\x1flast" strings (byte-exact,
+	 * never normalised — iron rule 2), for overlap comparisons.
+	 *
+	 * @return list<string>
+	 */
+	private function row_names( TSR_Result_Set $set ): array {
+		$names = array();
+		foreach ( $set->rows() as $row ) {
+			$names[] = $row->first_name . "\x1f" . $row->last_name;
+		}
+		return $names;
+	}
 
 	/**
 	 * The derived meta as post-meta key => value. A null value means "could not
