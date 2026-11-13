@@ -57,10 +57,11 @@ final class TSR_Upload_Match {
 				'sections'  => array(),
 				'leftovers' => array(),
 				'conflict'  => sprintf(
-					'Слъгът "%s" вече принадлежи на сезон %s. Добавете годината в името на събитието (напр. "Baba Marta Run\'%s").',
+					'Слъгът "%s" вече принадлежи на сезон %s. Добавете годината в името на събитието (напр. "…\'%s" накрая), за да не се презапишат резултатите от сезон %s.',
 					$base,
 					$hub['season'],
-					substr( (string) $season, -2 )
+					substr( (string) $season, -2 ),
+					$hub['season']
 				),
 			);
 		}
