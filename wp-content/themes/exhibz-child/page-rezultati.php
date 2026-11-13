@@ -153,7 +153,7 @@ if ( post_type_exists( 'ajde_events' ) ) {
 // keeps the page small (all 16 seasons used to be in the DOM at once).
 $tsr_years = array_keys( $grouped ); // newest first, 0 ("Без година") last
 // phpcs:ignore WordPress.Security.NonceVerification
-$tsr_req      = isset( $_GET['sezon'] ) ? (int) $_GET['sezon'] : null;
+$tsr_req      = ( isset( $_GET['sezon'] ) && is_string( $_GET['sezon'] ) && ctype_digit( $_GET['sezon'] ) ) ? (int) $_GET['sezon'] : null;
 $tsr_selected = ( null !== $tsr_req && array_key_exists( $tsr_req, $grouped ) )
 	? $tsr_req
 	: ( $tsr_years[0] ?? 0 );
