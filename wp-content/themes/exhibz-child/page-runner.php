@@ -166,6 +166,14 @@ if ( $tsr_do_search ) {
 			$tsr_ln  = (string) ( $tsr_row['last_name']  ?? '' );
 			$tsr_fl  = mb_strtolower( trim( $tsr_fn . ' ' . $tsr_ln ) );
 			$tsr_lf  = mb_strtolower( trim( $tsr_ln . ' ' . $tsr_fn ) );
+			// An aliased spelling matches, and is shown, as its canonical name (M2).
+			$tsr_full  = trim( $tsr_fn . ' ' . $tsr_ln );
+			$tsr_canon = tsr_runner_canonical( $tsr_full );
+			if ( $tsr_canon !== $tsr_full ) {
+				$tsr_full = $tsr_canon;
+				$tsr_fl   = mb_strtolower( $tsr_canon );
+				$tsr_lf   = $tsr_fl;
+			}
 
 			if ( false === mb_strpos( $tsr_fl, $tsr_q_lower )
 				&& false === mb_strpos( $tsr_lf, $tsr_q_lower ) ) {
@@ -185,7 +193,7 @@ if ( $tsr_do_search ) {
 			$tsr_candidates[] = array(
 				'fl'      => $tsr_fl,
 				'lf'      => $tsr_lf,
-				'full'    => trim( $tsr_fn . ' ' . $tsr_ln ),
+				'full'    => $tsr_full,
 				'post_id' => $tsr_post->ID,
 				'hash'    => $tsr_post_hash[ $tsr_post->ID ] ?? null,
 				'gender'  => tsr_race_gender( $tsr_post ),

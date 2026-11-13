@@ -125,7 +125,7 @@ function tsr_points( int $place, string $cat, bool $is_bonus = false ): int {
 // entry expires on its own TTL. On a cache hit the compute path below
 // runs over an empty post list and the cached standings are restored
 // after the (no-op) sort.
-$tsr_standings_key  = sprintf( 'tsr_standings3_g%d_s%d', tsr_cache_gen(), $current_season );
+$tsr_standings_key  = sprintf( 'tsr_standings4_g%d_s%d', tsr_cache_gen(), $current_season );
 // Audit H5: only a season that has results may compute or cache anything.
 // `?sezon=<any other int>` used to write a fresh transient per value; it
 // now renders the same empty standings straight away.
@@ -285,7 +285,8 @@ foreach ( $race_posts as $rpost ) {
 		}
 
 		$pts  = ( '' !== $cat || $is_bonus ) ? tsr_points( $place, $cat, $is_bonus ) : 0;
-		$name = trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) );
+		// Owner-confirmed spellings of one person count as one athlete (M2).
+		$name = tsr_runner_canonical( trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) ) );
 		$key  = mb_strtolower( $name );
 
 		if ( ! isset( $standings[ $gender_key ][ $key ] ) ) {

@@ -40,6 +40,61 @@ final class TSR_CLI {
 		WP_CLI::add_command( 'tsr verify-import', array( $instance, 'verify_import' ) );
 		WP_CLI::add_command( 'tsr apply-seasons', array( $instance, 'apply_seasons' ) );
 		WP_CLI::add_command( 'tsr import-standings', array( $instance, 'import_standings' ) );
+		WP_CLI::add_command( 'tsr alias', array( $instance, 'alias' ) );
+	}
+
+	/**
+	 * Map a spelling of a runner's name to the canonical one (audit M2).
+	 *
+	 * Use only when the owner has confirmed both spellings are one person.
+	 * Stored results are not changed; standings, search and profiles
+	 * aggregate under the canonical name.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<variant>]
+	 * : The spelling as it appears in the results ("First Last").
+	 *
+	 * [<canonical>]
+	 * : The name to show and aggregate under.
+	 *
+	 * [--list]
+	 * : Print the current aliases.
+	 *
+	 * [--remove]
+	 * : Remove the alias of <variant>.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp tsr alias "Ivan Testov-fast" "Ivan Testov - Fast"
+	 *     wp tsr alias --list
+	 *
+	 * @param array<int, string>    $args
+	 * @param array<string, string> $assoc_args
+	 */
+	public function alias( array $args, array $assoc_args ): void {
+		$map = (array) get_option( TSR_Runner_Alias::OPTION, array() );
+		if ( isset( $assoc_args['list'] ) ) {
+			foreach ( $map as $key => $canonical ) {
+				WP_CLI::log( "{$key}  =>  {$canonical}" );
+			}
+			WP_CLI::success( count( $map ) . ' alias(es).' );
+			return;
+		}
+		$variant = (string) ( $args[0] ?? '' );
+		if ( isset( $assoc_args['remove'] ) ) {
+			unset( $map[ TSR_Runner_Alias::key( $variant ) ] );
+		} else {
+			try {
+				$map = TSR_Runner_Alias::with( $map, $variant, (string) ( $args[1] ?? '' ) );
+			} catch ( InvalidArgumentException $e ) {
+				WP_CLI::error( $e->getMessage() );
+				return;
+			}
+		}
+		update_option( TSR_Runner_Alias::OPTION, $map, false );
+		do_action( 'tsr_results_updated' );
+		WP_CLI::success( count( $map ) . ' alias(es) stored; caches flushed.' );
 	}
 
 	/**

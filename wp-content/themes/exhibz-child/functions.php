@@ -673,8 +673,20 @@ function tsr_sort_results_indexed( array $posts ): array {
  *
  * @return array<int, string>
  */
+/**
+ * Canonical full name of a runner: the owner-confirmed alias target, or the
+ * name itself (audit M2; map managed with `wp tsr alias`).
+ */
+function tsr_runner_canonical( string $full_name ): string {
+	static $map = null;
+	if ( null === $map ) {
+		$map = (array) get_option( TSR_Runner_Alias::OPTION, array() );
+	}
+	return array() === $map ? $full_name : TSR_Runner_Alias::canonical( $full_name, $map );
+}
+
 function tsr_runner_name_index(): array {
-	$key    = 'tsr_runner_names_g' . tsr_cache_gen();
+	$key    = 'tsr_runner_names2_g' . tsr_cache_gen(); // v2: + canonical alias names
 	$cached = get_transient( $key );
 	if ( is_array( $cached ) ) {
 		return $cached;
@@ -700,6 +712,10 @@ function tsr_runner_name_index(): array {
 				$ln      = (string) ( $row['last_name'] ?? '' );
 				$lines[] = mb_strtolower( trim( $fn . ' ' . $ln ) );
 				$lines[] = mb_strtolower( trim( $ln . ' ' . $fn ) );
+				$canon   = tsr_runner_canonical( trim( $fn . ' ' . $ln ) );
+				if ( trim( $fn . ' ' . $ln ) !== $canon ) {
+					$lines[] = mb_strtolower( $canon ); // searchable under the canonical name
+				}
 			}
 			$index[ (int) $blob->post_id ] = implode( "\n", $lines );
 		}
