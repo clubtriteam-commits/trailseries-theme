@@ -236,7 +236,7 @@ function tsr_bg_month_short( int $month ): string {
  * Distance labels of a race ("6 км", "13 км", …) from data/tracks.json:
  * the nominal distance in each current track's name, shortest first. Tracks
  * whose nominal distances are within 1 km (variants of one course) show
- * once; at most four labels.
+ * once; at most four labels. An event's "calendar_km" list overrides this.
  *
  * @return list<string>
  */
@@ -248,6 +248,12 @@ function tsr_event_distance_labels( string $event_base ): array {
 	foreach ( tsr_tracks_events() as $event ) {
 		if ( 0 !== strcasecmp( (string) ( $event['name'] ?? '' ), $event_base ) ) {
 			continue;
+		}
+		// Owner-set list wins (a race distance without a published track,
+		// e.g. Buhovo Half Marathon's 10 km): "calendar_km" on the event.
+		if ( ! empty( $event['calendar_km'] ) && is_array( $event['calendar_km'] ) ) {
+			$kms = array_map( 'floatval', $event['calendar_km'] );
+			break;
 		}
 		foreach ( (array) ( $event['tracks'] ?? array() ) as $track ) {
 			if ( 'current' !== tsr_track_status( $track ) ) {
@@ -265,7 +271,7 @@ function tsr_event_distance_labels( string $event_base ): array {
 	$out  = array();
 	$last = null;
 	foreach ( $kms as $km ) {
-		if ( null !== $last && $km - $last < 1.0 ) {
+		if ( null !== $last && $km - $last <= 1.0 ) { // 15 and 16 km are variants of one course
 			continue;
 		}
 		$last  = $km;
