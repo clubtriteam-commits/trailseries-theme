@@ -36,6 +36,189 @@ final class TSR_CLI {
 		WP_CLI::add_command( 'tsr verify-names', array( $instance, 'verify_names' ) );
 		WP_CLI::add_command( 'tsr bulk-import',  array( $instance, 'bulk_import' ) );
 		WP_CLI::add_command( 'tsr backfill-meta', array( $instance, 'backfill_meta' ) );
+		WP_CLI::add_command( 'tsr prune',        array( $instance, 'prune' ) );
+	}
+
+	/**
+	 * List (and optionally trash) leftover section posts of migrated pages.
+	 *
+	 * bulk-import only creates and updates (audit M4). A section renamed by an
+	 * override, dropped from the manifest, or hand-fixed under another slug
+	 * leaves its old post published next to the current one, and the hub page
+	 * renders both.
+	 *
+	 * Scope — only posts that belong to a page in the manifest: post_name is
+	 * the page slug or starts with "{page_slug}-" (the same prefix rule the
+	 * hub view uses; no page slug is a dash-prefix of another). Posts outside
+	 * that scope (admin uploads of new races, anything else) are never touched.
+	 * A candidate is an in-scope post whose slug bulk-import does NOT derive
+	 * from the current manifest.
+	 *
+	 * Each candidate is classified by its stored names hash:
+	 *   DUPLICATE — the same table is stored in an expected post of the page.
+	 *   STALE     — matches no manifest section of the page: an older version
+	 *               of data the page now gets from the manifest.
+	 *   UNIQUE    — matches a manifest section that no expected post holds;
+	 *               trashing it would lose data. Never trashed automatically.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--manifest=<file>]
+	 * : Path to _manifest.csv. Default: TSR_DATA_DIR/_manifest.csv
+	 *
+	 * [--exclude=<slugs>]
+	 * : Page slugs bulk-import skips (must match its --exclude). Default: news
+	 *
+	 * [--slug=<pattern>]
+	 * : Only pages whose slug contains this string.
+	 *
+	 * [--trash]
+	 * : Move DUPLICATE and STALE candidates to the trash (reversible).
+	 *   Without it the command only lists.
+	 *
+	 * [--ids=<ids>]
+	 * : With --trash: only these post IDs (comma-separated); may include
+	 *   UNIQUE candidates after manual review.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp tsr prune
+	 *     wp tsr prune --slug=simeonovo-run18
+	 *     wp tsr prune --trash
+	 *     wp tsr prune --trash --ids=1336,7285
+	 *
+	 * @param array<int, string>    $args
+	 * @param array<string, string> $assoc_args
+	 */
+	public function prune( array $args, array $assoc_args ): void {
+		$do_trash    = isset( $assoc_args['trash'] );
+		$slug_filter = $assoc_args['slug'] ?? '';
+		$excluded    = array_filter( array_map( 'trim', explode( ',', $assoc_args['exclude'] ?? 'news' ) ) );
+		$only_ids    = isset( $assoc_args['ids'] )
+			? array_map( 'intval', array_filter( array_map( 'trim', explode( ',', $assoc_args['ids'] ) ) ) )
+			: null;
+
+		$manifest_path = $assoc_args['manifest']
+			?? ( ( defined( 'TSR_DATA_DIR' ) && is_string( TSR_DATA_DIR ) && '' !== TSR_DATA_DIR )
+				? rtrim( TSR_DATA_DIR, '/\\' ) . DIRECTORY_SEPARATOR . '_manifest.csv'
+				: '' );
+		if ( '' === $manifest_path || ! is_readable( $manifest_path ) ) {
+			WP_CLI::error( 'Cannot read manifest: pass --manifest or define TSR_DATA_DIR.' );
+			return;
+		}
+		$rows = $this->read_manifest( $manifest_path );
+
+		// Expected stored slugs, derived exactly as bulk_import() does.
+		$expected        = array(); // stored slug => page slug
+		$page_hashes     = array(); // page slug => list of manifest names hashes
+		$bare_slug_given = array();
+		foreach ( $rows as $row ) {
+			if ( empty( $row['file'] ) || in_array( $row['slug'], $excluded, true ) ) {
+				continue;
+			}
+			$page_slug = $row['slug'];
+			$post_slug = $this->derive_post_slug( $page_slug, $row['file'], $bare_slug_given );
+			$bare_slug_given[ $page_slug ] = true;
+			$expected[ sanitize_title( $post_slug ) ] = $page_slug;
+			$page_hashes[ $page_slug ][]              = (string) ( $row['names_sha256'] ?? '' );
+		}
+		$pages = array();
+		foreach ( array_unique( array_values( $expected ) ) as $page_slug ) {
+			if ( '' === $slug_filter || str_contains( $page_slug, $slug_filter ) ) {
+				$pages[ sanitize_title( $page_slug ) ] = $page_slug;
+			}
+		}
+
+		global $wpdb;
+		$all = $wpdb->get_results( $wpdb->prepare(
+			"SELECT ID, post_name, post_title, post_date FROM {$wpdb->posts}
+			  WHERE post_type = %s AND post_status NOT IN ( 'trash', 'auto-draft', 'inherit' )
+			  ORDER BY post_name",
+			TSR_Post_Types::POST_TYPE
+		) );
+
+		// Group in-scope posts by page; expected posts' hashes per page.
+		$candidates   = array();
+		$held_by_page = array(); // page slug => hashes stored in expected posts
+		foreach ( $all as $p ) {
+			$page = null;
+			foreach ( $pages as $stored_page => $page_slug ) {
+				if ( $p->post_name === $stored_page || str_starts_with( $p->post_name, $stored_page . '-' ) ) {
+					$page = $page_slug;
+					break;
+				}
+			}
+			if ( null === $page ) {
+				continue; // Not a migrated page: never touched.
+			}
+			$hash = (string) get_post_meta( (int) $p->ID, TSR_Repository::NAMES_HASH_KEY, true );
+			if ( isset( $expected[ $p->post_name ] ) ) {
+				$held_by_page[ $page ][] = $hash;
+			} else {
+				$candidates[] = array( 'post' => $p, 'page' => $page, 'hash' => $hash );
+			}
+		}
+
+		$trashable = array();
+		$counts    = array( 'DUPLICATE' => 0, 'STALE' => 0, 'UNIQUE' => 0 );
+		foreach ( $candidates as $c ) {
+			$held     = $held_by_page[ $c['page'] ] ?? array();
+			$manifest = $page_hashes[ $c['page'] ] ?? array();
+			if ( '' !== $c['hash'] && in_array( $c['hash'], $held, true ) ) {
+				$class = 'DUPLICATE';
+			} elseif ( '' !== $c['hash'] && in_array( $c['hash'], $manifest, true ) ) {
+				$class = 'UNIQUE';
+			} else {
+				$class = 'STALE';
+			}
+			++$counts[ $class ];
+			$set  = TSR_Repository::load( (int) $c['post']->ID );
+			WP_CLI::log( sprintf(
+				'%-9s [%d]  %-55s rows=%-4s %s  page=%s',
+				$class,
+				$c['post']->ID,
+				urldecode( $c['post']->post_name ),
+				null !== $set ? (string) count( $set->rows() ) : '?',
+				substr( $c['post']->post_date, 0, 10 ),
+				$c['page']
+			) );
+			if ( null !== $only_ids ? in_array( (int) $c['post']->ID, $only_ids, true ) : 'UNIQUE' !== $class ) {
+				$trashable[] = (int) $c['post']->ID;
+			}
+		}
+
+		WP_CLI::log( sprintf(
+			'Pages in scope: %d. Candidates: %d (DUPLICATE %d, STALE %d, UNIQUE %d).',
+			count( $pages ),
+			count( $candidates ),
+			$counts['DUPLICATE'],
+			$counts['STALE'],
+			$counts['UNIQUE']
+		) );
+
+		if ( ! $do_trash ) {
+			WP_CLI::success( 'Listed only. Re-run with --trash to move DUPLICATE and STALE candidates to the trash.' );
+			return;
+		}
+		if ( null !== $only_ids && count( $trashable ) !== count( $only_ids ) ) {
+			WP_CLI::error( 'Some --ids are not prune candidates; nothing trashed.' );
+			return;
+		}
+
+		$done = 0;
+		foreach ( $trashable as $id ) {
+			if ( wp_trash_post( $id ) ) {
+				++$done;
+				WP_CLI::log( sprintf( 'trashed [%d]', $id ) );
+			} else {
+				WP_CLI::warning( sprintf( 'could not trash [%d]', $id ) );
+			}
+		}
+		if ( $done > 0 ) {
+			do_action( 'tsr_results_updated', 0 );
+		}
+		// wp_untrash_post() restores to 'draft' since WP 5.6, so publish afterwards.
+		WP_CLI::success( sprintf( 'Trashed %d post(s). Undo per post: wp eval \'wp_untrash_post( ID );\' then wp post update ID --post_status=publish', $done ) );
 	}
 
 	/**
