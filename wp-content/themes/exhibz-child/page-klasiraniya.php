@@ -437,7 +437,7 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 		<p class="tsr-page-hero__kicker">TrailSeries.bg</p>
 		<h1 class="tsr-page-hero__title">Ранкинг</h1>
 		<p class="tsr-page-hero__subtitle">
-			Сезонен ранкинг по точки
+			Годишно класиране по точки
 		</p>
 	</div>
 </div>
@@ -448,12 +448,20 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 		<?php tsr_page_breadcrumbs( 'Ранкинг' ); ?>
 
 		<?php
+		// Season picker markup, printed inside the ranking bar next to the
+		// gender tabs (design pass 2026-11-13) or alone when there is no table.
+		ob_start();
 		if ( count( $available_seasons ) > 0 ) {
 			tsr_season_select(
 				$available_seasons,
 				$current_season,
 				$tsr_race_count > 0 ? sprintf( '%d %s', $tsr_race_count, 1 === $tsr_race_count ? 'състезание' : 'състезания' ) : ''
 			);
+		}
+		$tsr_season_form = (string) ob_get_clean();
+		$tsr_has_table   = ! empty( $standings['m'] ) || ! empty( $standings['f'] );
+		if ( ! $tsr_has_table ) {
+			echo $tsr_season_form; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in tsr_season_select().
 		}
 		?>
 
@@ -468,6 +476,7 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 			<?php endif; ?>
 
 			<div class="tsr-standings" data-tsr-tabs>
+				<div class="tsr-rank-bar">
 				<div class="tsr-tabs" role="tablist" aria-label="Класиране по пол" hidden>
 					<?php foreach ( array( 'm' => 'Мъже', 'f' => 'Жени' ) as $tsr_k => $tsr_h ) : ?>
 						<button class="tsr-tabs__tab" type="button" role="tab" id="tsr-tab-<?php echo esc_attr( $tsr_k ); ?>"
@@ -478,6 +487,8 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 						</button>
 					<?php endforeach; ?>
 				</div>
+				<?php echo $tsr_season_form; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in tsr_season_select(). ?>
+				</div><!-- .tsr-rank-bar -->
 
 				<?php
 				// Official names come from the old standings page, not from the

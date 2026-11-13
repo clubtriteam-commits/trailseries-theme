@@ -83,12 +83,12 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 }, 20 );
 
 // Preload the two Cyrillic font files every page uses above the fold —
-// Roboto (body/nav) and Raleway (hero title). Same-origin, so crossorigin
+// Geist (body/nav) and Ubuntu 700 (titles). Same-origin, so crossorigin
 // is still required for font preloads. Other subsets load on demand via
 // unicode-range. Map tiles get no preconnect (audit M19).
 add_action( 'wp_head', static function (): void {
 	$base = get_stylesheet_directory_uri() . '/fonts/';
-	foreach ( array( 'roboto-cyrillic.woff2', 'raleway-cyrillic.woff2' ) as $file ) {
+	foreach ( array( 'geist-cyrillic.woff2', 'ubuntu-700-cyrillic.woff2' ) as $file ) {
 		printf(
 			'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "
 ",
