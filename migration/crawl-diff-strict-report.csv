@@ -286,7 +286,7 @@ https://trailseries.bg/malak-sechko-run/,https://stg.trailseries.bg/malak-sechko
 https://trailseries.bg/malak-sechko-run16/,https://stg.trailseries.bg/malak-sechko-run16/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run17-results/,https://stg.trailseries.bg/malak-sechko-run17-results/,200,200,PASS,6,6,138,138,
 https://trailseries.bg/malak-sechko-run17/,https://stg.trailseries.bg/malak-sechko-run17/,200,200,PASS,,,,,
-https://trailseries.bg/malak-sechko-run18-ranking/,https://stg.trailseries.bg/malak-sechko-run18-ranking/,200,200,FAIL,7,8,168,181,"results mismatch: rendered 8 tables / 181 rows, manifest 7 / 168"
+https://trailseries.bg/malak-sechko-run18-ranking/,https://stg.trailseries.bg/malak-sechko-run18-ranking/,200,200,PASS,7,7,168,168,
 https://trailseries.bg/malak-sechko-run18/,https://stg.trailseries.bg/malak-sechko-run18/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run19-ranking/,https://stg.trailseries.bg/malak-sechko-run19-ranking/,200,200,PASS,6,6,158,158,
 https://trailseries.bg/malak-sechko-run19/,https://stg.trailseries.bg/malak-sechko-run19/,200,200,PASS,,,,,
@@ -302,7 +302,7 @@ https://trailseries.bg/malak-sechko-run24-results/,https://stg.trailseries.bg/ma
 https://trailseries.bg/malak-sechko-run24/,https://stg.trailseries.bg/malak-sechko-run24/,200,200,PASS,,,,,
 https://trailseries.bg/malak-sechko-run25-results/,https://stg.trailseries.bg/malak-sechko-run25-results/,200,200,PASS,6,6,98,98,
 https://trailseries.bg/malak-sechko-run25/,https://stg.trailseries.bg/malak-sechko-run25/,200,200,PASS,,,,,
-https://trailseries.bg/malak-sechko-run26-results/,https://stg.trailseries.bg/malak-sechko-run26-results/,200,200,FAIL,6,7,86,113,"results mismatch: rendered 7 tables / 113 rows, manifest 6 / 86"
+https://trailseries.bg/malak-sechko-run26-results/,https://stg.trailseries.bg/malak-sechko-run26-results/,200,200,PASS,6,6,86,86,
 https://trailseries.bg/malak-sechko-run26/,https://stg.trailseries.bg/malak-sechko-run26/,200,200,PASS,,,,,
 https://trailseries.bg/maliovitsa-skyrun-2/,https://stg.trailseries.bg/maliovitsa-skyrun-2/,200,200,PASS,,,,,
 https://trailseries.bg/maliovitsa-skyrun-4-%d0%b0%d0%b2%d0%b3%d1%83%d1%81%d1%82/,https://stg.trailseries.bg/maliovitsa-skyrun-4-%d0%b0%d0%b2%d0%b3%d1%83%d1%81%d1%82/,200,200,PASS,4,4,93,93,
@@ -382,7 +382,7 @@ https://trailseries.bg/simeonovo-run/,https://stg.trailseries.bg/simeonovo-run/,
 https://trailseries.bg/simeonovo-run15/,https://stg.trailseries.bg/simeonovo-run15/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run16-ranking/,https://stg.trailseries.bg/simeonovo-run16-ranking/,200,200,PASS,7,7,126,126,
 https://trailseries.bg/simeonovo-run17-results/,https://stg.trailseries.bg/simeonovo-run17-results/,200,200,PASS,6,6,90,90,
-https://trailseries.bg/simeonovo-run18-results/,https://stg.trailseries.bg/simeonovo-run18-results/,200,200,FAIL,6,7,156,193,"results mismatch: rendered 7 tables / 193 rows, manifest 6 / 156"
+https://trailseries.bg/simeonovo-run18-results/,https://stg.trailseries.bg/simeonovo-run18-results/,200,200,PASS,6,6,156,156,
 https://trailseries.bg/simeonovo-run19-ranking/,https://stg.trailseries.bg/simeonovo-run19-ranking/,200,200,PASS,6,6,90,90,
 https://trailseries.bg/simeonovo-run19/,https://stg.trailseries.bg/simeonovo-run19/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run20-results/,https://stg.trailseries.bg/simeonovo-run20-results/,200,200,PASS,6,6,96,96,
@@ -436,7 +436,7 @@ https://trailseries.bg/the-cactus-run24/,https://stg.trailseries.bg/the-cactus-r
 https://trailseries.bg/the-cactus-run25-results/,https://stg.trailseries.bg/the-cactus-run25-results/,200,200,PASS,6,6,231,231,
 https://trailseries.bg/the-cactus-run26-results/,https://stg.trailseries.bg/the-cactus-run26-results/,200,200,PASS,6,6,215,215,
 https://trailseries.bg/the-cactus-run26/,https://stg.trailseries.bg/the-cactus-run26/,200,200,PASS,,,,,
-https://trailseries.bg/the-chrismas-run19-ranking/,https://stg.trailseries.bg/the-chrismas-run19-ranking/,200,200,FAIL,6,7,178,220,"results mismatch: rendered 7 tables / 220 rows, manifest 6 / 178"
+https://trailseries.bg/the-chrismas-run19-ranking/,https://stg.trailseries.bg/the-chrismas-run19-ranking/,200,200,PASS,6,6,178,178,
 https://trailseries.bg/the-christmas-run-2014/,https://stg.trailseries.bg/the-christmas-run-2014/,200,200,PASS,,,,,
 https://trailseries.bg/the-christmas-run-2015/,https://stg.trailseries.bg/the-christmas-run-2015/,200,200,PASS,,,,,
 https://trailseries.bg/the-christmas-run-2017-klasirane/,https://stg.trailseries.bg/the-christmas-run-2017-klasirane/,200,200,PASS,6,6,114,114,
