@@ -63,24 +63,10 @@ add_filter( 'comments_array', static fn(): array => array(), 10, 2 );
 // ── Stylesheets ───────────────────────────────────────────────────────────────
 
 add_action( 'wp_enqueue_scripts', static function (): void {
-	// Child-owned fonts: Roboto (body) + Raleway (headings), same families the
-	// parent used, but one trimmed css2 request with display=swap instead of
-	// the parent's exhibz-fonts + fontfaceobserver pipeline (dequeued below).
-	// css2 serves Cyrillic subsets automatically via unicode-range.
-	wp_enqueue_style(
-		'tsr-fonts',
-		'https://fonts.googleapis.com/css2?family=Raleway:wght@700;800&family=Roboto:ital,wght@0,400;0,700;1,400&display=swap',
-		array(),
-		null // Google versions the URL itself; a ver param only busts its cache.
-	);
-
-	// Enqueue parent theme stylesheet first.
-	wp_enqueue_style(
-		'exhibz-parent',
-		get_template_directory_uri() . '/style.css',
-		array(),
-		wp_get_theme( get_template() )->get( 'Version' )
-	);
+	// Fonts are self-hosted (audit L15): @font-face rules at the top of
+	// style.css, woff2 files in fonts/. No Google Fonts request any more,
+	// and the parent's style.css (theme header comment only) is no longer
+	// enqueued — two fewer render-blocking stylesheets.
 
 	// Child theme stylesheet (overrides + homepage sections). Busts on the
 	// file's own mtime, not the theme's Version: header — that header is a
@@ -91,27 +77,25 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	wp_enqueue_style(
 		'exhibz-child',
 		get_stylesheet_uri(),
-		array( 'exhibz-parent' ),
+		array(),
 		(string) filemtime( get_stylesheet_directory() . '/style.css' )
 	);
 }, 20 );
 
-// Preconnect for the font origins — the css2 response points at
-// fonts.gstatic.com, so warming both saves a DNS+TLS round trip on mobile.
-add_filter( 'wp_resource_hints', static function ( array $urls, string $relation ): array {
-	if ( 'preconnect' === $relation ) {
-		$urls[] = array(
-			'href' => 'https://fonts.googleapis.com',
+// Preload the two Cyrillic font files every page uses above the fold —
+// Roboto (body/nav) and Raleway (hero title). Same-origin, so crossorigin
+// is still required for font preloads. Other subsets load on demand via
+// unicode-range. Map tiles get no preconnect (audit M19).
+add_action( 'wp_head', static function (): void {
+	$base = get_stylesheet_directory_uri() . '/fonts/';
+	foreach ( array( 'roboto-cyrillic.woff2', 'raleway-cyrillic.woff2' ) as $file ) {
+		printf(
+			'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "
+",
+			esc_url( $base . $file )
 		);
-		$urls[] = array(
-			'href'        => 'https://fonts.gstatic.com',
-			'crossorigin' => 'anonymous',
-		);
-		// No map-tile preconnect (audit M19/L5): maps load only on demand, so
-		// a preconnect would open a third-party connection on every view.
 	}
-	return $urls;
-}, 10, 2 );
+}, 2 );
 
 // ── Leaflet map (front page + Трасета template) ─────────────────────────────
 //
@@ -296,8 +280,8 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	}
 
 	// Exhibz parent bundles — unused under the fully custom child templates.
-	// The 426-byte exhibz-parent stub stays: exhibz-child declares it as a
-	// dependency. Dropping exhibz-style also drops its attached inline CSS
+	// (The parent's 426-byte style.css stub is not enqueued at all — L15.)
+	// Dropping exhibz-style also drops its attached inline CSS
 	// (body/heading fonts), which style.css's own base typography replaces.
 	foreach ( array(
 		'exhibz-fonts',
