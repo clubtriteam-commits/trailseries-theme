@@ -3502,3 +3502,250 @@ a.tsr-partner-card:hover {
 		content: none;
 	}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Single calendar event — single-ajde_events.php (2026-11-13)
+   Photo hero with date badge, fact cards, the race's tracks.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.tsr-ev-hero {
+	position:   relative;
+	isolation:  isolate;
+	overflow:   hidden;
+	color:      var(--tsr-white);
+	background:
+		radial-gradient(ellipse 60% 50% at 20% 50%, rgba(0, 170, 221, 0.14) 0%, transparent 60%),
+		linear-gradient(160deg, var(--tsr-navy) 0%, #0d2040 100%);
+	padding:    3.5rem 0 3rem;
+}
+
+.tsr-ev-hero--photo {
+	min-height: clamp(280px, 48vh, 460px);
+	display:    flex;
+	align-items: flex-end;
+	padding:    6rem 0 2.5rem;
+}
+
+.tsr-ev-hero__img {
+	position:   absolute;
+	inset:      0;
+	width:      100%;
+	height:     100%;
+	object-fit: cover;
+	z-index:    -2;
+}
+
+/* Scrim: light at the top, dark where the text sits — keeps white text
+   ≥ 4.5:1 on any photo. */
+.tsr-ev-hero--photo::after {
+	content:    '';
+	position:   absolute;
+	inset:      0;
+	z-index:    -1;
+	background: linear-gradient(to bottom, rgba(10, 22, 40, 0.15) 0%, rgba(10, 22, 40, 0.55) 45%, rgba(10, 22, 40, 0.92) 100%);
+}
+
+.tsr-ev-hero__inner {
+	display:     flex;
+	align-items: flex-end;
+	gap:         1.25rem;
+	width:       100%;
+}
+
+.tsr-ev-hero__date {
+	flex:           0 0 auto;
+	display:        flex;
+	flex-direction: column;
+	align-items:    center;
+	justify-content: center;
+	min-width:      4.5rem;
+	padding:        0.55rem 0.75rem;
+	margin:         0;
+	border-radius:  10px;
+	background:     var(--tsr-white);
+	color:          var(--tsr-navy);
+	line-height:    1;
+	box-shadow:     0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.tsr-ev-hero__day {
+	font-size:   2rem;
+	font-weight: 900;
+}
+
+.tsr-ev-hero__month {
+	margin-top:     0.3rem;
+	font-size:      0.8rem;
+	font-weight:    700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color:          var(--tsr-muted);
+}
+
+.tsr-ev-hero__text .tsr-page-hero__kicker {
+	margin-bottom: 0.35rem;
+}
+
+.tsr-ev-hero__title {
+	margin:      0;
+	font-size:   clamp(1.6rem, 4.5vw, 2.75rem);
+	line-height: 1.1;
+	color:       var(--tsr-white);
+	text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+	overflow-wrap: anywhere;
+}
+
+/* Fact cards */
+.tsr-ev-facts {
+	display:       grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+	gap:           1rem;
+	margin:        0 0 2.5rem;
+}
+
+.tsr-ev-fact {
+	background:    var(--tsr-white);
+	border:        1px solid var(--tsr-border);
+	border-top:    4px solid var(--tsr-blue);
+	border-radius: var(--tsr-radius);
+	padding:       1rem 1.25rem;
+}
+
+.tsr-ev-fact__label {
+	font-size:      0.75rem;
+	font-weight:    700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color:          var(--tsr-muted);
+	margin-bottom:  0.35rem;
+}
+
+.tsr-ev-fact__value {
+	margin:      0;
+	font-size:   1.1rem;
+	font-weight: 700;
+	color:       var(--tsr-navy);
+	line-height: 1.35;
+}
+
+.tsr-ev-fact__link {
+	display:     inline-block;
+	margin-top:  0.4rem;
+	min-height:  24px;
+	font-size:   0.9rem;
+	font-weight: 700;
+	color:       var(--tsr-blue-dk);
+}
+
+.tsr-ev-desc {
+	margin-bottom: 2.5rem;
+	max-width:     72ch;
+}
+
+/* Tracks */
+.tsr-ev-tracks {
+	margin-bottom: 3rem;
+}
+
+.tsr-ev-tracks__title {
+	font-size:     1.5rem;
+	color:         var(--tsr-navy);
+	margin:        0 0 1rem;
+}
+
+.tsr-ev-track-list {
+	list-style:    none;
+	margin:        0;
+	padding:       0;
+	display:       grid;
+	gap:           0.75rem;
+}
+
+.tsr-ev-track {
+	display:       grid;
+	grid-template-columns: minmax(8rem, 12rem) 1fr auto;
+	align-items:   center;
+	gap:           0.75rem 1.5rem;
+	background:    var(--tsr-white);
+	border:        1px solid var(--tsr-border);
+	border-left:   4px solid var(--tsr-blue);
+	border-radius: var(--tsr-radius);
+	padding:       0.9rem 1.25rem;
+}
+
+.tsr-ev-track__name {
+	margin:      0;
+	font-size:   1.15rem;
+	color:       var(--tsr-navy);
+}
+
+.tsr-ev-track__stats {
+	display:     flex;
+	flex-wrap:   wrap;
+	gap:         0.5rem 2rem;
+	margin:      0;
+}
+
+.tsr-ev-track__stats dt {
+	font-size:      0.75rem;
+	font-weight:    700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color:          var(--tsr-muted);
+}
+
+.tsr-ev-track__stats dd {
+	margin:      0;
+	font-weight: 700;
+	color:       var(--tsr-text);
+	font-variant-numeric: tabular-nums;
+}
+
+.tsr-ev-track__gpx {
+	display:         inline-flex;
+	align-items:     center;
+	min-height:      44px;
+	padding:         0 1.1rem;
+	border-radius:   999px;
+	background:      var(--tsr-navy);
+	color:           var(--tsr-white);
+	font-weight:     700;
+	text-decoration: none;
+}
+
+.tsr-ev-track__gpx:hover,
+.tsr-ev-track__gpx:focus-visible {
+	background: var(--tsr-blue-dk);
+	color:      var(--tsr-white);
+}
+
+.tsr-ev-tracks__more {
+	margin: 1rem 0 0;
+}
+
+.tsr-ev-tracks__more a {
+	display:     inline-block;
+	min-height:  24px;
+	font-weight: 700;
+	color:       var(--tsr-blue-dk);
+}
+
+@media (max-width: 640px) {
+	.tsr-ev-hero--photo {
+		padding-top: 4rem;
+	}
+
+	.tsr-ev-hero__day {
+		font-size: 1.6rem;
+	}
+
+	.tsr-ev-track {
+		grid-template-columns: 1fr auto;
+	}
+
+	.tsr-ev-track__stats {
+		grid-column: 1 / -1;
+		grid-row:    2;
+		gap:         0.5rem 1.25rem;
+	}
+}
