@@ -887,38 +887,6 @@ h1, h2, h3, h4, h5, h6 {
 	display: inline-block;
 }
 
-/* ── Класирания — season nav pills ─────────────────────────────────────────── */
-.tsr-season-nav {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-	margin-bottom: 2rem;
-}
-
-.tsr-season-nav__item {
-	padding: 0.4rem 0.875rem;
-	border-radius: 99px;
-	font-size: 0.85rem;
-	font-weight: 600;
-	color: var(--tsr-blue);
-	background: rgba(0, 170, 221, 0.08);
-	text-decoration: none;
-	border: 1px solid rgba(0, 170, 221, 0.25);
-	transition: background 0.15s, color 0.15s;
-}
-
-.tsr-season-nav__item:hover,
-.tsr-season-nav__item--active {
-	background: var(--tsr-blue);
-	color: var(--tsr-white);
-	border-color: var(--tsr-blue);
-}
-
-.tsr-rank-first td {
-	background: rgba(0, 170, 221, 0.07);
-	font-weight: 600;
-}
-
 /* ── Result hub — legacy multi-category page as accordion ───────────────────── */
 .tsr-result-hub__section {
 	border: 1px solid var(--tsr-border);
@@ -967,38 +935,10 @@ h1, h2, h3, h4, h5, h6 {
 	padding-bottom: 0.25rem;
 }
 
-/* ── Klasiraniya — two-column gender split ──────────────────────────────────── */
-.tsr-standings-cols {
-	display: flex;
-	gap: 2rem;
-	align-items: flex-start;
-}
-
-.tsr-standings-col {
-	flex: 1;
-	min-width: 0;
-}
-
-.tsr-standings-col__heading {
-	font-size: 1rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	color: var(--tsr-blue);
-	margin-bottom: 0.75rem;
-}
-
 .tsr-standings-note {
 	font-size: 0.82rem;
 	color: var(--tsr-muted);
 	margin-bottom: 1.25rem;
-}
-
-@media (max-width: 640px) {
-	.tsr-standings-cols {
-		flex-direction: column;
-		gap: 2.5rem;
-	}
 }
 
 /* ── Notice / alert boxes ───────────────────────────────────────────────────── */
@@ -2315,35 +2255,6 @@ body.tsr-modal-open {
 	white-space: nowrap;
 }
 
-/* ── Category pill links ── */
-.tsr-cat-list {
-	display:    flex;
-	flex-wrap:  wrap;
-	gap:        0.4rem 0.5rem;
-	list-style: none;
-	margin:     0;
-	padding:    0;
-}
-
-.tsr-cat-pill {
-	display:         inline-block;
-	padding:         0.2em 0.7em;
-	border-radius:   999px;
-	font-size:       0.75rem;
-	font-weight:     500;
-	background:      rgba(0, 170, 221, 0.1);
-	color:           var(--tsr-navy);
-	text-decoration: none;
-	border:          1px solid rgba(0, 170, 221, 0.3);
-	transition:      background 0.15s ease, color 0.15s ease;
-	white-space:     nowrap;
-}
-.tsr-cat-pill:hover {
-	background: var(--tsr-blue);
-	color:      #fff;
-	border-color: var(--tsr-blue);
-}
-
 /* ── Site header — single-row layout ────────────────────────────────────
  *
  * [logo] ........... [nav menu]
@@ -3084,8 +2995,8 @@ a.tsr-partner-card:hover {
 	.tsr-edition-item__link,
 	.tsr-compact-table__link,
 	.tsr-breadcrumbs__link,
-	.tsr-season-nav__item,
-	.tsr-cat-pill {
+	.tsr-dist-row__links a,
+	.tsr-race-card__more a {
 		display:     inline-flex;
 		align-items: center;
 		min-height:  44px;
@@ -3332,6 +3243,12 @@ a.tsr-partner-card:hover {
 
 .tsr-standings-panel {
 	margin-bottom: 2rem;
+}
+
+/* A 4-column table needs no more than this; full width spread the numbers
+   far from the names on desktop. Tabs, podium and table share the edge. */
+.tsr-standings {
+	max-width:     880px;
 }
 
 .tsr-standings-panel__heading {

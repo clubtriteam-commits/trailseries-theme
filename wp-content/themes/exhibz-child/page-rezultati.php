@@ -253,7 +253,7 @@ $tsr_dist_rows = static function ( array $posts ) use ( $tsr_rindex ): array {
 							</h3>
 							<?php if ( $race_ts > 0 ) : ?>
 								<time class="tsr-race-card__date" datetime="<?php echo esc_attr( wp_date( 'Y-m-d', $race_ts ) ); ?>">
-									<?php echo esc_html( wp_date( 'j F Y', $race_ts ) ); ?>
+									<?php echo esc_html( tsr_bg_date( $race_ts ) ); ?>
 								</time>
 							<?php endif; ?>
 						</header>

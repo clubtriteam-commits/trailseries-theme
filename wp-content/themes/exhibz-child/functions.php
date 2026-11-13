@@ -215,6 +215,15 @@ function tsr_season_label( int $year ): string {
 }
 
 /**
+ * Bulgarian date "8 ноември 2026" regardless of the site locale (the staging
+ * site language is English, so wp_date( 'F' ) gives English month names).
+ */
+function tsr_bg_date( int $ts ): string {
+	$months = array( 1 => 'януари', 'февруари', 'март', 'април', 'май', 'юни', 'юли', 'август', 'септември', 'октомври', 'ноември', 'декември' );
+	return wp_date( 'j', $ts ) . ' ' . $months[ (int) wp_date( 'n', $ts ) ] . ' ' . wp_date( 'Y', $ts );
+}
+
+/**
  * Season dropdown (GET form on the current page). Submits on change via
  * js/tsr-ui.js; the button is the no-JS fallback and is hidden by the script.
  *
