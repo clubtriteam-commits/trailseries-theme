@@ -183,6 +183,23 @@ final class TSR_CLI {
 	 * [--limit=<n>]
 	 * : Stop after processing N JSON files (useful for smoke-testing).
 	 *
+	 * [--map=<file>]
+	 * : category-map.csv used to derive distance and gender.
+	 *   Default: {plugin}/data/category-map.csv
+	 *
+	 * [--exclude=<slugs>]
+	 * : Comma-separated page slugs never imported as results. Default: news
+	 *   (the podium tables of the news post /news/, which the extractor took
+	 *   for results; a ts_result hub "news" would collide with that post).
+	 *
+	 * Titles are "{page_title} — {label}", label = override_applied when the
+	 * manifest has one, else category_raw (audit B3). Distance, category,
+	 * gender, season and event meta are written by the import itself, from
+	 * the manifest via derive_section_meta() (audit B4); a value that cannot
+	 * be derived is deleted rather than left stale. The dry run lists every
+	 * meta change on existing posts and summarises gender and distance
+	 * changes against what the site uses today.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp tsr bulk-import --dry-run
@@ -202,6 +219,13 @@ final class TSR_CLI {
 		$slug_filter   = $assoc_args['slug'] ?? '';
 		$limit         = isset( $assoc_args['limit'] ) ? (int) $assoc_args['limit'] : 0;
 		$post_status   = $assoc_args['status'] ?? 'publish';
+		$excluded      = array_filter( array_map( 'trim', explode( ',', $assoc_args['exclude'] ?? 'news' ) ) );
+		$map_path      = $assoc_args['map'] ?? TSR_PLUGIN_DIR . 'data/category-map.csv';
+		$map           = $this->read_category_map( $map_path );
+		if ( array() === $map ) {
+			WP_CLI::error( sprintf( 'Cannot read category map (or it is empty): %s', $map_path ) );
+			return;
+		}
 
 		// No default under ABSPATH: the canonical JSON is personal data and
 		// was once served straight from the web root because the default
@@ -270,7 +294,20 @@ final class TSR_CLI {
 		$skipped         = 0;
 		$failed          = 0;
 		$processed       = 0;
+		$excluded_count  = 0;
 		$bare_slug_given = array(); // page_slug → true once its first section is assigned.
+		$audit           = array(
+			'title_changed'  => 0,
+			'meta_changed'   => 0,
+			'gender_gained'  => array(), // '' today → M/F (starts scoring)
+			'gender_flipped' => array(), // M ↔ F
+			'gender_lost'    => array(), // M/F today → '' / mixed (stops scoring)
+			'km_changed'     => array(), // old value → different new value
+			'km_removed'     => array(), // had a value, now underivable
+			'no_km_before'   => 0,
+			'no_km_after'    => 0,
+			'labels'         => array(), // page_slug → list of labels (duplicate check)
+		);
 
 		foreach ( $manifest_rows as $row ) {
 			if ( empty( $row['file'] ) ) {
@@ -281,16 +318,31 @@ final class TSR_CLI {
 			if ( $slug_filter && false === strpos( $page_slug, $slug_filter ) ) {
 				continue;
 			}
+			if ( in_array( $page_slug, $excluded, true ) ) {
+				++$excluded_count;
+				continue;
+			}
 
 			// Derive post slug: first section gets the original page slug.
 			$post_slug                      = $this->derive_post_slug( $page_slug, $row['file'], $bare_slug_given );
 			$bare_slug_given[ $page_slug ]  = true;
 
-			// Derive post title.
-			$post_title = $row['page_title'];
-			if ( ! empty( $row['category_raw'] ) ) {
-				$post_title .= ' — ' . $row['category_raw'];
+			// Derive label (B3), title and meta (B4).
+			$label = trim( (string) ( $row['override_applied'] ?? '' ) );
+			if ( '' === $label ) {
+				$label = trim( (string) ( $row['category_raw'] ?? '' ) );
 			}
+			$post_title = $row['page_title'] . ( '' !== $label ? ' — ' . $label : '' );
+			$meta       = $this->derive_section_meta(
+				(string) $row['page_title'],
+				$page_slug,
+				$label,
+				(string) ( $row['distance_km'] ?? '' ),
+				(string) ( $row['gender'] ?? '' ),
+				$map
+			);
+			$meta_new   = $this->meta_writes( $meta );
+			$audit['labels'][ $page_slug ][] = $label;
 
 			// Resolve the actual on-disk path. On Linux, ZIP extraction may store
 			// Cyrillic filenames as raw Windows code-page bytes instead of UTF-8,
@@ -307,6 +359,10 @@ final class TSR_CLI {
 			// post that WordPress silently renamed with a '-2' suffix.
 			$expected_slug = sanitize_title( $post_slug );
 			$existing      = $this->find_existing_by_slug( $expected_slug );
+			$meta_diff     = $existing ? $this->audit_meta_change( $existing, $post_title, $meta_new, $audit ) : array();
+			if ( null === $meta_new['_tsr_distance_km'] ) {
+				++$audit['no_km_after'];
+			}
 
 			if ( $dry_run ) {
 				if ( $existing ) {
@@ -320,6 +376,9 @@ final class TSR_CLI {
 					$post_slug,
 					mb_strimwidth( $post_title, 0, 55, '…' )
 				) );
+				if ( array() !== $meta_diff ) {
+					WP_CLI::log( '          ' . implode( '  ', $meta_diff ) );
+				}
 				++$processed;
 				if ( $limit && $processed >= $limit ) {
 					break;
@@ -424,15 +483,28 @@ final class TSR_CLI {
 				continue;
 			}
 
-			$label = $existing ? 'UPDATE' : 'CREATE';
+			// Meta after the data import succeeded; a cache flush at the end of
+			// the run covers these meta-only writes (audit M3).
+			foreach ( $meta_new as $meta_key => $value ) {
+				if ( null === $value ) {
+					delete_post_meta( (int) $post_id, $meta_key );
+				} else {
+					update_post_meta( (int) $post_id, $meta_key, $value );
+				}
+			}
+
+			$verb = $existing ? 'UPDATE' : 'CREATE';
 			WP_CLI::log( sprintf(
 				'%-6s  [%d]  slug=%-55s  rows=%-4d  sha=%s…',
-				$label,
+				$verb,
 				$post_id,
 				$post_slug,
 				$row_count,
 				substr( $hash, 0, 12 )
 			) );
+			if ( array() !== $meta_diff ) {
+				WP_CLI::log( '          ' . implode( '  ', $meta_diff ) );
+			}
 
 			if ( $existing ) {
 				++$updated;
@@ -445,6 +517,12 @@ final class TSR_CLI {
 				break;
 			}
 		}
+
+		if ( ! $dry_run && ( $created + $updated ) > 0 ) {
+			do_action( 'tsr_results_updated', 0 ); // Meta written after the last save (M3).
+		}
+
+		$this->print_import_audit( $audit, $excluded_count, $excluded );
 
 		$summary = sprintf(
 			'Done. created=%d  updated=%d  skipped=%d  failed=%d',
@@ -539,6 +617,7 @@ final class TSR_CLI {
 			'cat'         => 0,
 			'event_base'  => 0,
 			'season'      => 0,
+			'gender'      => 0,
 			'no_distance' => 0,
 			'no_season'   => 0,
 			'no_event'    => 0,
@@ -551,42 +630,21 @@ final class TSR_CLI {
 			}
 			++$stats['processed'];
 
-			// ── Derive all four values ────────────────────────────────────────
-			$km = null;
-
-			$cat_raw = $this->title_category_suffix( $post->post_title );
-			if ( '' !== $cat_raw ) {
-				$key = $this->norm_cat_key( $cat_raw );
-				if ( isset( $map[ $key ] ) && '' !== $map[ $key ] ) {
-					$km = (float) $map[ $key ];
-				}
-			}
-			if ( null === $km ) {
-				$km = $this->parse_km( '' !== $cat_raw ? $cat_raw : $post->post_title );
-			}
-			if ( null === $km ) {
-				// Secondary-section slugs carry the category part after "--"
-				// (e.g. "iran-run18-results--16.7km-m").
-				$km = $this->parse_km( $post->post_name );
-			}
-
-			$cat = null !== $km ? $this->km_to_cat( $km ) : null;
-
-			$event_base = $this->event_base_name( $post->post_title );
-			if ( '' === $event_base ) {
-				$event_base = $this->slug_event_name( $post->post_name );
-			}
-
-			$season = $this->title_year( $post->post_title )
-				?? $this->slug_year( $post->post_name );
+			// ── Derive (shared with bulk-import, audit B3/B4) ─────────────────
+			// Title is "{page_title} — {label}"; the page part feeds season and
+			// event name, the label feeds distance and gender. No slug fallback
+			// for the distance (B4). The slug only stands in for the page slug.
+			$label      = $this->title_category_suffix( $post->post_title );
+			$page_title = '' !== $label
+				? trim( mb_substr( $post->post_title, 0, (int) mb_strrpos( $post->post_title, ' — ' ) ) )
+				: $post->post_title;
+			$meta       = $this->derive_section_meta( $page_title, $post->post_name, $label, '', '', $map );
+			$km         = $meta['km'];
+			$season     = $meta['season'];
+			$event_base = (string) $meta['event_base'];
 
 			// ── Collect writes (respecting --force vs fill-missing) ──────────
-			$derived = array(
-				'_tsr_distance_km'  => null !== $km ? rtrim( rtrim( sprintf( '%.1f', $km ), '0' ), '.' ) : null,
-				'_tsr_distance_cat' => $cat,
-				'_tsr_event_base'   => '' !== $event_base ? $event_base : null,
-				'_tsr_season'       => null !== $season ? (string) $season : null,
-			);
+			$derived = $this->meta_writes( $meta );
 			$writes  = array();
 			foreach ( $derived as $meta_key => $value ) {
 				if ( null === $value ) {
@@ -615,12 +673,13 @@ final class TSR_CLI {
 
 			// ── Log + write ───────────────────────────────────────────────────
 			WP_CLI::log( sprintf(
-				'%s[%d]  %-50s  km=%-5s cat=%-6s season=%-4s base=%s',
+				'%s[%d]  %-50s  km=%-5s cat=%-6s g=%-5s season=%-4s base=%s',
 				$dry_run ? '[DRY] ' : '',
 				$post->ID,
 				mb_strimwidth( $post->post_name, 0, 50, '…' ),
 				$derived['_tsr_distance_km'] ?? '—',
 				$derived['_tsr_distance_cat'] ?? '—',
+				$derived['_tsr_gender'] ?? '—',
 				$derived['_tsr_season'] ?? '—',
 				$derived['_tsr_event_base'] ?? '—'
 			) );
@@ -636,6 +695,13 @@ final class TSR_CLI {
 			if ( isset( $writes['_tsr_distance_cat'] ) ) { ++$stats['cat']; }
 			if ( isset( $writes['_tsr_event_base'] ) )   { ++$stats['event_base']; }
 			if ( isset( $writes['_tsr_season'] ) )       { ++$stats['season']; }
+			if ( isset( $writes['_tsr_gender'] ) )       { ++$stats['gender']; }
+		}
+
+		// Meta-only writes never pass through TSR_Repository::save(), so the
+		// result caches (rankings, records, totals) must be told (audit M3).
+		if ( ! $dry_run && ( $stats['km'] + $stats['cat'] + $stats['event_base'] + $stats['season'] + $stats['gender'] ) > 0 ) {
+			do_action( 'tsr_results_updated', 0 );
 		}
 
 		WP_CLI::log( '' );
@@ -652,10 +718,11 @@ final class TSR_CLI {
 		}
 
 		WP_CLI::success( sprintf(
-			'Processed %d posts. Wrote: km=%d cat=%d event_base=%d season=%d. Existing values kept: %d.',
+			'Processed %d posts. Wrote: km=%d cat=%d gender=%d event_base=%d season=%d. Existing values kept: %d.',
 			$stats['processed'],
 			$stats['km'],
 			$stats['cat'],
+			$stats['gender'],
 			$stats['event_base'],
 			$stats['season'],
 			$stats['kept']
@@ -881,13 +948,223 @@ final class TSR_CLI {
 	}
 
 	/**
-	 * Parse category-map.csv into a normalised-header → canonical_distance_km map.
+	 * Derive the scoring/grouping meta for one results section (audit B3/B4).
+	 *
+	 * Single source of truth for bulk-import (from manifest fields) and
+	 * backfill-meta (from a post_title of the form "{page_title} — {label}").
+	 *
+	 *   label    — the corrected category: override_applied when present,
+	 *              else category_raw (B3). Used for the post_title suffix.
+	 *   km       — manifest distance_km → category map (normalised key) →
+	 *              "NN km" in the label (or in the page title when the section
+	 *              has no label). Never from the slug: sanitize_title() and the
+	 *              Python slugify turn "11.5km" into "11-5km" / "115km" (B4).
+	 *   gender   — manifest gender → category map → МЪЖЕ / ЖЕНИ in the label
+	 *              (both present → mixed). 'M', 'F', 'mixed' or '' (unknown).
+	 *   season / event_base — from the PAGE title and slug only, never from the
+	 *              label: override labels such as "Крайно класиране" must not
+	 *              leak into the year or the event name.
+	 *
+	 * @param array<string, array{km: string, gender: string}> $map From read_category_map().
+	 * @return array{label: string, km: ?string, cat: ?string, gender: string, season: ?string, event_base: ?string}
+	 */
+	private function derive_section_meta(
+		string $page_title,
+		string $page_slug,
+		string $label,
+		string $manifest_km,
+		string $manifest_gender,
+		array $map
+	): array {
+		$label  = trim( $label );
+		$mapped = ( '' !== $label ) ? ( $map[ $this->norm_cat_key( $label ) ] ?? null ) : null;
+
+		$km = null;
+		if ( is_numeric( trim( $manifest_km ) ) ) {
+			$km = (float) trim( $manifest_km );
+		} elseif ( null !== $mapped && is_numeric( $mapped['km'] ) ) {
+			$km = (float) $mapped['km'];
+		} else {
+			$km = $this->parse_km( '' !== $label ? $label : $page_title );
+		}
+
+		$valid  = array( 'M', 'F', 'mixed' );
+		$gender = in_array( trim( $manifest_gender ), $valid, true ) ? trim( $manifest_gender ) : '';
+		if ( '' === $gender && null !== $mapped && in_array( $mapped['gender'], $valid, true ) ) {
+			$gender = $mapped['gender'];
+		}
+		if ( '' === $gender && '' !== $label ) {
+			$upper = mb_strtoupper( $label, 'UTF-8' );
+			$men   = str_contains( $upper, 'МЪЖЕ' );
+			$women = str_contains( $upper, 'ЖЕНИ' );
+			$gender = $men && $women ? 'mixed' : ( $men ? 'M' : ( $women ? 'F' : '' ) );
+		}
+
+		$season     = $this->title_year( $page_title ) ?? $this->slug_year( $page_slug );
+		$event_base = $this->event_base_name( $page_title );
+		if ( '' === $event_base ) {
+			$event_base = $this->slug_event_name( $page_slug );
+		}
+
+		return array(
+			'label'      => $label,
+			'km'         => null !== $km ? rtrim( rtrim( sprintf( '%.1f', $km ), '0' ), '.' ) : null,
+			'cat'        => null !== $km ? $this->km_to_cat( $km ) : null,
+			'gender'     => $gender,
+			'season'     => null !== $season ? (string) $season : null,
+			'event_base' => '' !== $event_base ? $event_base : null,
+		);
+	}
+
+	/**
+	 * Compare an existing post with what the import is about to write, record
+	 * the change in $audit and return printable "key: old→new" items.
+	 *
+	 * Gender is compared by EFFECT, not by stored meta (no post has
+	 * _tsr_gender before the first run): "old" is what tsr_race_gender()
+	 * returns today, "new" is what it will return afterwards. 'mixed' counts
+	 * as '' because standings skip undetermined-gender categories.
+	 *
+	 * @param array<string, ?string> $meta_new From meta_writes().
+	 * @param array<string, mixed>   $audit    Accumulator, see bulk_import().
+	 * @return list<string>
+	 */
+	private function audit_meta_change( WP_Post $post, string $new_title, array $meta_new, array &$audit ): array {
+		$diff = array();
+		$slug = urldecode( $post->post_name );
+
+		if ( $post->post_title !== $new_title ) {
+			++$audit['title_changed'];
+			$diff[] = sprintf( 'label: "%s"→"%s"', $this->title_category_suffix( $post->post_title ), $this->title_category_suffix( $new_title ) );
+		}
+
+		$old_km = (string) get_post_meta( $post->ID, '_tsr_distance_km', true );
+		$new_km = (string) ( $meta_new['_tsr_distance_km'] ?? '' );
+		if ( '' === $old_km ) {
+			++$audit['no_km_before'];
+		}
+		if ( $old_km !== $new_km ) {
+			if ( '' === $new_km ) {
+				$audit['km_removed'][] = sprintf( '%s (%s)', $slug, $old_km );
+			} elseif ( '' !== $old_km ) {
+				$audit['km_changed'][] = sprintf( '%s %s→%s', $slug, $old_km, $new_km );
+			}
+			$diff[] = sprintf( 'km: %s→%s', '' !== $old_km ? $old_km : '∅', '' !== $new_km ? $new_km : '∅' );
+		}
+
+		$old_cat = (string) get_post_meta( $post->ID, '_tsr_distance_cat', true );
+		$new_cat = (string) ( $meta_new['_tsr_distance_cat'] ?? '' );
+		if ( $old_cat !== $new_cat ) {
+			$diff[] = sprintf( 'cat: %s→%s', '' !== $old_cat ? $old_cat : '∅', '' !== $new_cat ? $new_cat : '∅' );
+		}
+
+		$old_g = tsr_race_gender( $post );
+		$new_m = (string) ( $meta_new['_tsr_gender'] ?? '' );
+		if ( 'M' === $new_m || 'F' === $new_m ) {
+			$new_g = $new_m;
+		} elseif ( 'mixed' === $new_m ) {
+			$new_g = '';
+		} else {
+			$sim             = clone $post;
+			$sim->post_title = $new_title;
+			$new_g           = tsr_race_gender_from_text( $sim );
+		}
+		if ( $old_g !== $new_g ) {
+			$item = sprintf( '%s %s→%s', $slug, '' !== $old_g ? $old_g : '∅', '' !== $new_g ? $new_g : '∅' );
+			if ( '' === $old_g ) {
+				$audit['gender_gained'][] = $item;
+			} elseif ( '' === $new_g ) {
+				$audit['gender_lost'][] = $item;
+			} else {
+				$audit['gender_flipped'][] = $item;
+			}
+			$diff[] = sprintf( 'gender: %s→%s', '' !== $old_g ? $old_g : '∅', '' !== $new_g ? $new_g : '∅' );
+		}
+
+		foreach ( array( '_tsr_season' => 'season', '_tsr_event_base' => 'event' ) as $key => $name ) {
+			$old = (string) get_post_meta( $post->ID, $key, true );
+			$new = (string) ( $meta_new[ $key ] ?? '' );
+			if ( $old !== $new ) {
+				$diff[] = sprintf( '%s: %s→%s', $name, '' !== $old ? $old : '∅', '' !== $new ? $new : '∅' );
+			}
+		}
+
+		if ( array() !== $diff ) {
+			++$audit['meta_changed'];
+		}
+		return $diff;
+	}
+
+	/**
+	 * Print the bulk-import change summary (dry run and real run alike).
+	 *
+	 * @param array<string, mixed> $audit
+	 * @param list<string>         $excluded
+	 */
+	private function print_import_audit( array $audit, int $excluded_count, array $excluded ): void {
+		$dupes = array();
+		foreach ( $audit['labels'] as $page_slug => $labels ) {
+			$counts = array_count_values( array_map( fn( $l ) => $this->norm_cat_key( (string) $l ), $labels ) );
+			$rep    = array_filter( $counts, static fn( $n ) => $n > 1 );
+			if ( array() !== $rep ) {
+				$dupes[] = sprintf( '%s [%s]', $page_slug, implode( ', ', array_map(
+					static fn( $k, $n ) => ( '' !== $k ? $k : '(no label)' ) . ' ×' . $n,
+					array_keys( $rep ),
+					$rep
+				) ) );
+			}
+		}
+
+		WP_CLI::log( '' );
+		WP_CLI::log( '── Change summary (existing posts) ─────────────────────────────' );
+		WP_CLI::log( sprintf( 'Excluded pages (%s): %d sections', implode( ',', $excluded ), $excluded_count ) );
+		WP_CLI::log( sprintf( 'Posts with any change: %d   title/label changes: %d', $audit['meta_changed'], $audit['title_changed'] ) );
+		WP_CLI::log( sprintf( 'No distance: before %d (existing posts)  →  after %d (all processed sections)', $audit['no_km_before'], $audit['no_km_after'] ) );
+		$lists = array(
+			'Distance changed'                              => $audit['km_changed'],
+			'Distance removed (no longer derivable)'        => $audit['km_removed'],
+			'Gender gained: undetermined → M/F (starts scoring)' => $audit['gender_gained'],
+			'Gender flipped M ↔ F'                          => $audit['gender_flipped'],
+			'Gender lost: M/F → undetermined (stops scoring)' => $audit['gender_lost'],
+			'Hubs with repeated section labels'             => $dupes,
+		);
+		foreach ( $lists as $heading => $items ) {
+			WP_CLI::log( sprintf( '%s: %d', $heading, count( $items ) ) );
+			foreach ( array_slice( $items, 0, 60 ) as $item ) {
+				WP_CLI::log( '    ' . $item );
+			}
+			if ( count( $items ) > 60 ) {
+				WP_CLI::log( sprintf( '    … %d more', count( $items ) - 60 ) );
+			}
+		}
+	}
+
+	/**
+	 * The derived meta as post-meta key => value. A null value means "could not
+	 * be derived": callers that treat the derivation as authoritative
+	 * (bulk-import) delete the key; backfill-meta leaves it alone.
+	 *
+	 * @param array{label: string, km: ?string, cat: ?string, gender: string, season: ?string, event_base: ?string} $meta
+	 * @return array<string, ?string>
+	 */
+	private function meta_writes( array $meta ): array {
+		return array(
+			'_tsr_distance_km'  => $meta['km'],
+			'_tsr_distance_cat' => $meta['cat'],
+			'_tsr_gender'       => '' !== $meta['gender'] ? $meta['gender'] : null,
+			'_tsr_event_base'   => $meta['event_base'],
+			'_tsr_season'       => $meta['season'],
+		);
+	}
+
+	/**
+	 * Parse category-map.csv into normalised-header → {km, gender}.
 	 *
 	 * Keys are produced by norm_cat_key() so lookups tolerate case and
-	 * Latin/Cyrillic KM/КМ variation. Values may be '' for headers whose
+	 * Latin/Cyrillic KM/КМ variation. km may be '' for headers whose
 	 * distance is unknown ("Мъже", "Жени" — marked "fill in manually").
 	 *
-	 * @return array<string, string> normalised raw_header => canonical_distance_km.
+	 * @return array<string, array{km: string, gender: string}>
 	 */
 	private function read_category_map( string $path ): array {
 		if ( ! is_readable( $path ) ) {
@@ -916,7 +1193,10 @@ final class TSR_CLI {
 			if ( '' === trim( $row['raw_header'] ) ) {
 				continue;
 			}
-			$map[ $this->norm_cat_key( $row['raw_header'] ) ] = trim( $row['canonical_distance_km'] );
+			$map[ $this->norm_cat_key( $row['raw_header'] ) ] = array(
+				'km'     => trim( $row['canonical_distance_km'] ),
+				'gender' => trim( $row['gender'] ?? '' ),
+			);
 		}
 
 		fclose( $handle );

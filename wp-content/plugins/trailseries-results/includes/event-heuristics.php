@@ -210,6 +210,23 @@ function tsr_dist_label_from_title( string $title ): string {
  * @return string 'M', 'F', or '' when undetermined.
  */
 function tsr_race_gender( WP_Post $post ): string {
+	// _tsr_gender is written by bulk-import from the manifest / category map
+	// (audit B4). 'mixed' means "known to have no single gender" → ''.
+	$meta = (string) get_post_meta( $post->ID, '_tsr_gender', true );
+	if ( 'M' === $meta || 'F' === $meta ) {
+		return $meta;
+	}
+	if ( 'mixed' === $meta ) {
+		return '';
+	}
+	return tsr_race_gender_from_text( $post );
+}
+
+/**
+ * Gender from slug and title text only — the fallback for posts without
+ * _tsr_gender meta (e.g. admin uploads). Same rules as before B4.
+ */
+function tsr_race_gender_from_text( WP_Post $post ): string {
 	if ( preg_match( '/-m$/i', $post->post_name ) ) {
 		return 'M';
 	}
