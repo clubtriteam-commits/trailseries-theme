@@ -54,25 +54,7 @@ $available_seasons = array_keys( $season_years );
 
 $current_season = isset( $_GET['sezon'] ) ? (int) $_GET['sezon'] : ( $available_seasons[0] ?? (int) gmdate( 'Y' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
-// -- Season display labels ----------------------------------------------------
-$season_labels = array(
-	2012 => 'Сезон 1 (2012–2013)',
-	2013 => 'Сезон 2 (2013–2014)',
-	2014 => 'Сезон 3 (2014–2015)',
-	2015 => 'Сезон 4 (2015–2016)',
-	2016 => 'Сезон 5 (2016–2017)',
-	2017 => 'Сезон 6 (2017–2018)',
-	2018 => 'Сезон 7 (2018–2019)',
-	2019 => 'Сезон 8 (2019–2020)',
-	2020 => 'Сезон 8 (2019–2020)',
-	2021 => 'Сезон 9 (2021)',
-	2022 => 'Сезон 10 (2022)',
-	2023 => 'Сезон 11 (2023)',
-	2024 => 'Сезон 12 (2024)',
-	2025 => 'Сезон 13 (2025)',
-	2026 => 'Сезон 14 (2026)',
-);
-$current_season_label = $season_labels[ $current_season ] ?? "Сезон $current_season";
+$current_season_label = tsr_season_label( $current_season );
 
 // -- Bonus race designation ---------------------------------------------------
 //
@@ -336,44 +318,87 @@ if ( $tsr_need_compute ) {
 	$has_cat_meta = (bool) $tsr_standings_hit['has_cat_meta'];
 }
 
+// -- Presentation (audit M17 redesign) ---------------------------------------
+//
+// Season dropdown, Мъже/Жени tabs, top-3 podium and a table up to #50 per
+// gender; "Покажи всички" (`&vsichki=1`) renders the full list server-side,
+// so the default page stays small (both full lists used to be in the DOM).
+const TSR_STANDINGS_TOP = 50;
+// phpcs:disable WordPress.Security.NonceVerification
+$tsr_show_all = isset( $_GET['vsichki'] );
+$tsr_open_tab = ( isset( $_GET['pol'] ) && 'f' === $_GET['pol'] ) ? 'f' : 'm';
+// phpcs:enable WordPress.Security.NonceVerification
+
+$tsr_race_count = count( array_unique( array_filter( array_map(
+	static fn( array $e ): string => (string) $current_season === $e['season'] ? $e['event_base'] : '',
+	tsr_results_index()
+) ) ) );
+
 /**
- * Render one gender column of the standings table.
+ * One gender panel: podium (top 3) + table (#4 … #50, or all).
  *
- * @param array  $rows    Sorted athlete rows.
- * @param string $heading Column heading (e.g. "Мъже").
+ * @param array<int, array{points:int, finishes:int, podiums:int, name:string}> $rows Sorted.
  */
-function tsr_render_standings_col( array $rows, string $heading ): void {
-	if ( empty( $rows ) ) {
-		return;
-	}
+function tsr_render_standings_panel( array $rows, string $key, string $heading, bool $open, int $season, bool $show_all ): void {
+	$runner_url = static fn( string $name ): string => add_query_arg( 'runner', rawurlencode( $name ), home_url( '/runner/' ) );
+	$total      = count( $rows );
+	$limit      = $show_all ? $total : min( $total, TSR_STANDINGS_TOP );
 	?>
-	<div class="tsr-standings-col">
-		<h3 class="tsr-standings-col__heading">
-			<?php echo esc_html( $heading ); ?>
-		</h3>
-		<div class="tsr-results-wrap">
-			<table class="tsr-results">
-				<thead>
-					<tr>
-						<th>#</th>
-						<th>Атлет</th>
-						<th>Точки</th>
-						<th>Подиуми</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $rows as $tsr_rank => $tsr_athlete ) : ?>
-						<tr<?php echo 0 === $tsr_rank ? ' class="tsr-rank-first"' : ''; ?>>
-							<td><?php echo esc_html( $tsr_rank + 1 ); ?></td>
-							<td><strong><?php echo esc_html( $tsr_athlete['name'] ); ?></strong></td>
-							<td><?php echo esc_html( $tsr_athlete['points'] ); ?></td>
-							<td><?php echo esc_html( $tsr_athlete['podiums'] ); ?></td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		</div>
-	</div>
+	<section class="tsr-standings-panel" id="tsr-panel-<?php echo esc_attr( $key ); ?>" role="tabpanel" aria-labelledby="tsr-tab-<?php echo esc_attr( $key ); ?>"<?php echo $open ? '' : ''; ?>>
+		<h3 class="tsr-standings-panel__heading"><?php echo esc_html( $heading ); ?></h3>
+
+		<?php if ( 0 === $total ) : ?>
+			<p class="tsr-empty">Няма класирани.</p>
+		<?php else : ?>
+
+			<ol class="tsr-podium">
+				<?php foreach ( array_slice( $rows, 0, 3 ) as $i => $a ) : ?>
+					<li class="tsr-podium__item tsr-podium__item--<?php echo esc_attr( (string) ( $i + 1 ) ); ?>">
+						<span class="tsr-podium__place" aria-hidden="true"><?php echo esc_html( (string) ( $i + 1 ) ); ?></span>
+						<a class="tsr-podium__name" href="<?php echo esc_url( $runner_url( $a['name'] ) ); ?>"><?php echo esc_html( $a['name'] ); ?></a>
+						<span class="tsr-podium__pts"><?php echo esc_html( (string) $a['points'] ); ?> т. <span class="tsr-podium__meta">· <?php echo esc_html( (string) $a['podiums'] ); ?> <?php echo 1 === (int) $a['podiums'] ? 'подиум' : 'подиума'; ?></span></span>
+					</li>
+				<?php endforeach; ?>
+			</ol>
+
+			<?php if ( $limit > 3 ) : ?>
+				<div class="tsr-results-wrap">
+					<table class="tsr-results tsr-standings-table">
+						<caption class="screen-reader-text"><?php echo esc_html( $heading ); ?> — места 4 до <?php echo esc_html( (string) $limit ); ?></caption>
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Атлет</th>
+								<th scope="col">Точки</th>
+								<th scope="col">Подиуми</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php for ( $i = 3; $i < $limit; $i++ ) : $a = $rows[ $i ]; ?>
+								<tr>
+									<td><?php echo esc_html( (string) ( $i + 1 ) ); ?></td>
+									<td><a href="<?php echo esc_url( $runner_url( $a['name'] ) ); ?>"><?php echo esc_html( $a['name'] ); ?></a></td>
+									<td><?php echo esc_html( (string) $a['points'] ); ?></td>
+									<td><?php echo esc_html( (string) $a['podiums'] ); ?></td>
+								</tr>
+							<?php endfor; ?>
+						</tbody>
+					</table>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( $total > TSR_STANDINGS_TOP ) : ?>
+				<p class="tsr-standings-more">
+					<?php if ( $show_all ) : ?>
+						<a href="<?php echo esc_url( add_query_arg( array( 'sezon' => $season, 'pol' => $key ), get_permalink() ) . '#tsr-panel-' . $key ); ?>">Покажи само първите <?php echo esc_html( (string) TSR_STANDINGS_TOP ); ?></a>
+					<?php else : ?>
+						<a href="<?php echo esc_url( add_query_arg( array( 'sezon' => $season, 'pol' => $key, 'vsichki' => 1 ), get_permalink() ) . '#tsr-panel-' . $key ); ?>">Покажи всички <?php echo esc_html( (string) $total ); ?><span class="screen-reader-text"> — <?php echo esc_html( $heading ); ?></span></a>
+					<?php endif; ?>
+				</p>
+			<?php endif; ?>
+
+		<?php endif; ?>
+	</section>
 	<?php
 }
 ?>
@@ -393,55 +418,55 @@ function tsr_render_standings_col( array $rows, string $heading ): void {
 
 		<?php tsr_page_breadcrumbs( 'Ранкинг' ); ?>
 
-		<!-- Season picker -->
-		<?php if ( count( $available_seasons ) > 1 ) : ?>
-			<nav class="tsr-season-nav" aria-label="Избор на сезон">
-				<?php foreach ( $available_seasons as $yr ) : ?>
-					<a class="tsr-season-nav__item<?php echo $yr === $current_season ? ' tsr-season-nav__item--active' : ''; ?>"
-					   href="<?php echo esc_url( add_query_arg( 'sezon', $yr ) ); ?>">
-						<?php echo esc_html( $season_labels[ $yr ] ?? (string) $yr ); ?>
-					</a>
-				<?php endforeach; ?>
-			</nav>
-		<?php endif; ?>
+		<?php
+		if ( count( $available_seasons ) > 0 ) {
+			tsr_season_select(
+				$available_seasons,
+				$current_season,
+				$tsr_race_count > 0 ? sprintf( '%d %s', $tsr_race_count, 1 === $tsr_race_count ? 'състезание' : 'състезания' ) : ''
+			);
+		}
+		?>
 
-		<?php if ( ! $has_cat_meta ) : ?>
-			<div class="tsr-notice tsr-notice--info">
-				<strong>Забележка:</strong> На резултатите от сезон
-				<?php echo esc_html( $current_season ); ?> липсва метаданни за
-				категорията дистанция (<code>_tsr_distance_cat</code>).
-				Класирането показва само броя финиши. Добавете метаданни чрез
-				<code>wp tsr bulk-import</code>, за да се изчислят точките.
-			</div>
-		<?php endif; ?>
+		<h2 class="tsr-season-heading"><?php echo esc_html( $current_season_label ); ?></h2>
 
-		<!-- Standings -->
 		<?php if ( ! empty( $standings['m'] ) || ! empty( $standings['f'] ) ) : ?>
-			<section class="tsr-prose-section">
-				<h2><?php echo esc_html( $current_season_label ); ?></h2>
-				<p class="tsr-standings-note">
-					За класиране при равен брой точки предимство има броят подиуми.
-				</p>
-				<div class="tsr-standings-cols">
-					<?php tsr_render_standings_col( $standings['m'], 'Мъже' ); ?>
-					<?php tsr_render_standings_col( $standings['f'], 'Жени' ); ?>
-				</div>
-			</section>
-		<?php else : ?>
-			<section class="tsr-prose-section">
-				<p class="tsr-empty">
-					Няма резултати за <?php echo esc_html( $current_season_label ); ?>.
-				</p>
-			</section>
-		<?php endif; ?>
 
-		<p class="tsr-view-all">
-			<a class="tsr-card__link" href="<?php echo esc_url( home_url( '/pravila/' ) ); ?>">
-				Виж пълните правила за класиране
-			</a>
-		</p>
+			<?php if ( ! $has_cat_meta ) : ?>
+				<div class="tsr-notice tsr-notice--info">
+					<p>Класирането за този сезон показва само броя финиши — липсват данни за дистанциите.</p>
+				</div>
+			<?php endif; ?>
+
+			<div class="tsr-standings" data-tsr-tabs>
+				<div class="tsr-tabs" role="tablist" aria-label="Класиране по пол" hidden>
+					<?php foreach ( array( 'm' => 'Мъже', 'f' => 'Жени' ) as $tsr_k => $tsr_h ) : ?>
+						<button class="tsr-tabs__tab" type="button" role="tab" id="tsr-tab-<?php echo esc_attr( $tsr_k ); ?>"
+							aria-controls="tsr-panel-<?php echo esc_attr( $tsr_k ); ?>"
+							aria-selected="<?php echo $tsr_k === $tsr_open_tab ? 'true' : 'false'; ?>">
+							<?php echo esc_html( $tsr_h ); ?>
+							<span class="tsr-tabs__count"><?php echo esc_html( (string) count( $standings[ $tsr_k ] ) ); ?></span>
+						</button>
+					<?php endforeach; ?>
+				</div>
+
+				<?php
+				tsr_render_standings_panel( $standings['m'], 'm', 'Мъже', 'm' === $tsr_open_tab, $current_season, $tsr_show_all );
+				tsr_render_standings_panel( $standings['f'], 'f', 'Жени', 'f' === $tsr_open_tab, $current_season, $tsr_show_all );
+				?>
+			</div>
+
+			<p class="tsr-standings-note">
+				При равен брой точки предимство има броят подиуми.
+				<a href="<?php echo esc_url( home_url( '/pravila/' ) ); ?>">Пълните правила за класиране</a>
+			</p>
+
+		<?php else : ?>
+			<p class="tsr-empty">Няма класиране за <?php echo esc_html( $current_season_label ); ?>.</p>
+		<?php endif; ?>
 
 	</div>
 </main>
 
-<?php get_footer(); ?>
+<?php
+get_footer();

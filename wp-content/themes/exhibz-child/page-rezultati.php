@@ -60,7 +60,6 @@ $tsr_index = tsr_results_index();
 // ── 2. Group: year_key → event_name → [ WP_Post, … ] ────────────────────────
 
 $grouped      = array();
-$current_year = (int) gmdate( 'Y' );
 
 foreach ( $all_posts as $post ) {
 	// Year: _tsr_season meta first (most authoritative), then title heuristics,
@@ -147,24 +146,52 @@ if ( post_type_exists( 'ajde_events' ) ) {
 	unset( $tsr_events_for_year );
 }
 
-// ── Season display labels ─────────────────────────────────────────────────────
-$season_labels = array(
-	2012 => 'Сезон 1 (2012–2013)',
-	2013 => 'Сезон 2 (2013–2014)',
-	2014 => 'Сезон 3 (2014–2015)',
-	2015 => 'Сезон 4 (2015–2016)',
-	2016 => 'Сезон 5 (2016–2017)',
-	2017 => 'Сезон 6 (2017–2018)',
-	2018 => 'Сезон 7 (2018–2019)',
-	2019 => 'Сезон 8 (2019–2020)',
-	2020 => 'Сезон 8 (2019–2020)',
-	2021 => 'Сезон 9 (2021)',
-	2022 => 'Сезон 10 (2022)',
-	2023 => 'Сезон 11 (2023)',
-	2024 => 'Сезон 12 (2024)',
-	2025 => 'Сезон 13 (2025)',
-	2026 => 'Сезон 14 (2026)',
-);
+// ── Selected season (one season per page — audit M17 redesign) ──────────────
+//
+// `?sezon=<year>` picks the season; anything that is not a season with
+// results falls back to the latest one. Only that season is rendered, which
+// keeps the page small (all 16 seasons used to be in the DOM at once).
+$tsr_years = array_keys( $grouped ); // newest first, 0 ("Без година") last
+// phpcs:ignore WordPress.Security.NonceVerification
+$tsr_req      = isset( $_GET['sezon'] ) ? (int) $_GET['sezon'] : null;
+$tsr_selected = ( null !== $tsr_req && array_key_exists( $tsr_req, $grouped ) )
+	? $tsr_req
+	: ( $tsr_years[0] ?? 0 );
+$tsr_events   = $grouped[ $tsr_selected ] ?? array();
+$tsr_dates    = ( $tsr_event_dates ?? array() )[ $tsr_selected ] ?? array();
+$tsr_rindex   = tsr_results_index();
+
+/**
+ * Distance rows of one race card: "21 км — Мъже · Жени". Sections with a
+ * distance and a gender are grouped by distance; anything else (kids,
+ * relays, sections without a distance) gets its own row under its label.
+ * Input is already in ADR-004 order (longest first, men before women).
+ *
+ * @param list<WP_Post> $posts
+ * @return list<array{label: string, links: list<array{text: string, url: string}>}>
+ */
+$tsr_dist_rows = static function ( array $posts ) use ( $tsr_rindex ): array {
+	$rows = array();
+	foreach ( $posts as $p ) {
+		$entry  = $tsr_rindex[ $p->ID ] ?? array( 'km' => '', 'gender' => '' );
+		$label  = TSR_Section_Meta::title_category_suffix( $p->post_title );
+		$gender = in_array( $entry['gender'], array( 'M', 'F' ), true )
+			? $entry['gender']
+			: ( 'mixed' === $entry['gender'] ? '' : tsr_race_gender_from_text( $p ) );
+		$url    = (string) get_permalink( $p );
+		if ( '' !== $entry['km'] && '' !== $gender ) {
+			$km_label = str_replace( '.', ',', $entry['km'] ) . ' км';
+			$rows[ 'km:' . $entry['km'] ] ??= array( 'label' => $km_label, 'links' => array() );
+			$rows[ 'km:' . $entry['km'] ]['links'][] = array( 'text' => 'M' === $gender ? 'Мъже' : 'Жени', 'url' => $url );
+		} else {
+			$rows[ 'p:' . $p->ID ] = array(
+				'label' => '' !== $entry['km'] ? str_replace( '.', ',', $entry['km'] ) . ' км' : '',
+				'links' => array( array( 'text' => '' !== $label ? $label : 'Резултати', 'url' => $url ) ),
+			);
+		}
+	}
+	return array_values( $rows );
+};
 ?>
 
 <div class="tsr-page-hero">
@@ -189,103 +216,73 @@ $season_labels = array(
 
 		<?php else : ?>
 
-			<div class="tsr-results-archive">
+			<?php
+			$tsr_n = count( $tsr_events );
+			tsr_season_select( $tsr_years, $tsr_selected, sprintf( '%d %s', $tsr_n, 1 === $tsr_n ? 'състезание' : 'състезания' ) );
+			?>
 
-				<?php foreach ( $grouped as $year => $events ) : ?>
+			<h2 class="tsr-season-heading"><?php echo esc_html( tsr_season_label( $tsr_selected ) ); ?></h2>
+
+			<div class="tsr-race-cards">
+
+				<?php foreach ( $tsr_events as $event_name => $event_posts ) : ?>
 					<?php
-					$year_label = $year > 0
-						? ( $season_labels[ $year ] ?? (string) $year )
-						: __( 'Без година', 'exhibz-child' );
-					$is_current = ( $year === $current_year );
+					// Primary post: the hub (no other post's slug + '-' prefixes it)
+					// = the SEO-preserved legacy URL. tsr_hub_head_for() returns null
+					// for hubs/standalone posts.
+					$primary = null;
+					$cats    = array();
+					foreach ( $event_posts as $p ) {
+						if ( null === $primary && null === tsr_hub_head_for( $p ) ) {
+							$primary = $p;
+						} else {
+							$cats[] = $p;
+						}
+					}
+					if ( null === $primary ) {
+						$primary = array_shift( $cats );
+					}
+					$sections = tsr_sort_results_indexed( array_merge( array( $primary ), $cats ) );
+					$race_ts  = $tsr_dates[ $event_name ] ?? 0;
+					$ev_slug  = sanitize_title( $event_name );
 					?>
+					<article class="tsr-race-card">
+						<header class="tsr-race-card__head">
+							<h3 class="tsr-race-card__title">
+								<a href="<?php echo esc_url( (string) get_permalink( $primary ) ); ?>"><?php echo esc_html( $event_name ); ?></a>
+							</h3>
+							<?php if ( $race_ts > 0 ) : ?>
+								<time class="tsr-race-card__date" datetime="<?php echo esc_attr( wp_date( 'Y-m-d', $race_ts ) ); ?>">
+									<?php echo esc_html( wp_date( 'j F Y', $race_ts ) ); ?>
+								</time>
+							<?php endif; ?>
+						</header>
 
-					<details class="tsr-year-group" <?php echo $is_current ? 'open' : ''; ?>>
-						<summary class="tsr-year-group__summary">
-							<span class="tsr-year-group__year"><?php echo esc_html( $year_label ); ?></span>
-							<span class="tsr-year-group__count">
-								<?php
-								$n = 0;
-								foreach ( $events as $event_posts ) {
-									$n += count( $event_posts );
-								}
-								/* translators: %d = number of result sets in this season */
-								printf( esc_html( _n( '%d класиране', '%d класирания', $n, 'exhibz-child' ) ), $n );
-								?>
-							</span>
-						</summary>
-
-						<ul class="tsr-event-list">
-
-							<?php foreach ( $events as $event_name => $event_posts ) : ?>
-
-								<?php
-								// Primary post: the hub (no other post's slug + '-' prefixes
-								// it) = the SEO-preserved legacy URL. tsr_hub_head_for()
-								// (functions.php) returns null for hubs/standalone posts —
-								// see tsr_slug_base() above for why a strpos('--') check
-								// never matches any real stored slug.
-								$primary = null;
-								$cats    = array();
-
-								foreach ( $event_posts as $p ) {
-									if ( null === tsr_hub_head_for( $p ) ) {
-										$primary = $p;
-									} else {
-										$cats[] = $p;
-									}
-								}
-								// Fallback: no post in this group resolved as a hub (shouldn't happen).
-								if ( null === $primary ) {
-									$primary = array_shift( $event_posts );
-								}
-								// Every available category gets a pill — including the hub
-								// category itself, which otherwise has no visible label at
-								// all (it's only reachable via the bare event-name link).
-								// Site-wide ordering rule (ADR-004) governs the combined
-								// list: longest distance first, men before women.
-								$pills = tsr_sort_results_indexed( array_merge( array( $primary ), $cats ) );
-
-								$primary_url = get_permalink( $primary );
-								?>
-
-								<li class="tsr-event-item">
-
-									<a class="tsr-event-item__name"
-									   href="<?php echo esc_url( $primary_url ); ?>">
-										<?php echo esc_html( $event_name ); ?>
-									</a>
-
-									<?php if ( ! empty( $pills ) ) : ?>
-										<ul class="tsr-cat-list">
-											<?php foreach ( $pills as $cat_post ) : ?>
-												<?php
-												$cat_sep   = mb_strpos( $cat_post->post_title, ' — ' );
-												$cat_label = false !== $cat_sep
-													? mb_substr( $cat_post->post_title, $cat_sep + 3 )
-													: $cat_post->post_title;
-												$cat_url   = get_permalink( $cat_post );
-												?>
-												<li>
-													<a class="tsr-cat-pill"
-													   href="<?php echo esc_url( $cat_url ); ?>">
-														<?php echo esc_html( $cat_label ); ?>
-													</a>
-												</li>
-											<?php endforeach; ?>
-										</ul>
-									<?php endif; ?>
-
-								</li>
-
+						<dl class="tsr-dist-rows">
+							<?php foreach ( $tsr_dist_rows( $sections ) as $row ) : ?>
+								<div class="tsr-dist-row">
+									<dt class="tsr-dist-row__km"><?php echo esc_html( $row['label'] ); ?></dt>
+									<dd class="tsr-dist-row__links">
+										<?php foreach ( $row['links'] as $i => $link ) : ?>
+											<?php if ( $i > 0 ) : ?><span class="tsr-dist-row__sep" aria-hidden="true">·</span><?php endif; ?>
+											<a href="<?php echo esc_url( $link['url'] ); ?>"><?php echo esc_html( $link['text'] ); ?><span class="screen-reader-text"> — <?php echo esc_html( trim( $row['label'] . ' ' . $event_name ) ); ?></span></a>
+										<?php endforeach; ?>
+									</dd>
+								</div>
 							<?php endforeach; ?>
+						</dl>
 
-						</ul><!-- .tsr-event-list -->
-
-					</details><!-- .tsr-year-group -->
-
+						<?php if ( '' !== $ev_slug ) : ?>
+							<p class="tsr-race-card__more">
+								<a href="<?php echo esc_url( add_query_arg( 'sabitie', $ev_slug, home_url( '/event/' ) ) ); ?>">
+									История на събитието<span class="screen-reader-text">: <?php echo esc_html( $event_name ); ?></span> ›
+								</a>
+							</p>
+						<?php endif; ?>
+					</article>
 				<?php endforeach; ?>
 
-			</div><!-- .tsr-results-archive -->
+			</div><!-- .tsr-race-cards -->
 
 		<?php endif; ?>
 

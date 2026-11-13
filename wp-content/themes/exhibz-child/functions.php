@@ -163,6 +163,84 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	}
 }, 25 );
 
+// ── Results / ranking UI (season dropdown, gender tabs) ──────────────────────
+//
+// Progressive enhancement only: without JS the season form has a submit
+// button and both gender lists are shown one after the other.
+add_action( 'wp_enqueue_scripts', static function (): void {
+	if ( ! is_page_template( array( 'page-rezultati.php', 'page-klasiraniya.php' ) ) ) {
+		return;
+	}
+	$path = get_stylesheet_directory() . '/js/tsr-ui.js';
+	wp_enqueue_script(
+		'tsr-ui',
+		get_stylesheet_directory_uri() . '/js/tsr-ui.js',
+		array(),
+		(string) filemtime( $path ),
+		array(
+			'in_footer' => true,
+			'strategy'  => 'defer',
+		)
+	);
+}, 25 );
+
+/**
+ * Display label of a season (the race year stored in `_tsr_season`).
+ * One definition for every template (audit L10). Seasons 1–8 spanned two
+ * calendar years; how those map is still an open owner decision (audit H1),
+ * so 2019 and 2020 both read "Сезон 8" until then.
+ */
+function tsr_season_label( int $year ): string {
+	if ( 0 === $year ) {
+		return 'Без година';
+	}
+	$labels = array(
+		2012 => 'Сезон 1 (2012–2013)',
+		2013 => 'Сезон 2 (2013–2014)',
+		2014 => 'Сезон 3 (2014–2015)',
+		2015 => 'Сезон 4 (2015–2016)',
+		2016 => 'Сезон 5 (2016–2017)',
+		2017 => 'Сезон 6 (2017–2018)',
+		2018 => 'Сезон 7 (2018–2019)',
+		2019 => 'Сезон 8 (2019–2020)',
+		2020 => 'Сезон 8 (2019–2020)',
+		2021 => 'Сезон 9 (2021)',
+		2022 => 'Сезон 10 (2022)',
+		2023 => 'Сезон 11 (2023)',
+		2024 => 'Сезон 12 (2024)',
+		2025 => 'Сезон 13 (2025)',
+		2026 => 'Сезон 14 (2026)',
+	);
+	return $labels[ $year ] ?? "Сезон $year";
+}
+
+/**
+ * Season dropdown (GET form on the current page). Submits on change via
+ * js/tsr-ui.js; the button is the no-JS fallback and is hidden by the script.
+ *
+ * @param list<int> $years   Seasons to offer, in display order.
+ * @param int       $current Selected season.
+ * @param string    $note    Optional text after the picker (e.g. "7 състезания").
+ */
+function tsr_season_select( array $years, int $current, string $note = '' ): void {
+	?>
+	<form class="tsr-toolbar" method="get" action="<?php echo esc_url( get_permalink() ); ?>">
+		<label class="tsr-toolbar__label" for="tsr-season">Сезон</label>
+		<select class="tsr-select" id="tsr-season" name="sezon" data-tsr-autosubmit>
+			<?php foreach ( $years as $year ) : ?>
+				<option value="<?php echo esc_attr( (string) $year ); ?>"<?php selected( $year, $current ); ?>>
+					<?php echo esc_html( tsr_season_label( (int) $year ) ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<button class="tsr-toolbar__go" type="submit">Покажи</button>
+		<?php if ( '' !== $note ) : ?>
+			<span class="tsr-toolbar__note"><?php echo esc_html( $note ); ?></span>
+		<?php endif; ?>
+	</form>
+	<?php
+}
+
 // ── Performance: strip unused third-party assets ─────────────────────────────
 //
 // Diagnosed 2026-07 (mobile LCP 13.6 s): EventON enqueues its full stack —

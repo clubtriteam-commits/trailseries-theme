@@ -3123,3 +3123,327 @@ a.tsr-partner-card:hover {
 .desc_trig {
 	background-color: #eaf6fb;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Results & ranking pages — one season at a time (audit M17 redesign)
+   page-rezultati.php, page-klasiraniya.php; season form from
+   tsr_season_select() (functions.php), tabs from js/tsr-ui.js.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Season toolbar */
+.tsr-toolbar {
+	display:       flex;
+	flex-wrap:     wrap;
+	align-items:   center;
+	gap:           0.5rem 0.75rem;
+	margin:        0 0 1.5rem;
+}
+
+.tsr-toolbar__label {
+	font-weight:   700;
+	color:         var(--tsr-navy);
+}
+
+.tsr-select {
+	min-height:    44px;
+	padding:       0.5rem 2.25rem 0.5rem 0.85rem;
+	border:        1px solid var(--tsr-border);
+	border-radius: var(--tsr-radius);
+	background:    var(--tsr-white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%230a1628' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 0.85rem center;
+	font:          inherit;
+	font-weight:   700;
+	color:         var(--tsr-navy);
+	appearance:    none;
+	max-width:     100%;
+	cursor:        pointer;
+}
+
+.tsr-select:focus-visible {
+	outline:        3px solid var(--tsr-blue);
+	outline-offset: 2px;
+}
+
+.tsr-toolbar__go {
+	min-height:    44px;
+	padding:       0 1rem;
+	border:        0;
+	border-radius: var(--tsr-radius);
+	background:    var(--tsr-blue-dk);
+	color:         var(--tsr-white);
+	font-weight:   700;
+	cursor:        pointer;
+}
+
+.tsr-toolbar__note {
+	color:         var(--tsr-muted);
+	font-size:     0.95rem;
+}
+
+.tsr-season-heading {
+	font-size:     1.5rem;
+	margin:        0 0 1.25rem;
+	color:         var(--tsr-navy);
+}
+
+/* Race cards (Резултати) */
+.tsr-race-cards {
+	display:       grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+	gap:           1rem;
+	margin-bottom: 2.5rem;
+}
+
+.tsr-race-card {
+	display:        flex;
+	flex-direction: column;
+	background:     var(--tsr-white);
+	border:         1px solid var(--tsr-border);
+	border-top:     4px solid var(--tsr-blue);
+	border-radius:  var(--tsr-radius);
+	padding:        1rem 1.25rem;
+}
+
+.tsr-race-card__head {
+	margin-bottom: 0.75rem;
+}
+
+.tsr-race-card__title {
+	font-size:     1.15rem;
+	line-height:   1.25;
+	margin:        0;
+}
+
+.tsr-race-card__title a {
+	color:         var(--tsr-navy);
+	text-decoration: none;
+}
+
+.tsr-race-card__title a:hover,
+.tsr-race-card__title a:focus-visible {
+	color:         var(--tsr-blue-dk);
+	text-decoration: underline;
+}
+
+.tsr-race-card__date {
+	display:       block;
+	margin-top:    0.2rem;
+	color:         var(--tsr-muted);
+	font-size:     0.9rem;
+}
+
+.tsr-dist-rows {
+	margin:        0;
+	flex:          1;
+}
+
+.tsr-dist-row {
+	display:       flex;
+	align-items:   baseline;
+	gap:           0.75rem;
+	padding:       0.35rem 0;
+	border-top:    1px solid var(--tsr-border);
+}
+
+.tsr-dist-row:first-child {
+	border-top:    0;
+}
+
+.tsr-dist-row__km {
+	flex:          0 0 4.5rem;
+	font-weight:   800;
+	color:         var(--tsr-navy);
+	font-variant-numeric: tabular-nums;
+}
+
+.tsr-dist-row__links {
+	margin:        0;
+	display:       flex;
+	flex-wrap:     wrap;
+	align-items:   center;
+	gap:           0 0.35rem;
+}
+
+.tsr-dist-row__links a {
+	display:       inline-block;
+	min-height:    24px;  /* touch target, WCAG 2.5.8 (audit L17) */
+	padding:       0.15rem 0.1rem;
+	color:         var(--tsr-blue-dk);
+	font-weight:   700;
+}
+
+.tsr-dist-row__sep {
+	color:         var(--tsr-muted);
+}
+
+.tsr-race-card__more {
+	margin:        0.75rem 0 0;
+	text-align:    right;
+	font-size:     0.9rem;
+}
+
+.tsr-race-card__more a {
+	display:       inline-block;
+	min-height:    24px;
+	padding:       0.15rem 0;
+	color:         var(--tsr-blue-dk);
+}
+
+/* Ranking: gender tabs */
+.tsr-tabs {
+	display:       flex;
+	gap:           0.25rem;
+	border-bottom: 2px solid var(--tsr-border);
+	margin-bottom: 1.5rem;
+}
+
+.tsr-tabs[hidden] {
+	display:       none;
+}
+
+.tsr-tabs__tab {
+	min-height:    44px;
+	padding:       0.5rem 1.25rem;
+	margin-bottom: -2px;
+	border:        0;
+	border-bottom: 3px solid transparent;
+	background:    none;
+	font:          inherit;
+	font-weight:   800;
+	color:         var(--tsr-muted);
+	cursor:        pointer;
+}
+
+.tsr-tabs__tab[aria-selected="true"] {
+	color:         var(--tsr-navy);
+	border-bottom-color: var(--tsr-blue);
+}
+
+.tsr-tabs__tab:focus-visible {
+	outline:        3px solid var(--tsr-blue);
+	outline-offset: -3px;
+}
+
+.tsr-tabs__count {
+	font-weight:   400;
+	font-size:     0.85rem;
+	color:         var(--tsr-muted);
+	margin-left:   0.25rem;
+}
+
+.tsr-standings-panel {
+	margin-bottom: 2rem;
+}
+
+.tsr-standings-panel__heading {
+	font-size:     1.2rem;
+	color:         var(--tsr-navy);
+	margin:        0 0 1rem;
+}
+
+/* With JS tabs the heading repeats the tab label: hide visually, keep for AT */
+.tsr-tabs-on .tsr-standings-panel__heading {
+	position:      absolute;
+	width:         1px;
+	height:        1px;
+	overflow:      hidden;
+	clip:          rect(0 0 0 0);
+	white-space:   nowrap;
+}
+
+/* Ranking: podium (top 3) */
+.tsr-podium {
+	list-style:    none;
+	margin:        0 0 1.5rem;
+	padding:       0;
+	display:       grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+	gap:           0.75rem;
+}
+
+.tsr-podium__item {
+	display:       grid;
+	grid-template-columns: auto 1fr;
+	grid-template-areas:
+		"place name"
+		"place pts";
+	column-gap:    0.85rem;
+	align-items:   center;
+	background:    var(--tsr-navy);
+	color:         var(--tsr-white);
+	border-radius: var(--tsr-radius);
+	padding:       0.9rem 1rem;
+}
+
+.tsr-podium__place {
+	grid-area:     place;
+	display:       grid;
+	place-items:   center;
+	width:         2.5rem;
+	height:        2.5rem;
+	border-radius: 50%;
+	background:    var(--tsr-blue);
+	color:         var(--tsr-navy);
+	font-weight:   900;
+	font-size:     1.2rem;
+}
+
+.tsr-podium__item--1 .tsr-podium__place {
+	background:    #f2c94c; /* gold — decorative only; the rank is also in the order */
+}
+
+.tsr-podium__name {
+	grid-area:     name;
+	color:         var(--tsr-white);
+	font-weight:   800;
+	text-decoration: none;
+	overflow-wrap: anywhere;
+}
+
+.tsr-podium__name:hover,
+.tsr-podium__name:focus-visible {
+	text-decoration: underline;
+}
+
+.tsr-podium__pts {
+	grid-area:     pts;
+	font-weight:   700;
+	color:         var(--tsr-blue);
+}
+
+.tsr-podium__meta {
+	font-weight:   400;
+	color:         #c7d2e0;
+}
+
+.tsr-standings-table td:nth-child(2) a {
+	color:         var(--tsr-navy);
+	font-weight:   700;
+	text-decoration: none;
+}
+
+.tsr-standings-table td:nth-child(2) a:hover,
+.tsr-standings-table td:nth-child(2) a:focus-visible {
+	color:         var(--tsr-blue-dk);
+	text-decoration: underline;
+}
+
+.tsr-standings-more {
+	margin:        0.75rem 0 0;
+}
+
+.tsr-standings-more a {
+	display:       inline-block;
+	min-height:    44px;
+	padding:       0.6rem 1.1rem;
+	border:        1px solid var(--tsr-blue-dk);
+	border-radius: var(--tsr-radius);
+	color:         var(--tsr-blue-dk);
+	font-weight:   700;
+	text-decoration: none;
+}
+
+.tsr-standings-more a:hover,
+.tsr-standings-more a:focus-visible {
+	background:    var(--tsr-blue-dk);
+	color:         var(--tsr-white);
+}
