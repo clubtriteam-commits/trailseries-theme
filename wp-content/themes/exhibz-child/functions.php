@@ -514,6 +514,30 @@ function tsr_results_index(): array {
 }
 
 /**
+ * tsr_sort_results_by_distance_gender() (ADR-004) for posts that are in
+ * tsr_results_index(): same comparator (via the scalar variant), but km and
+ * gender come from the index instead of one meta load per post — without
+ * meta priming, each of those loads also pulls the post's results blob.
+ * Gender resolves exactly like tsr_race_gender(): _tsr_gender M/F wins,
+ * 'mixed' is undetermined, otherwise the slug/title rules.
+ *
+ * @param list<WP_Post> $posts
+ * @return list<WP_Post>
+ */
+function tsr_sort_results_indexed( array $posts ): array {
+	$index = tsr_results_index();
+	$items = array();
+	foreach ( $posts as $p ) {
+		$entry  = $index[ $p->ID ] ?? array( 'km' => '', 'gender' => '' );
+		$gender = in_array( $entry['gender'], array( 'M', 'F' ), true )
+			? $entry['gender']
+			: ( 'mixed' === $entry['gender'] ? '' : tsr_race_gender_from_text( $p ) );
+		$items[] = array( 'km' => (float) $entry['km'], 'gender' => $gender, 'post' => $p );
+	}
+	return array_column( tsr_sort_by_distance_gender_scalars( $items ), 'post' );
+}
+
+/**
  * Runner-name index for /runner/ (audit H3): post ID → every row's
  * "first last" and "last first", lowercased, one per line. A search tests
  * this string first and decodes only the posts that can match; the exact

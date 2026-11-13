@@ -243,7 +243,7 @@ $season_labels = array(
 								// all (it's only reachable via the bare event-name link).
 								// Site-wide ordering rule (ADR-004) governs the combined
 								// list: longest distance first, men before women.
-								$pills = tsr_sort_results_by_distance_gender( array_merge( array( $primary ), $cats ) );
+								$pills = tsr_sort_results_indexed( array_merge( array( $primary ), $cats ) );
 
 								$primary_url = get_permalink( $primary );
 								?>
