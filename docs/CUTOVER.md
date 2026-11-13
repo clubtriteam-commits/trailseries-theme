@@ -27,9 +27,8 @@ WP-CLI is `php ~/wp-cli.phar`. Placeholders below:
    (exclude `news__*.json` — podium tables of a news post; a `news` hub would
    collide with post 4811), `wp tsr bulk-import --force` from
    `canonical_fixed`, M3 cache flush.
-2. M16: import the 5 missing posts from the WXR with their exact slugs (3 news
-   posts, registration lists `/117/` and `/1539/`).
-3. Delete the stub page `/event-directory/` (13 bytes; the map 301s that URL).
+2. ~~M16: import the 5 missing posts~~ Done 2026-11-13 (`/1539/` is a 301 to `/1539-2/`, see audit M16).
+3. ~~Delete the stub page `/event-directory/`~~ Not a stub: page 1566 is EventON's "Events" page (`[add_eventon]`); keep it. The map 301s `/event-directory/` to `/calendar/` regardless.
 4. Strict crawl diff, locally, with a copy of the manifest kept outside the repo:
    `python -X utf8 migration/crawl_diff.py --strict --manifest <copy of tsr-data/migration/data/canonical_fixed/_manifest.csv>`
    Must end with **0 FAIL, 0 ERROR**. Exceptions only from
