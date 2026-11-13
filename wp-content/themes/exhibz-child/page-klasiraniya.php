@@ -125,7 +125,7 @@ function tsr_points( int $place, string $cat, bool $is_bonus = false ): int {
 // entry expires on its own TTL. On a cache hit the compute path below
 // runs over an empty post list and the cached standings are restored
 // after the (no-op) sort.
-$tsr_standings_key  = sprintf( 'tsr_standings_g%d_s%d', tsr_cache_gen(), $current_season );
+$tsr_standings_key  = sprintf( 'tsr_standings3_g%d_s%d', tsr_cache_gen(), $current_season );
 // Audit H5: only a season that has results may compute or cache anything.
 // `?sezon=<any other int>` used to write a fresh transient per value; it
 // now renders the same empty standings straight away.
@@ -294,25 +294,30 @@ foreach ( $race_posts as $rpost ) {
 				'points'   => 0,
 				'finishes' => 0,
 				'podiums'  => 0,
+				'p1'       => 0, // wins, seconds, thirds — tie-break after the podium count
+				'p2'       => 0,
+				'p3'       => 0,
 			);
 		}
 		$standings[ $gender_key ][ $key ]['points']   += $pts;
 		$standings[ $gender_key ][ $key ]['finishes'] += 1;
-		if ( $place <= 3 ) {
-			$standings[ $gender_key ][ $key ]['podiums'] += 1;
+		if ( $place >= 1 && $place <= 3 ) {
+			$standings[ $gender_key ][ $key ]['podiums']      += 1;
+			$standings[ $gender_key ][ $key ][ 'p' . $place ] += 1;
 		}
 	}
 }
 
-// Sort: points DESC, podiums DESC, finishes DESC.
+// Order (owner's rule, 2026-11-13): points; on equal points more podiums;
+// on equal podiums the better podiums (more wins, then more second places,
+// then more thirds). Finishes and the name only make the order stable.
 $tsr_sort_fn = static function ( array $a, array $b ): int {
-	if ( $a['points'] !== $b['points'] ) {
-		return $b['points'] <=> $a['points'];
+	foreach ( array( 'points', 'podiums', 'p1', 'p2', 'p3', 'finishes' ) as $tsr_k ) {
+		if ( $a[ $tsr_k ] !== $b[ $tsr_k ] ) {
+			return $b[ $tsr_k ] <=> $a[ $tsr_k ];
+		}
 	}
-	if ( $a['podiums'] !== $b['podiums'] ) {
-		return $b['podiums'] <=> $a['podiums'];
-	}
-	return $b['finishes'] <=> $a['finishes'];
+	return strcmp( $a['name'], $b['name'] );
 };
 uasort( $standings['m'], $tsr_sort_fn );
 uasort( $standings['f'], $tsr_sort_fn );
@@ -402,7 +407,8 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 						</thead>
 						<tbody>
 							<?php for ( $i = 3; $i < $limit; $i++ ) : $a = $rows[ $i ]; ?>
-								<tr>
+								<?php // Top 10 run with an honorary orange bib next season. ?>
+								<tr<?php echo $place( $a, $i ) <= 10 ? ' class="tsr-top10"' : ''; ?>>
 									<td><?php echo esc_html( (string) $place( $a, $i ) ); ?></td>
 									<td><?php echo $name_html( $a ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in $name_html. ?></td>
 									<td><?php echo esc_html( (string) $a['points'] ); ?></td>
@@ -508,6 +514,10 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 				?>
 			</div>
 
+			<p class="tsr-standings-note tsr-standings-note--top10">
+				<span class="tsr-top10-mark" aria-hidden="true"></span>
+				Първите десет в класирането бягат с почетен оранжев номер през следващия сезон.
+			</p>
 			<?php if ( $tsr_official_full ) : ?>
 				<p class="tsr-standings-note">
 					Официалното генерално класиране за сезона, както е публикувано от Trail Series.
@@ -517,7 +527,7 @@ function tsr_render_standings_panel( array $rows, string $key, string $heading, 
 				</p>
 			<?php else : ?>
 				<p class="tsr-standings-note">
-					При равен брой точки предимство има броят подиуми.
+					При равен брой точки предимство има този с повече подиуми, а при равни подиуми — с по-предните.
 					<a href="<?php echo esc_url( home_url( '/pravila/' ) ); ?>">Пълните правила за класиране</a>
 				</p>
 			<?php endif; ?>

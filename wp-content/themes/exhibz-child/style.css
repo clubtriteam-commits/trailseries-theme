@@ -3713,3 +3713,23 @@ h1, h2, h3, h4, h5, h6 {
 		white-space: normal;
 	}
 }
+
+/* Top 10 of a season run with an honorary orange bib next season (owner,
+   2026-11-13): places 4–10 get the orange numeral (1–3 are the podium cards). */
+.tsr-standings-table tr.tsr-top10 td:first-child {
+	color: var(--tsr-orange);
+}
+
+.tsr-top10-mark {
+	display:        inline-block;
+	width:          0.75rem;
+	height:         0.75rem;
+	margin-right:   0.35rem;
+	border-radius:  50%;
+	background:     var(--tsr-orange);
+	vertical-align: -0.05em;
+}
+
+.tsr-standings-note--top10 {
+	margin-bottom: 0.35rem;
+}
