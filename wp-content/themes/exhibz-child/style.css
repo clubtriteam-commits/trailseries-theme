@@ -3516,3 +3516,14 @@ a.tsr-partner-card:hover {
 .evo_sin_page .evo_eventtop .evoet_dayblock em.month {
 	color: var(--tsr-muted) !important;
 }
+
+/* Official standings (audit H1 step 2): names without a runner profile are
+   plain text — same weight and colour as the linked ones. */
+.tsr-standings-table td:nth-child(2) > span {
+	color:       var(--tsr-navy);
+	font-weight: 700;
+}
+
+span.tsr-podium__name {
+	color: var(--tsr-white);
+}
