@@ -60,6 +60,16 @@ races** have taken place on the old site, plus any news.
    into `results-page-list.csv` and commit it.
 5. Import them (`wp tsr bulk-import` with `TSR_DATA_DIR` or
    `--manifest`/`--json-dir`), and import new news posts with their exact slugs.
+   New race landing pages go into `migration/event-pages-list.csv` and through
+   `import-event-pages.php` (copy the list to `tsr-data/migration/` first; run
+   with `wp eval-file … --use-include`, plain eval rejects the script's
+   `declare(strict_types=1)`).
+   Done 2026-11-13 for the three 2026 races so far: landing pages
+   `/7-hills-run26/`, `/buhovo-half-marathon26/`, `/the-cactus-run26/` imported
+   (staging pages 7296, 7298, 7304); their results pages
+   `/7-hills-run26-ranking/`, `/buhovo-half-marathon26-results/`,
+   `/the-cactus-run26-results/` (live pages 6636, 6652, 6670) are in the map and
+   wait for a fresh WXR export.
 6. Re-run the strict crawl diff (A4) — green again, now including the new URLs.
 
 ## C. Cutover day
