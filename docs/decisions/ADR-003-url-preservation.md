@@ -78,3 +78,29 @@ entries per rule 5.
   page or news post given a result's slug silently takes over that result's
   URL (pages and posts win over results). Rule 2 wants that to fail instead;
   not enforced yet.
+
+## Accepted exceptions (owner decisions, 2026-11-13, audit H9)
+
+The redirect map (`migration/redirect-map.csv`) is the record. Its source of
+truth for behaviour is `migration/generate_redirects.py`; never hand-edit
+`redirects.php`. As of 2026-11-13: 340 URLs preserved (200), 88 one-to-one
+301s, 39 410s, no wildcard/prefix rules (`redirect-prefixes.csv` is empty on
+purpose — unknown URLs must surface as 404s under rule 6).
+
+- **No race results page is retired.** The 11 "results pages with no
+  extracted data" were 10 Christmas Run 2013 registration lists (kept as news
+  posts, 200) and one 2020 news post with a top-10 table
+  (`/koy-oglavyava-top-10/`, 410).
+- **301 by decision:** old EventON `/events/{slug}/`, `/event-location/…`,
+  `/event-type/…`, `/event-organizer/…` → `/calendar/` (stable across seasons,
+  rather than the current edition); category/pagination archives →
+  `/novini/`; old standings pages → `/klasiraniya/`; `/спонсори/` →
+  `/partniori/`.
+- **410 by decision:** photo galleries (`/snimki/…` and others), tag archives,
+  registration and t-shirt order forms, junk pages, attachment pages; contact
+  and feedback forms *until a contact page exists*, then they get a 301 to it.
+- **Live content wins over a legacy rule** for post types created for the new
+  site (`GATE_POST_TYPES`, currently EventON events): a current event that
+  reuses an old `/events/{slug}/` is served, not redirected.
+- The verifier's accepted body-check exceptions are in
+  `migration/crawl-diff-exceptions.csv`.
