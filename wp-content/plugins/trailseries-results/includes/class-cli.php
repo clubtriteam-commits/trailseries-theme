@@ -38,6 +38,119 @@ final class TSR_CLI {
 		WP_CLI::add_command( 'tsr backfill-meta', array( $instance, 'backfill_meta' ) );
 		WP_CLI::add_command( 'tsr prune',        array( $instance, 'prune' ) );
 		WP_CLI::add_command( 'tsr verify-import', array( $instance, 'verify_import' ) );
+		WP_CLI::add_command( 'tsr apply-seasons', array( $instance, 'apply_seasons' ) );
+	}
+
+	/**
+	 * Apply the 2012–2020 race years and series seasons (audit H1).
+	 *
+	 * Reads migration/series-seasons.csv (one row per old results page:
+	 * page_slug, race_year, series_season) and, for every ts_result post of
+	 * that page (slug equal to the page slug or "{page}-…", longest page slug
+	 * wins), sets `_tsr_season` to the race year and `_tsr_series_season` to
+	 * the season start year or `none`. Idempotent — re-run it after any bulk
+	 * re-import. Also lists 2012–2020 posts that no CSV row covers.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --file=<csv>
+	 * : Path to series-seasons.csv.
+	 *
+	 * [--dry-run]
+	 * : Report what would change without writing.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp tsr apply-seasons --file=/home/trailser/tsr-data/migration/series-seasons.csv --dry-run
+	 *
+	 * @subcommand apply-seasons
+	 *
+	 * @param array<int, string>    $args
+	 * @param array<string, string> $assoc_args
+	 */
+	public function apply_seasons( array $args, array $assoc_args ): void {
+		global $wpdb;
+		$path = (string) ( $assoc_args['file'] ?? '' );
+		if ( '' === $path || ! is_readable( $path ) ) {
+			WP_CLI::error( 'Cannot read --file.' );
+			return;
+		}
+		$dry = isset( $assoc_args['dry-run'] );
+		try {
+			$pages = TSR_Series_Seasons::parse_csv( (string) file_get_contents( $path ) );
+		} catch ( InvalidArgumentException $e ) {
+			WP_CLI::error( $e->getMessage() );
+			return;
+		}
+		$slugs = array_keys( $pages );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$posts = $wpdb->get_results(
+			"SELECT p.ID, p.post_name, p.post_status,
+			        MAX( CASE WHEN m.meta_key = '_tsr_season' THEN m.meta_value END ) AS season,
+			        MAX( CASE WHEN m.meta_key = '" . TSR_Series_Seasons::META_KEY . "' THEN m.meta_value END ) AS series
+			   FROM {$wpdb->posts} p
+			   LEFT JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key IN ( '_tsr_season', '" . TSR_Series_Seasons::META_KEY . "' )
+			  WHERE p.post_type = 'ts_result' AND p.post_status NOT IN ( 'trash', 'auto-draft' )
+			  GROUP BY p.ID, p.post_name, p.post_status"
+		);
+
+		$hit        = array_fill_keys( $slugs, 0 );
+		$changes    = array( 'race_year' => 0, 'series' => 0, 'posts' => 0 );
+		$uncovered  = array();
+		$per_season = array();
+		foreach ( $posts as $post ) {
+			$slug = urldecode( (string) $post->post_name );
+			$page = TSR_Series_Seasons::page_for( $slug, $slugs );
+			if ( null === $page ) {
+				$y = (int) $post->season;
+				if ( 'publish' === $post->post_status && ( 0 === $y || $y <= TSR_Series_Seasons::LAST_SPLIT_YEAR ) ) {
+					$uncovered[] = sprintf( '%d %s (season %s)', $post->ID, $slug, '' !== (string) $post->season ? $post->season : '—' );
+				}
+				continue;
+			}
+			++$hit[ $page ];
+			$want_year   = (string) $pages[ $page ]['race_year'];
+			$want_series = $pages[ $page ]['series_season'];
+			$per_season[ $want_series ] = ( $per_season[ $want_series ] ?? 0 ) + 1;
+			$touched     = false;
+			if ( (string) $post->season !== $want_year ) {
+				++$changes['race_year'];
+				$touched = true;
+				if ( ! $dry ) {
+					update_post_meta( (int) $post->ID, '_tsr_season', $want_year );
+				}
+			}
+			if ( (string) $post->series !== $want_series ) {
+				++$changes['series'];
+				$touched = true;
+				if ( ! $dry ) {
+					update_post_meta( (int) $post->ID, TSR_Series_Seasons::META_KEY, $want_series );
+				}
+			}
+			if ( $touched ) {
+				++$changes['posts'];
+			}
+		}
+
+		ksort( $per_season );
+		WP_CLI::log( sprintf( 'CSV pages: %d. Posts matched: %d.', count( $pages ), array_sum( $hit ) ) );
+		WP_CLI::log( 'Sections per series season: ' . implode( ', ', array_map( static fn( $k, $v ) => "{$k}={$v}", array_keys( $per_season ), $per_season ) ) );
+		WP_CLI::log( sprintf( '%s %d post(s): race year on %d, series season on %d.', $dry ? 'Would change' : 'Changed', $changes['posts'], $changes['race_year'], $changes['series'] ) );
+		foreach ( array_keys( array_filter( $hit, static fn( int $n ): bool => 0 === $n ) ) as $page ) {
+			WP_CLI::warning( "CSV page with no posts: {$page}" );
+		}
+		foreach ( $uncovered as $line ) {
+			WP_CLI::warning( "2012–2020 post not in the CSV: {$line}" );
+		}
+		if ( $dry ) {
+			WP_CLI::success( 'Dry run. Nothing written.' );
+			return;
+		}
+		if ( $changes['posts'] > 0 ) {
+			do_action( 'tsr_results_updated' );
+		}
+		WP_CLI::success( 'Seasons applied.' );
 	}
 
 	/**

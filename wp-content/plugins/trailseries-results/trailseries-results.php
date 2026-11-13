@@ -30,6 +30,7 @@ require TSR_PLUGIN_DIR . 'includes/class-result-row.php';
 require TSR_PLUGIN_DIR . 'includes/class-result-set.php';
 require TSR_PLUGIN_DIR . 'includes/class-repository.php';
 require TSR_PLUGIN_DIR . 'includes/class-section-meta.php';
+require TSR_PLUGIN_DIR . 'includes/class-series-seasons.php';
 require TSR_PLUGIN_DIR . 'includes/class-renderer.php';
 require TSR_PLUGIN_DIR . 'includes/class-post-types.php';
 require TSR_PLUGIN_DIR . 'includes/template-functions.php';
