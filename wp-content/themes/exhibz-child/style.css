@@ -3502,3 +3502,17 @@ a.tsr-partner-card:hover {
 		content: none;
 	}
 }
+
+/* ── Single event page (EventON): readable date + title in the top box ───────
+   EventON prints the event-top box in "white text" mode (.clrW) on its light
+   grey #f1f1f1 background on single event pages — the date and title were
+   white on grey (1.1:1). Only the single page is touched: the /calendar/
+   list keeps white text on its coloured event backgrounds. */
+.evo_sin_page .evo_eventtop .evoet_dayblock em,
+.evo_sin_page .evo_eventtop .evcal_event_title {
+	color: var(--tsr-navy) !important;
+}
+
+.evo_sin_page .evo_eventtop .evoet_dayblock em.month {
+	color: var(--tsr-muted) !important;
+}
