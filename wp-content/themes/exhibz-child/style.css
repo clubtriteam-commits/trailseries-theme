@@ -1897,6 +1897,14 @@ h1, h2, h3, h4, h5, h6 {
 	outline-offset: 2px;
 }
 
+/* The row ring replaces the button's own ring (one focus indicator, not
+   two); browsers without :has() keep the button ring from the rule above. */
+@supports selector(:has(*)) {
+	.tsr-track__open:focus-visible {
+		outline: none;
+	}
+}
+
 /* Touch devices: lift the pill buttons to a ~44px tap target. */
 @media (pointer: coarse) {
 	.tsr-track__gpx {
