@@ -39,21 +39,15 @@ get_header();
 
 // -- Season selection ---------------------------------------------------------
 
+// Seasons from the small cached index (audit H3): the previous per-post
+// get_post_meta() loop loaded every post's meta, results blob included —
+// ~980 queries per view even when the standings themselves were cached.
 $season_years = array();
-$all_ids      = get_posts(
-	array(
-		'post_type'   => 'ts_result',
-		'numberposts' => -1,
-		'post_status' => 'publish',
-		'fields'      => 'ids',
-	)
-);
-foreach ( $all_ids as $pid ) {
-	$season_meta = get_post_meta( $pid, '_tsr_season', true );
-	if ( '' === (string) $season_meta ) {
+foreach ( tsr_results_index() as $tsr_entry ) {
+	if ( '' === $tsr_entry['season'] ) {
 		continue;
 	}
-	$season_years[ (int) $season_meta ] = true;
+	$season_years[ (int) $tsr_entry['season'] ] = true;
 }
 krsort( $season_years );
 $available_seasons = array_keys( $season_years );

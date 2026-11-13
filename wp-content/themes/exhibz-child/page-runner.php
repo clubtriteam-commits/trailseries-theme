@@ -73,11 +73,24 @@ $tsr_first_year   = null;
 if ( $tsr_searching ) {
 	$tsr_q_lower = mb_strtolower( $tsr_runner_query );
 
-	$tsr_all = get_posts( array(
+	// Same ordered post list as before (IDs only, no meta priming), narrowed
+	// to the posts whose names can match: the cached name index answers that
+	// without decoding every results blob (audit H3). The exact per-row
+	// matching below is unchanged and runs only on these posts.
+	$tsr_name_index = tsr_runner_name_index();
+	$tsr_match_ids  = array();
+	foreach ( get_posts( array(
 		'post_type'      => 'ts_result',
 		'posts_per_page' => -1,
 		'post_status'    => 'publish',
-	) );
+		'fields'         => 'ids',
+	) ) as $tsr_id ) {
+		if ( isset( $tsr_name_index[ $tsr_id ] ) && false !== mb_strpos( $tsr_name_index[ $tsr_id ], $tsr_q_lower ) ) {
+			$tsr_match_ids[] = (int) $tsr_id;
+		}
+	}
+	_prime_post_caches( $tsr_match_ids, false, true );
+	$tsr_all = array_map( 'get_post', $tsr_match_ids );
 
 	// Map every post to its `_tsr_names_sha256` hash so byte-identical
 	// duplicate posts (same full results table, different category label)

@@ -43,13 +43,19 @@ declare( strict_types=1 );
 
 get_header();
 
+// No meta priming: priming would load every post's `_tsr_result_set` blob
+// (≈2.8 MB) just to read the season. Scalar meta comes from the small
+// cached index instead (tsr_results_index(), audit H3).
 $all_posts = get_posts( array(
-	'post_type'        => 'ts_result',
-	'posts_per_page'   => -1,
-	'post_status'      => 'publish',
-	'orderby'          => array( 'date' => 'DESC', 'title' => 'ASC' ),
-	'suppress_filters' => false,
+	'post_type'              => 'ts_result',
+	'posts_per_page'         => -1,
+	'post_status'            => 'publish',
+	'orderby'                => array( 'date' => 'DESC', 'title' => 'ASC' ),
+	'suppress_filters'       => false,
+	'update_post_meta_cache' => false,
+	'update_post_term_cache' => false,
 ) );
+$tsr_index = tsr_results_index();
 
 // ── 2. Group: year_key → event_name → [ WP_Post, … ] ────────────────────────
 
@@ -60,7 +66,7 @@ foreach ( $all_posts as $post ) {
 	// Year: _tsr_season meta first (most authoritative), then title heuristics,
 	// then slug heuristics, 0 = "Без година".
 	// NEVER use post_date — it is the import date, not the race year.
-	$season_meta = get_post_meta( $post->ID, '_tsr_season', true );
+	$season_meta = $tsr_index[ $post->ID ]['season'] ?? '';
 	$year_key    = ( '' !== (string) $season_meta )
 		? (int) $season_meta
 		: ( tsr_title_year( $post->post_title )

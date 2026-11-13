@@ -460,6 +460,108 @@ function tsr_result_slug_index(): array {
 }
 
 /**
+ * Small per-post index of every published ts_result: the scalar meta the
+ * listing pages need, WITHOUT the `_tsr_result_set` blobs (audit H3).
+ *
+ * Reading any meta key of a post loads all of that post's meta, blob
+ * included (≈2.8 MB across the corpus), which is what made /rezultati/,
+ * /klasiraniya/ and /runner/ heavy. One SQL query, cached per results cache
+ * generation (any results write makes a fresh key), plus a static copy per
+ * request.
+ *
+ * @return array<int, array{slug: string, season: string, event_base: string, km: string, gender: string, hash: string}>
+ */
+function tsr_results_index(): array {
+	static $index = null;
+	if ( null !== $index ) {
+		return $index;
+	}
+	$key    = 'tsr_index_g' . tsr_cache_gen();
+	$cached = get_transient( $key );
+	if ( is_array( $cached ) ) {
+		$index = $cached;
+		return $index;
+	}
+	global $wpdb;
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+	$rows  = $wpdb->get_results(
+		"SELECT p.ID, p.post_name,
+		        MAX( CASE WHEN m.meta_key = '_tsr_season'       THEN m.meta_value END ) AS season,
+		        MAX( CASE WHEN m.meta_key = '_tsr_event_base'   THEN m.meta_value END ) AS event_base,
+		        MAX( CASE WHEN m.meta_key = '_tsr_distance_km'  THEN m.meta_value END ) AS km,
+		        MAX( CASE WHEN m.meta_key = '_tsr_gender'       THEN m.meta_value END ) AS gender,
+		        MAX( CASE WHEN m.meta_key = '_tsr_names_sha256' THEN m.meta_value END ) AS hash
+		   FROM {$wpdb->posts} p
+		   LEFT JOIN {$wpdb->postmeta} m
+		          ON m.post_id = p.ID
+		         AND m.meta_key IN ( '_tsr_season', '_tsr_event_base', '_tsr_distance_km', '_tsr_gender', '_tsr_names_sha256' )
+		  WHERE p.post_type = 'ts_result' AND p.post_status = 'publish'
+		  GROUP BY p.ID, p.post_name"
+	);
+	$index = array();
+	foreach ( $rows as $row ) {
+		$index[ (int) $row->ID ] = array(
+			'slug'       => (string) $row->post_name,
+			'season'     => (string) $row->season,
+			'event_base' => (string) $row->event_base,
+			'km'         => (string) $row->km,
+			'gender'     => (string) $row->gender,
+			'hash'       => (string) $row->hash,
+		);
+	}
+	set_transient( $key, $index, 12 * HOUR_IN_SECONDS );
+	return $index;
+}
+
+/**
+ * Runner-name index for /runner/ (audit H3): post ID → every row's
+ * "first last" and "last first", lowercased, one per line. A search tests
+ * this string first and decodes only the posts that can match; the exact
+ * per-row matching in page-runner.php is unchanged. Lines are separated by
+ * "\n", which sanitize_text_field() strips from the query, so a substring
+ * hit is always within one row's name.
+ *
+ * Built once per results cache generation, reading the blobs in batches of
+ * 100 so the build itself never holds the whole corpus in memory.
+ *
+ * @return array<int, string>
+ */
+function tsr_runner_name_index(): array {
+	$key    = 'tsr_runner_names_g' . tsr_cache_gen();
+	$cached = get_transient( $key );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+	global $wpdb;
+	$ids   = array_keys( tsr_results_index() );
+	$index = array();
+	foreach ( array_chunk( $ids, 100 ) as $chunk ) {
+		$in = implode( ',', array_map( 'intval', $chunk ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$blobs = $wpdb->get_results( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = '_tsr_result_set' AND post_id IN ( {$in} )" );
+		foreach ( $blobs as $blob ) {
+			$data = json_decode( (string) $blob->meta_value, true );
+			if ( ! isset( $data['rows'] ) || ! is_array( $data['rows'] ) ) {
+				continue;
+			}
+			$lines = array();
+			foreach ( $data['rows'] as $row ) {
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+				$fn      = (string) ( $row['first_name'] ?? '' );
+				$ln      = (string) ( $row['last_name'] ?? '' );
+				$lines[] = mb_strtolower( trim( $fn . ' ' . $ln ) );
+				$lines[] = mb_strtolower( trim( $ln . ' ' . $fn ) );
+			}
+			$index[ (int) $blob->post_id ] = implode( "\n", $lines );
+		}
+	}
+	set_transient( $key, $index, 12 * HOUR_IN_SECONDS );
+	return $index;
+}
+
+/**
  * Find the hub post a ts_result post belongs to, or null when the post IS a
  * hub (or a standalone post with no siblings at all).
  *
