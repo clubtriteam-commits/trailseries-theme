@@ -277,14 +277,6 @@ add_filter( 'template_include', static function ( string $template ): string {
 	return $template;
 }, 100 );
 
-// EventON enqueues its single-event stylesheet after wp_enqueue_scripts, so
-// drop it right before styles print. The theme template doesn't use it.
-add_action( 'wp_print_styles', static function (): void {
-	if ( is_singular( 'ajde_events' ) ) {
-		wp_dequeue_style( 'evo_single_event' );
-	}
-}, 100 );
-
 // ── Emoji loader off ─────────────────────────────────────────────────────────
 //
 // wp-emoji-loader tests emoji support in a blob: Worker, which the host's
