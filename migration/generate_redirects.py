@@ -17,11 +17,15 @@ lost that way). Behaviour decisions belong here:
   The `init` move of 2026-07-04 (d9052ee) was about page-cache plugins; the
   host has none (no cache headers, checked 2026-11-13, audit question 10). If
   a page cache is ever added, it must not cache 404/410 responses.
-- Singular gate (audit H7): a rule never fires when the request resolved to a
-  real post, page, result or event (`is_singular()`, front page excepted).
-  Legacy rules must not hide current content, e.g. an EventON event that
-  reuses an old /events/{slug}/. Archive and pagination rules stay
-  unconditional, since WordPress answers those with thin 200 pages.
+- Live-content gate (audit H7): a rule never fires when the request resolved
+  to a single item of a post type in GATE_POST_TYPES, i.e. content created
+  for the new site after the map was drawn up, such as an EventON event that
+  reuses an old /events/{slug}/. Deliberately NOT all of is_singular(): the
+  news migration imported old posts the map retires (Christmas Run
+  registration lists with registrants' names, season-winner posts, a stub
+  /event-directory/ page), and a general gate re-published 13 of them on
+  2026-11-13. For legacy content the map is the decision; fix the conflict
+  in the map or by removing the post, not here.
 - Prefix fallbacks come from migration/redirect-prefixes.csv
   (prefix,status_code,new_url; status 301 or 410). They run after the exact
   rules, only for requests that would otherwise 404, and are pattern rules,
@@ -37,6 +41,9 @@ from pathlib import Path
 REPO_ROOT   = Path(__file__).resolve().parent.parent
 REDIRECT_MAP = REPO_ROOT / "migration" / "redirect-map.csv"
 PREFIXES     = REPO_ROOT / "migration" / "redirect-prefixes.csv"
+
+# Post types whose live items always win over a legacy rule (see docstring).
+GATE_POST_TYPES = ["ajde_events"]
 OUT_PHP      = REPO_ROOT / "wp-content" / "plugins" / "trailseries-results" / "includes" / "redirects.php"
 
 
@@ -100,7 +107,7 @@ def main() -> None:
         f" * 410 gone:      {len(gone_sorted)} rules",
         f" * prefix rules:  {len(prefix_rules)} (from migration/redirect-prefixes.csv, 404 only)",
         " *",
-        " * Behaviour (hook, singular gate, prefixes) is documented in the generator.",
+        " * Behaviour (hook, live-content gate, prefixes) is documented in the generator.",
         " *",
         " * @package trailseries-results",
         " */",
@@ -117,9 +124,9 @@ def main() -> None:
         "\t\t\t$path = '/';",
         "\t\t}",
         "",
-        "\t\t// Legacy rules never hide current content (audit H7): if the request",
-        "\t\t// resolved to a real post, page, result or event, serve it.",
-        "\t\tif ( is_singular() && ! is_front_page() ) {",
+        "\t\t// Legacy rules never hide content created for the new site (audit H7),",
+        "\t\t// e.g. an EventON event that reuses an old /events/{slug}/.",
+        "\t\tif ( is_singular( array( " + ", ".join(php_str(t) for t in GATE_POST_TYPES) + " ) ) ) {",
         "\t\t\treturn;",
         "\t\t}",
         "",

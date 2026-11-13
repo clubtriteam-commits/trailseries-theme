@@ -9,7 +9,7 @@
  * 410 gone:      50 rules
  * prefix rules:  0 (from migration/redirect-prefixes.csv, 404 only)
  *
- * Behaviour (hook, singular gate, prefixes) is documented in the generator.
+ * Behaviour (hook, live-content gate, prefixes) is documented in the generator.
  *
  * @package trailseries-results
  */
@@ -26,9 +26,9 @@ add_action(
 			$path = '/';
 		}
 
-		// Legacy rules never hide current content (audit H7): if the request
-		// resolved to a real post, page, result or event, serve it.
-		if ( is_singular() && ! is_front_page() ) {
+		// Legacy rules never hide content created for the new site (audit H7),
+		// e.g. an EventON event that reuses an old /events/{slug}/.
+		if ( is_singular( array( 'ajde_events' ) ) ) {
 			return;
 		}
 
