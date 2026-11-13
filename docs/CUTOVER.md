@@ -68,8 +68,16 @@ races** have taken place on the old site, plus any news.
    `/7-hills-run26/`, `/buhovo-half-marathon26/`, `/the-cactus-run26/` imported
    (staging pages 7296, 7298, 7304); their results pages
    `/7-hills-run26-ranking/`, `/buhovo-half-marathon26-results/`,
-   `/the-cactus-run26-results/` (live pages 6636, 6652, 6670) are in the map and
-   wait for a fresh WXR export.
+   `/the-cactus-run26-results/` (live pages 6636, 6652, 6670) extracted from the
+   export `runbgtrailseries.WordPress.2026-11-13.xml` (pages since 2026-09-01)
+   into `migration/data/delta-2026-11/`: 17 sections, 295 rows, every source
+   data row accounted for, 0 issues (6 new headings added to
+   `category-map.csv`). Imported to staging (posts 7308–7324, names verified),
+   `backfill-meta` run (categories match the 2025 editions), and merged into
+   `tsr-data/…/canonical_fixed/` (manifest backup
+   `canonical_fixed-_manifest.bak-20261113`). Strict crawl: all six URLs pass.
+   Still to do at cutover: B1/B2 again for anything newer, and news posts
+   since July (export Posts from 2026-07).
 6. Re-run the strict crawl diff (A4) — green again, now including the new URLs.
 
 ## C. Cutover day

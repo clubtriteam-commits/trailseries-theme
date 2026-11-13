@@ -83,6 +83,8 @@ https://trailseries.bg/7-hills-run23/,https://stg.trailseries.bg/7-hills-run23/,
 https://trailseries.bg/7-hills-run24/,https://stg.trailseries.bg/7-hills-run24/,200,200,PASS,,,,,
 https://trailseries.bg/7-hills-run25-results/,https://stg.trailseries.bg/7-hills-run25-results/,200,200,FAIL,8,8,78,83,"results mismatch: rendered 8 tables / 83 rows, manifest 8 / 78"
 https://trailseries.bg/7-hills-run25/,https://stg.trailseries.bg/7-hills-run25/,200,200,PASS,,,,,
+https://trailseries.bg/7-hills-run26-ranking/,https://stg.trailseries.bg/7-hills-run26-ranking/,200,200,PASS,7,7,34,34,
+https://trailseries.bg/7-hills-run26/,https://stg.trailseries.bg/7-hills-run26/,200,200,PASS,,,,,
 https://trailseries.bg/7hills-run-2017-results/,https://stg.trailseries.bg/7hills-run-2017-results/,200,200,PASS,6,6,95,95,
 https://trailseries.bg/7hills-run18-ranking/,https://stg.trailseries.bg/7hills-run18-ranking/,200,200,PASS,6,6,63,63,
 https://trailseries.bg/7hills-run19-results/,https://stg.trailseries.bg/7hills-run19-results/,200,200,PASS,8,8,143,143,
@@ -149,6 +151,8 @@ https://trailseries.bg/boyana-x-trails21/,https://stg.trailseries.bg/boyana-x-tr
 https://trailseries.bg/buhovo-26-may/,https://stg.trailseries.bg/buhovo-26-may/,200,200,PASS,2,2,67,67,
 https://trailseries.bg/buhovo-half-marathon/,https://stg.trailseries.bg/buhovo-half-marathon/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-half-marathon25-results/,https://stg.trailseries.bg/buhovo-half-marathon25-results/,200,200,FAIL,4,4,60,73,"results mismatch: rendered 4 tables / 73 rows, manifest 4 / 60"
+https://trailseries.bg/buhovo-half-marathon26-results/,https://stg.trailseries.bg/buhovo-half-marathon26-results/,200,200,PASS,4,4,46,46,
+https://trailseries.bg/buhovo-half-marathon26/,https://stg.trailseries.bg/buhovo-half-marathon26/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-run-2-0/,https://stg.trailseries.bg/buhovo-run-2-0/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-run-2/,https://stg.trailseries.bg/buhovo-run-2/,200,200,PASS,,,,,
 https://trailseries.bg/buhovo-run/,https://stg.trailseries.bg/buhovo-run/,200,200,PASS,,,,,
@@ -430,6 +434,8 @@ https://trailseries.bg/the-cactus-run23/,https://stg.trailseries.bg/the-cactus-r
 https://trailseries.bg/the-cactus-run24-results/,https://stg.trailseries.bg/the-cactus-run24-results/,200,200,FAIL,6,6,283,332,"results mismatch: rendered 6 tables / 332 rows, manifest 6 / 283"
 https://trailseries.bg/the-cactus-run24/,https://stg.trailseries.bg/the-cactus-run24/,200,200,PASS,,,,,
 https://trailseries.bg/the-cactus-run25-results/,https://stg.trailseries.bg/the-cactus-run25-results/,200,200,PASS,6,6,231,231,
+https://trailseries.bg/the-cactus-run26-results/,https://stg.trailseries.bg/the-cactus-run26-results/,200,200,PASS,6,6,215,215,
+https://trailseries.bg/the-cactus-run26/,https://stg.trailseries.bg/the-cactus-run26/,200,200,PASS,,,,,
 https://trailseries.bg/the-chrismas-run19-ranking/,https://stg.trailseries.bg/the-chrismas-run19-ranking/,200,200,PASS,6,6,178,178,
 https://trailseries.bg/the-christmas-run-2014/,https://stg.trailseries.bg/the-christmas-run-2014/,200,200,PASS,,,,,
 https://trailseries.bg/the-christmas-run-2015/,https://stg.trailseries.bg/the-christmas-run-2015/,200,200,PASS,,,,,
