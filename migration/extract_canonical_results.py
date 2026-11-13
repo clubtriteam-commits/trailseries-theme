@@ -842,6 +842,10 @@ def main() -> int:
     parser.add_argument("--pages", default="migration/results-page-list.csv")
     parser.add_argument("--category-map", default="migration/category-map.csv")
     parser.add_argument("--overrides", default="migration/category-overrides.csv")
+    # slug -> display title, for legacy pages that have no title at all (the
+    # manifest's page_title becomes the post title prefix and feeds the event
+    # name and season). Kept out of results-page-list.csv, which is generated.
+    parser.add_argument("--titles", default="migration/page-title-overrides.csv")
     parser.add_argument("--out-dir", default="migration/data/canonical")
     args = parser.parse_args()
 
@@ -850,6 +854,10 @@ def main() -> int:
 
     category_map = load_category_map(args.category_map)
     overrides = load_overrides(args.overrides)
+    title_overrides: dict[str, str] = {}
+    if Path(args.titles).exists():
+        with open(args.titles, encoding="utf-8-sig") as f:
+            title_overrides = {r["slug"]: r["display_title"] for r in csv.DictReader(f)}
     with open(args.pages, encoding="utf-8-sig") as f:
         page_list = {(r["page_title"], r["slug"]): r for r in csv.DictReader(f)}
 
@@ -976,7 +984,7 @@ def main() -> int:
                     "file": file_name,
                     "url": listed["url"],
                     "slug": page_slug,
-                    "page_title": title,
+                    "page_title": title_overrides.get(page_slug) or title,
                     "category_raw": raw,
                     "occurrence": occurrence,
                     "override_applied": override or "",
