@@ -3364,3 +3364,18 @@ a.tsr-partner-card:hover {
 	background:    var(--tsr-blue-dk);
 	color:         var(--tsr-white);
 }
+
+/* Phones: the 4-column standings table fits without scrolling once the cell
+   padding is tighter, so the "плъзнете" hint is not needed for it. */
+@media (max-width: 480px) {
+	.tsr-standings-table th,
+	.tsr-standings-table td {
+		padding-left:  0.5rem;
+		padding-right: 0.5rem;
+	}
+
+	.tsr-results-wrap:has(> .tsr-standings-table)::before,
+	.tsr-results-wrap:has(> .tsr-standings-table)::after {
+		content: none;
+	}
+}
