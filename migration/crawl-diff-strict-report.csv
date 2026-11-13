@@ -161,7 +161,7 @@ https://trailseries.bg/buhovo-run15-ranking/,https://stg.trailseries.bg/buhovo-r
 https://trailseries.bg/buhovorun-ranking-2014/,https://stg.trailseries.bg/buhovorun-ranking-2014/,200,200,PASS,6,6,61,61,
 https://trailseries.bg/cactus-run-10-11-2013/,https://stg.trailseries.bg/cactus-run-10-11-2013/,200,200,PASS,8,8,230,230,
 https://trailseries.bg/cactus-run-2016-ranking/,https://stg.trailseries.bg/cactus-run-2016-ranking/,200,200,PASS,6,6,180,180,
-https://trailseries.bg/cactus-run18-ranking/,https://stg.trailseries.bg/cactus-run18-ranking/,200,200,FAIL,6,7,205,211,"results mismatch: rendered 7 tables / 211 rows, manifest 6 / 205"
+https://trailseries.bg/cactus-run18-ranking/,https://stg.trailseries.bg/cactus-run18-ranking/,200,200,PASS,7,7,211,211,
 https://trailseries.bg/calendar/,https://stg.trailseries.bg/calendar/,200,200,PASS,,,,,
 https://trailseries.bg/category/%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8/page/1/,https://stg.trailseries.bg/category/%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8/page/1/,301,301,PASS,,,,,→ https://stg.trailseries.bg/novini/
 https://trailseries.bg/category/%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8/page/2/,https://stg.trailseries.bg/category/%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8/page/2/,301,301,PASS,,,,,→ https://stg.trailseries.bg/novini/
@@ -344,9 +344,9 @@ https://trailseries.bg/pancharevo-night-run-2018-%d1%89%d0%b0%d1%84%d0%b5%d1%82%
 https://trailseries.bg/pancharevo-night-run-2019-relay/,https://stg.trailseries.bg/pancharevo-night-run-2019-relay/,200,200,PASS,,,,,
 https://trailseries.bg/pancharevo-night-run/,https://stg.trailseries.bg/pancharevo-night-run/,200,200,PASS,,,,,
 https://trailseries.bg/pancharevo-night-run17-ranking/,https://stg.trailseries.bg/pancharevo-night-run17-ranking/,200,200,PASS,6,6,124,124,
-https://trailseries.bg/pancharevo-night-run18-ranking/,https://stg.trailseries.bg/pancharevo-night-run18-ranking/,200,200,FAIL,2,5,45,63,"results mismatch: rendered 5 tables / 63 rows, manifest 2 / 45"
-https://trailseries.bg/pancharevo-night-run19-ranking/,https://stg.trailseries.bg/pancharevo-night-run19-ranking/,200,200,FAIL,2,5,35,58,"results mismatch: rendered 5 tables / 58 rows, manifest 2 / 35"
-https://trailseries.bg/pancharevo-night-run21-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://stg.trailseries.bg/pancharevo-night-run21-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,200,200,PASS,2,2,5,5,
+https://trailseries.bg/pancharevo-night-run18-ranking/,https://stg.trailseries.bg/pancharevo-night-run18-ranking/,200,200,PASS,5,5,63,63,
+https://trailseries.bg/pancharevo-night-run19-ranking/,https://stg.trailseries.bg/pancharevo-night-run19-ranking/,200,200,PASS,5,5,58,58,
+https://trailseries.bg/pancharevo-night-run21-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,https://stg.trailseries.bg/pancharevo-night-run21-%d1%80%d0%b5%d0%b7%d1%83%d0%bb%d1%82%d0%b0%d1%82%d0%b8/,200,200,PASS,3,3,16,16,
 https://trailseries.bg/pasare-results/,https://stg.trailseries.bg/pasare-results/,200,200,PASS,4,4,111,111,
 https://trailseries.bg/pasarel-run-16-06/,https://stg.trailseries.bg/pasarel-run-16-06/,200,200,PASS,6,6,87,87,
 https://trailseries.bg/pasarel-run-2/,https://stg.trailseries.bg/pasarel-run-2/,200,200,PASS,,,,,
@@ -376,7 +376,7 @@ https://trailseries.bg/september-run/,https://stg.trailseries.bg/september-run/,
 https://trailseries.bg/simeonovo-run-2016/,https://stg.trailseries.bg/simeonovo-run-2016/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run-2017/,https://stg.trailseries.bg/simeonovo-run-2017/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run-2018/,https://stg.trailseries.bg/simeonovo-run-2018/,200,200,PASS,,,,,
-https://trailseries.bg/simeonovo-run-ranking/,https://stg.trailseries.bg/simeonovo-run-ranking/,200,200,FAIL,7,8,148,152,"results mismatch: rendered 8 tables / 152 rows, manifest 7 / 148"
+https://trailseries.bg/simeonovo-run-ranking/,https://stg.trailseries.bg/simeonovo-run-ranking/,200,200,PASS,8,8,152,152,
 https://trailseries.bg/simeonovo-run-ranking14/,https://stg.trailseries.bg/simeonovo-run-ranking14/,200,200,PASS,2,2,163,163,
 https://trailseries.bg/simeonovo-run/,https://stg.trailseries.bg/simeonovo-run/,200,200,PASS,,,,,
 https://trailseries.bg/simeonovo-run15/,https://stg.trailseries.bg/simeonovo-run15/,200,200,PASS,,,,,
@@ -417,7 +417,7 @@ https://trailseries.bg/the-cactus-run-2016/,https://stg.trailseries.bg/the-cactu
 https://trailseries.bg/the-cactus-run-2017/,https://stg.trailseries.bg/the-cactus-run-2017/,200,200,PASS,,,,,
 https://trailseries.bg/the-cactus-run-results14/,https://stg.trailseries.bg/the-cactus-run-results14/,200,200,PASS,8,8,236,236,
 https://trailseries.bg/the-cactus-run/,https://stg.trailseries.bg/the-cactus-run/,200,200,PASS,,,,,
-https://trailseries.bg/the-cactus-run15-results/,https://stg.trailseries.bg/the-cactus-run15-results/,200,200,FAIL,6,7,184,195,"results mismatch: rendered 7 tables / 195 rows, manifest 6 / 184"
+https://trailseries.bg/the-cactus-run15-results/,https://stg.trailseries.bg/the-cactus-run15-results/,200,200,PASS,7,7,195,195,
 https://trailseries.bg/the-cactus-run17-ranking/,https://stg.trailseries.bg/the-cactus-run17-ranking/,200,200,PASS,6,6,190,190,
 https://trailseries.bg/the-cactus-run18/,https://stg.trailseries.bg/the-cactus-run18/,200,200,PASS,,,,,
 https://trailseries.bg/the-cactus-run19-results/,https://stg.trailseries.bg/the-cactus-run19-results/,200,200,PASS,6,6,244,244,
