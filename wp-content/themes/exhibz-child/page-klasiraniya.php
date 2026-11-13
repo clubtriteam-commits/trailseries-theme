@@ -137,7 +137,12 @@ function tsr_points( int $place, string $cat, bool $is_bonus = false ): int {
 // runs over an empty post list and the cached standings are restored
 // after the (no-op) sort.
 $tsr_standings_key  = sprintf( 'tsr_standings_g%d_s%d', tsr_cache_gen(), $current_season );
-$tsr_standings_hit  = get_transient( $tsr_standings_key );
+// Audit H5: only a season that has results may compute or cache anything.
+// `?sezon=<any other int>` used to write a fresh transient per value; it
+// now renders the same empty standings straight away.
+$tsr_standings_hit  = in_array( $current_season, $available_seasons, true )
+	? get_transient( $tsr_standings_key )
+	: array( 'standings' => array( 'm' => array(), 'f' => array() ), 'has_cat_meta' => false );
 $tsr_need_compute   = ! is_array( $tsr_standings_hit );
 
 /**

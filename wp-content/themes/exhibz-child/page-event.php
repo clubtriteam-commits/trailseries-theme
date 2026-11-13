@@ -37,38 +37,44 @@ declare( strict_types=1 );
 $tsr_event_slug = sanitize_title( trim( sanitize_text_field( wp_unslash( $_GET['sabitie'] ?? '' ) ) ) );
 $tsr_searching  = '' !== $tsr_event_slug;
 
-// ── Data: fetch all ts_result posts once ──────────────────────────────────────
+// ── Data ──────────────────────────────────────────────────────────────────────
 //
-// Both branches are cached in results-derived transients (key embeds
-// tsr_cache_gen(), functions.php — any results write mints a new key).
-// On a hit the compute loop below runs over an empty post list and the
-// cached value is restored after it; the full fetch + per-post JSON
-// decode only happens on a miss.
+// Results-derived transients (key embeds tsr_cache_gen(), functions.php —
+// any results write mints a new key). Audit H5: only a KNOWN event slug may
+// compute or cache anything; `?sabitie=<anything else>` renders the normal
+// "not found" view without scanning the corpus or writing a transient.
+// Audit H3: posts are listed without meta priming (priming loads every
+// results blob); event names come from tsr_results_index(), and only the
+// matching event's posts load their blobs.
 
-$tsr_index_key = 'tsr_event_index_g' . tsr_cache_gen();
-$tsr_index_hit = ! $tsr_searching ? get_transient( $tsr_index_key ) : false;
+$tsr_all_posts = null; // ordered list, fetched at most once
+$tsr_list_posts = static function () use ( &$tsr_all_posts ): array {
+	if ( null === $tsr_all_posts ) {
+		$tsr_all_posts = get_posts( array(
+			'post_type'              => 'ts_result',
+			'posts_per_page'         => -1,
+			'post_status'            => 'publish',
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		) );
+	}
+	return $tsr_all_posts;
+};
+$tsr_rindex = tsr_results_index();
+// Meta first (canonical, set by backfill-meta), title heuristic as fallback —
+// same precedence as page-rezultati.php.
+$tsr_name_of = static function ( WP_Post $p ) use ( $tsr_rindex ): string {
+	return ( $tsr_rindex[ $p->ID ]['event_base'] ?? '' ) ?: tsr_event_base_name( $p->post_title );
+};
 
-$tsr_event_key = 'tsr_event_g' . tsr_cache_gen() . '_' . md5( $tsr_event_slug );
-$tsr_event_hit = $tsr_searching ? get_transient( $tsr_event_key ) : false;
+// ── Event index (slug → display name): browse list, and the H5 whitelist ──────
 
-$tsr_need_posts = $tsr_searching ? ! is_array( $tsr_event_hit ) : ! is_array( $tsr_index_hit );
-
-$tsr_all_posts = ! $tsr_need_posts ? array() : get_posts( array(
-	'post_type'      => 'ts_result',
-	'posts_per_page' => -1,
-	'post_status'    => 'publish',
-) );
-
-// ── Branch A: browse all events ───────────────────────────────────────────────
-
-$tsr_event_index = array(); // slug → display name
-
-if ( ! $tsr_searching ) {
-	foreach ( $tsr_all_posts as $tsr_p ) {
-		// Meta first (canonical, set by backfill-meta), title heuristic as
-		// fallback — same precedence as page-rezultati.php.
-		$tsr_name = (string) get_post_meta( $tsr_p->ID, '_tsr_event_base', true )
-			?: tsr_event_base_name( $tsr_p->post_title );
+$tsr_index_key   = 'tsr_event_index_g' . tsr_cache_gen();
+$tsr_event_index = get_transient( $tsr_index_key );
+if ( ! is_array( $tsr_event_index ) ) {
+	$tsr_event_index = array();
+	foreach ( $tsr_list_posts() as $tsr_p ) {
+		$tsr_name = $tsr_name_of( $tsr_p );
 		if ( '' === $tsr_name ) {
 			continue;
 		}
@@ -78,13 +84,12 @@ if ( ! $tsr_searching ) {
 		}
 	}
 	asort( $tsr_event_index );
-
-	if ( is_array( $tsr_index_hit ) ) {
-		$tsr_event_index = $tsr_index_hit;
-	} else {
-		set_transient( $tsr_index_key, $tsr_event_index, 12 * HOUR_IN_SECONDS );
-	}
+	set_transient( $tsr_index_key, $tsr_event_index, 12 * HOUR_IN_SECONDS );
 }
+$tsr_known_event = $tsr_searching && isset( $tsr_event_index[ $tsr_event_slug ] );
+
+$tsr_event_key = 'tsr_event_g' . tsr_cache_gen() . '_' . md5( $tsr_event_slug );
+$tsr_event_hit = $tsr_known_event ? get_transient( $tsr_event_key ) : false;
 
 // ── Branch B: single event history ───────────────────────────────────────────
 
@@ -92,13 +97,14 @@ $tsr_event_display = '';          // human-readable name
 $tsr_editions      = array();     // [ year => [ [post, dist], … ] ]
 $tsr_records       = array();     // [ dist_key => [time, name, url, year] ]
 
-if ( $tsr_searching ) {
-	foreach ( $tsr_all_posts as $tsr_p ) {
-		$tsr_name = (string) get_post_meta( $tsr_p->ID, '_tsr_event_base', true )
-			?: tsr_event_base_name( $tsr_p->post_title );
-		if ( sanitize_title( $tsr_name ) !== $tsr_event_slug ) {
-			continue;
-		}
+if ( $tsr_known_event && ! is_array( $tsr_event_hit ) ) {
+	$tsr_event_posts = array_values( array_filter(
+		$tsr_list_posts(),
+		static fn( WP_Post $p ): bool => sanitize_title( $tsr_name_of( $p ) ) === $tsr_event_slug
+	) );
+	_prime_post_caches( wp_list_pluck( $tsr_event_posts, 'ID' ), false, true );
+	foreach ( $tsr_event_posts as $tsr_p ) {
+		$tsr_name = $tsr_name_of( $tsr_p );
 
 		if ( '' === $tsr_event_display ) {
 			$tsr_event_display = $tsr_name;
@@ -168,21 +174,19 @@ if ( $tsr_searching ) {
 	}
 	unset( $tsr_eds_for_year );
 
-	if ( is_array( $tsr_event_hit ) ) {
-		$tsr_event_display = (string) $tsr_event_hit['display'];
-		$tsr_editions      = $tsr_event_hit['editions'];
-		$tsr_records       = $tsr_event_hit['records'];
-	} else {
-		set_transient(
-			$tsr_event_key,
-			array(
-				'display'  => $tsr_event_display,
-				'editions' => $tsr_editions,
-				'records'  => $tsr_records,
-			),
-			12 * HOUR_IN_SECONDS
-		);
-	}
+	set_transient(
+		$tsr_event_key,
+		array(
+			'display'  => $tsr_event_display,
+			'editions' => $tsr_editions,
+			'records'  => $tsr_records,
+		),
+		12 * HOUR_IN_SECONDS
+	);
+} elseif ( is_array( $tsr_event_hit ) ) {
+	$tsr_event_display = (string) $tsr_event_hit['display'];
+	$tsr_editions      = $tsr_event_hit['editions'];
+	$tsr_records       = $tsr_event_hit['records'];
 }
 
 get_header();
