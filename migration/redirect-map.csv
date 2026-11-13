@@ -466,3 +466,9 @@ https://trailseries.bg/thechristmasrun-%d1%81%d1%82%d0%b0%d1%80%d1%82%d0%be%d0%b
 https://trailseries.bg/vladaya-eco-run/,https://trailseries.bg/vladaya-eco-run/,200,event landing page — content migrated to staging (import-event-pages.php)
 https://trailseries.bg/xmas-run18/,https://trailseries.bg/xmas-run18/,200,event landing page — content migrated to staging (import-event-pages.php)
 https://trailseries.bg/zheleznitsa-2-0-20-jan/olympus-digital-camera/,,410,attachment page — not migrated
+https://trailseries.bg/7-hills-run26/,https://trailseries.bg/7-hills-run26/,200,event landing page published after the 2026-07-02 export — content migrated to staging (import-event-pages.php)
+https://trailseries.bg/buhovo-half-marathon26/,https://trailseries.bg/buhovo-half-marathon26/,200,event landing page published after the 2026-07-02 export — content migrated to staging (import-event-pages.php)
+https://trailseries.bg/the-cactus-run26/,https://trailseries.bg/the-cactus-run26/,200,event landing page published after the 2026-07-02 export — content migrated to staging (import-event-pages.php)
+https://trailseries.bg/7-hills-run26-ranking/,https://trailseries.bg/7-hills-run26-ranking/,200,results page published after the 2026-07-02 export — slug preserved (iron rule 3)
+https://trailseries.bg/buhovo-half-marathon26-results/,https://trailseries.bg/buhovo-half-marathon26-results/,200,results page published after the 2026-07-02 export — slug preserved (iron rule 3)
+https://trailseries.bg/the-cactus-run26-results/,https://trailseries.bg/the-cactus-run26-results/,200,results page published after the 2026-07-02 export — slug preserved (iron rule 3)
