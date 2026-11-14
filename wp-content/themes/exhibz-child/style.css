@@ -4225,18 +4225,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .tsr-hero--photo::before {
-	z-index:    0;
+	z-index:    1; /* shade above the photo */
 	background:
 		linear-gradient(180deg, rgba(10, 22, 40, 0.55) 0%, rgba(10, 22, 40, 0.45) 40%, rgba(10, 22, 40, 0.82) 100%),
 		radial-gradient(ellipse 60% 50% at 50% 48%, rgba(10, 22, 40, 0.35) 0%, transparent 70%);
 }
 
 .tsr-hero--photo::after {
-	z-index: 1;
+	z-index: 2;
 }
 
 .tsr-hero--photo .tsr-hero__inner {
-	z-index: 2;
+	z-index: 3;
 }
 
 /* Small line above the title: light, readable on any photo */
