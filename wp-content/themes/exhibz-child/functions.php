@@ -600,6 +600,11 @@ function tsr_homepage_total_finishers(): int {
 		   AND p.post_status = 'publish'"
 	);
 
+	// Finishes the series counts that are not in the imported results (races
+	// without a results page). Owner's total on 2026-11-14: 19 299, against
+	// 17 863 in the data → 1 436. New results add to the total on their own.
+	$total += (int) get_option( 'tsr_finishers_offset', 1436 );
+
 	set_transient( 'tsr_total_finishers', $total, 12 * HOUR_IN_SECONDS );
 	return $total;
 }
