@@ -23,6 +23,11 @@
 				?>
 				<p class="tsr-footer__word">Trail<span>Series</span>.bg</p>
 				<p class="tsr-footer__tag">Серия планинско бягане около София · от 2012 г.</p>
+				<?php // Strava club widget (owner, 2026-11-14) — third-party, loads only when scrolled near. ?>
+				<iframe class="tsr-footer__strava"
+				        title="Trail Series в Strava — последни активности на клуба"
+				        src="https://www.strava.com/clubs/2417014/latest-rides/768ac25a32f9fc9cf0d3fdae33a41fa212eaa552?show_rides=false"
+				        width="300" height="160" loading="lazy" scrolling="no" frameborder="0" allowtransparency="true"></iframe>
 			</div>
 
 			<nav class="tsr-footer__col" aria-labelledby="tsr-f-map">
@@ -46,6 +51,15 @@
 					<li><a href="<?php echo esc_url( home_url( '/rekordi/' ) ); ?>">Рекорди</a></li>
 				</ul>
 			</nav>
+
+			<div class="tsr-footer__col">
+				<h2 class="tsr-footer__h">Последвай ни</h2>
+				<ul>
+					<li><a href="https://www.instagram.com/trailseries.bg/" target="_blank" rel="noopener">Instagram<span class="screen-reader-text"> (нов прозорец)</span></a></li>
+					<li><a href="https://www.facebook.com/TrailSeries.bg" target="_blank" rel="noopener">Facebook<span class="screen-reader-text"> (нов прозорец)</span></a></li>
+					<li><a href="https://www.strava.com/clubs/TrailSeriesBG" target="_blank" rel="noopener">Strava<span class="screen-reader-text"> (нов прозорец)</span></a></li>
+				</ul>
+			</div>
 
 			<div class="tsr-footer__col">
 				<h2 class="tsr-footer__h">Контакт</h2>
