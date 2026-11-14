@@ -4274,7 +4274,13 @@ h1, h2, h3, h4, h5, h6 {
    ══════════════════════════════════════════════════════════════════════════ */
 
 .tsr-map-section {
-	padding-bottom: 4rem;
+	padding-block: 4rem;
+}
+
+@media (max-width: 768px) {
+	.tsr-map-section {
+		padding-block: 2.5rem;
+	}
 }
 
 .tsr-map-layout {
@@ -4285,7 +4291,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .tsr-map-wrap {
-	position: relative;
+	position:  relative;
+	isolation: isolate; /* the Pirin button stays under the sticky header */
 }
 
 .tsr-map-section .tsr-map {

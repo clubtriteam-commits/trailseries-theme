@@ -808,7 +808,7 @@ foreach ( $tsr_map_groups as $tsr_gi => $tsr_g ) {
 		if ( initialized || typeof L === 'undefined' ) { return; }
 		initialized = true;
 
-		var map = L.map( 'tsr-map', { scrollWheelZoom: false } );
+		var map = L.map( 'tsr-map', { scrollWheelZoom: false, zoomSnap: 0.25 } ); // quarter zoom steps: Sofia fills the map
 		map.on( 'focus', function () { map.scrollWheelZoom.enable(); } );
 		map.on( 'blur',  function () { map.scrollWheelZoom.disable(); } );
 
@@ -853,7 +853,7 @@ foreach ( $tsr_map_groups as $tsr_gi => $tsr_g ) {
 		} );
 
 		var showSofia = function () {
-			map.fitBounds( sofia, { padding: [ 40, 40 ], maxZoom: 12 } );
+			map.fitBounds( sofia, { padding: [ 30, 30 ], maxZoom: 12 } );
 		};
 		showSofia();
 
