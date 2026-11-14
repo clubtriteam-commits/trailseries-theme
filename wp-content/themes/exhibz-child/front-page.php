@@ -886,11 +886,11 @@ get_header();
 			</div>
 
 			<?php
-			// Races organised by the series so far — the owner's count
-			// (147 on 2026-11-13). Not derived from the results: some races
-			// have no results page. Update after each race:
-			// wp option update tsr_races_held 148
-			$tsr_races_held = (int) get_option( 'tsr_races_held', 147 );
+			// Races organised by the series — the owner's count: the 149
+			// races with published results plus The Christmas Run 2026, as
+			// the site goes live after it (owner, 2026-11-14). Update after
+			// each race: wp option update tsr_races_held 151
+			$tsr_races_held = (int) get_option( 'tsr_races_held', 150 );
 			?>
 			<div class="tsr-stat">
 				<div class="tsr-stat__num"><?php echo esc_html( (string) $tsr_races_held ); ?></div>
