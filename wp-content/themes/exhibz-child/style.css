@@ -4192,3 +4192,19 @@ h1, h2, h3, h4, h5, h6 {
 		margin-bottom: -2.5rem;
 	}
 }
+
+/* History: races in the season, under the block title */
+.tsr-story__races {
+	display:       inline-block;
+	margin:        -0.4rem 0 1rem;
+	padding:       0.3rem 0.8rem;
+	border-radius: 999px;
+	background:    var(--tsr-bg);
+	color:         var(--tsr-navy);
+	font-size:     0.9rem;
+	font-weight:   700;
+}
+
+.tsr-band .tsr-story__races {
+	background: rgba(255, 255, 255, 0.92);
+}

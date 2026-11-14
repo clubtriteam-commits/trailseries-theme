@@ -226,6 +226,26 @@ add_filter( 'image_editor_output_format', static function ( array $formats ): ar
 	return $formats;
 } );
 
+/**
+ * Number of races with published results in a series season (season key:
+ * start year for 2012–2019, the calendar year from 2021). A race is an event
+ * name + race year, so season 8's two editions of one race count twice.
+ */
+function tsr_season_race_count( int $season_key ): int {
+	$races = array();
+	foreach ( tsr_results_index() as $entry ) {
+		if ( (string) $season_key === $entry['series'] && '' !== $entry['event_base'] ) {
+			$races[ $entry['event_base'] . '|' . $entry['season'] ] = true;
+		}
+	}
+	return count( $races );
+}
+
+/** "1 състезание" / "10 състезания". */
+function tsr_races_label( int $n ): string {
+	return sprintf( '%d %s', $n, 1 === $n ? 'състезание' : 'състезания' );
+}
+
 /** Short Bulgarian month name ("ян", "февр", … ) for date badges. */
 function tsr_bg_month_short( int $month ): string {
 	$m = array( 1 => 'ян', 'февр', 'март', 'апр', 'май', 'юни', 'юли', 'авг', 'септ', 'окт', 'ноем', 'дек' );

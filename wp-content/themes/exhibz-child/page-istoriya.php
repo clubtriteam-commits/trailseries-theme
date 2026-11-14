@@ -136,6 +136,19 @@ $tsr_photo_credit   = 'KrisoK Photography'; // one credit line at the bottom of 
 $tsr_by_year = array_column( $tsr_timeline, null, 'year' );
 
 /**
+ * Races of the season a timeline year stands for, from the published
+ * results (same count as on /klasiraniya/). 2020 has none of its own:
+ * season 8 ran from October 2019 to December 2020 and is counted at 2019.
+ */
+$tsr_year_races = static function ( int $year ): string {
+	if ( 2020 === $year ) {
+		return '';
+	}
+	$n = tsr_season_race_count( $year );
+	return $n > 0 ? tsr_races_label( $n ) : '';
+};
+
+/**
  * <img> for a history photo (lazy, with its real dimensions).
  */
 $tsr_history_img = static function ( string $file, string $class = '' ): string {
@@ -347,6 +360,9 @@ $tsr_plain_years = array_filter(
 								<p class="tsr-story__season"><?php echo esc_html( $tsr_season ); ?></p>
 							<?php endif; ?>
 							<h2 class="tsr-story__title"><?php echo esc_html( $tsr_title ); ?></h2>
+							<?php if ( '' !== $tsr_year_races( $tsr_b['year'] ) ) : ?>
+								<p class="tsr-story__races"><?php echo esc_html( $tsr_year_races( $tsr_b['year'] ) ); ?></p>
+							<?php endif; ?>
 							<?php if ( '' !== $tsr_e['desc'] ) : ?>
 								<p><?php echo esc_html( $tsr_e['desc'] ); ?></p>
 							<?php endif; ?>
@@ -367,6 +383,9 @@ $tsr_plain_years = array_filter(
 							<p class="tsr-story__season"><?php echo esc_html( $tsr_season ); ?></p>
 						<?php endif; ?>
 						<h2 class="tsr-story__title"><?php echo esc_html( $tsr_title ); ?></h2>
+							<?php if ( '' !== $tsr_year_races( $tsr_b['year'] ) ) : ?>
+								<p class="tsr-story__races"><?php echo esc_html( $tsr_year_races( $tsr_b['year'] ) ); ?></p>
+							<?php endif; ?>
 						<?php if ( '' !== $tsr_e['desc'] ) : ?>
 							<p><?php echo esc_html( $tsr_e['desc'] ); ?></p>
 						<?php endif; ?>

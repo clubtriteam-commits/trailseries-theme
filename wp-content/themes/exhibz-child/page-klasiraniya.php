@@ -350,10 +350,7 @@ $tsr_show_all = isset( $_GET['vsichki'] );
 $tsr_open_tab = ( isset( $_GET['pol'] ) && 'f' === $_GET['pol'] ) ? 'f' : 'm';
 // phpcs:enable WordPress.Security.NonceVerification
 
-$tsr_race_count = count( array_unique( array_filter( array_map(
-	static fn( array $e ): string => (string) $current_season === $e['series'] ? $e['event_base'] : '',
-	tsr_results_index()
-) ) ) );
+$tsr_race_count = tsr_season_race_count( $current_season );
 
 /**
  * One gender panel: podium (top 3) + table (#4 … #50, or all).
