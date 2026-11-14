@@ -9,8 +9,8 @@ declare( strict_types=1 );
  * same and maps them to one canonical name — but only when nothing in the
  * data contradicts it:
  *
- *   - two different spellings of the group appear in the same race
- *     (two people, not one), or
+ *   - the group has two different results in the same race (two people
+ *     with the same name, not one), or
  *   - the birth years implied by the recorded ages differ by more than
  *     AGE_TOLERANCE years.
  *
@@ -75,8 +75,9 @@ final class TSR_Runner_Merge {
 	/**
 	 * Decide which spellings are merged.
 	 *
-	 * @param iterable<array{name:string, race:string, year:int, age:?int, bib:string}> $rows
-	 *        One entry per result row; `race` identifies the race (event + year).
+	 * @param iterable<array{name:string, race:string, year:int, age:?int, bib:string, result?:string}> $rows
+	 *        One entry per result row; `race` identifies the race (event + year),
+	 *        `result` the result itself (place, time, status).
 	 * @param array<string, string> $manual  Owner-confirmed aliases (TSR_Runner_Alias map).
 	 * @param list<string>          $blocked fold_key()s that must never be merged.
 	 * @return array{map: array<string, string>, merged: list<array{canonical:string, spellings:list<string>}>, skipped: list<array{reason:string, spellings:list<string>}>}
@@ -100,7 +101,9 @@ final class TSR_Runner_Merge {
 			$g   = &$groups[ $fold ];
 			$g['shown'][ $name ]              = ( $g['shown'][ $name ] ?? 0 ) + 1;
 			$g['keys'][ $key ]                = true;
-			$g['races'][ $row['race'] ][ $key ] = true;
+			// Two different results in one race = two people. The same result
+			// twice (a table published twice) is one person.
+			$g['races'][ $row['race'] ][ $row['result'] ?? $key ] = true;
 			$age = $row['age'];
 			if ( null !== $age && $age > 5 && $age < 90 && (string) $age !== trim( (string) $row['bib'] ) && $row['year'] > 0 ) {
 				$g['births'][] = $row['year'] - $age; // an age equal to the bib is a known import artefact
@@ -119,7 +122,7 @@ final class TSR_Runner_Merge {
 			$reason  = '';
 			if ( $several && isset( $blocked[ $fold ] ) ) {
 				$reason = 'blocked';
-			} elseif ( $several && array_filter( $g['races'], static fn( array $keys ): bool => count( $keys ) > 1 ) ) {
+			} elseif ( $several && array_filter( $g['races'], static fn( array $results ): bool => count( $results ) > 1 ) ) {
 				$reason = 'same-race';
 			} elseif ( $several && isset( $g['births'] ) && max( $g['births'] ) - min( $g['births'] ) > self::AGE_TOLERANCE ) {
 				$reason = 'age';

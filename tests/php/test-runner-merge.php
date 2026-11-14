@@ -4,8 +4,9 @@ declare( strict_types=1 );
  * TSR_Runner_Merge — automatic merging of spellings (invented names).
  */
 
-function tsr_test_merge_row( string $name, string $race, int $year = 2020, ?int $age = null, string $bib = '' ): array {
-	return array( 'name' => $name, 'race' => $race, 'year' => $year, 'age' => $age, 'bib' => $bib );
+function tsr_test_merge_row( string $name, string $race, int $year = 2020, ?int $age = null, string $bib = '', string $result = '' ): array {
+	$row = array( 'name' => $name, 'race' => $race, 'year' => $year, 'age' => $age, 'bib' => $bib );
+	return '' === $result ? $row : $row + array( 'result' => $result );
 }
 
 test( 'merge: fold_key ignores script, spelling variants and word order', static function (): void {
@@ -40,13 +41,19 @@ test( 'merge: two spellings in the same race are two people', static function ()
 	eq( $plan['skipped'][0]['reason'], 'same-race', 'reason' );
 } );
 
-test( 'merge: the same spelling twice in a race does not block a merge', static function (): void {
+test( 'merge: the same result twice in a race is one person, two results are two people', static function (): void {
 	$plan = TSR_Runner_Merge::plan( array(
-		tsr_test_merge_row( 'Testan Probov', 'a|2018' ),
-		tsr_test_merge_row( 'Testan Probov', 'a|2018' ), // duplicated table
-		tsr_test_merge_row( 'Тестан Пробов', 'b|2014' ),
+		tsr_test_merge_row( 'Testan Probov', 'a|2018', 2018, null, '', '3|1:02:03|FIN' ),
+		tsr_test_merge_row( 'Testan Probov', 'a|2018', 2018, null, '', '3|1:02:03|FIN' ), // table published twice
+		tsr_test_merge_row( 'Тестан Пробов', 'b|2014', 2014, null, '', '5|1:10:00|FIN' ),
 	) );
 	eq( TSR_Runner_Alias::canonical( 'Тестан Пробов', $plan['map'] ), 'Testan Probov', 'merged' );
+	$plan = TSR_Runner_Merge::plan( array(
+		tsr_test_merge_row( 'Testan Probov', 'a|2018', 2018, null, '', '3|1:02:03|FIN' ),
+		tsr_test_merge_row( 'Testan Probov', 'a|2018', 2018, null, '', '9|1:20:00|FIN' ), // a namesake
+		tsr_test_merge_row( 'Тестан Пробов', 'b|2014', 2014, null, '', '5|1:10:00|FIN' ),
+	) );
+	eq( $plan['map'], array(), 'namesakes in one race: not merged with the other script' );
 } );
 
 test( 'merge: contradicting ages block, bib-as-age is ignored', static function (): void {

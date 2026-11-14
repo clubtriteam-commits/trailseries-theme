@@ -138,6 +138,7 @@ final class TSR_CLI {
 						'year' => $year,
 						'age'  => isset( $row['age'] ) && is_int( $row['age'] ) ? $row['age'] : null,
 						'bib'  => (string) ( $row['bib'] ?? '' ),
+						'result' => ( $row['place'] ?? '' ) . '|' . ( $row['finish_time'] ?? '' ) . '|' . ( $row['status'] ?? '' ),
 					);
 				}
 			}
@@ -148,7 +149,7 @@ final class TSR_CLI {
 		$why    = array_count_values( array_column( $plan['skipped'], 'reason' ) );
 		WP_CLI::log( sprintf( '%d result rows read.', count( $rows ) ) );
 		WP_CLI::log( sprintf( '%d people merged (%d spellings mapped).', count( $plan['merged'] ), count( $plan['map'] ) ) );
-		WP_CLI::log( sprintf( '%d groups left alone: %d two spellings in one race, %d ages do not fit, %d blocked.', count( $plan['skipped'] ), $why['same-race'] ?? 0, $why['age'] ?? 0, $why['blocked'] ?? 0 ) );
+		WP_CLI::log( sprintf( '%d groups left alone: %d two results in one race, %d ages do not fit, %d blocked.', count( $plan['skipped'] ), $why['same-race'] ?? 0, $why['age'] ?? 0, $why['blocked'] ?? 0 ) );
 
 		if ( isset( $assoc_args['report'] ) ) {
 			$file = (string) $assoc_args['report'];
