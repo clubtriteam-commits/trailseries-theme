@@ -61,29 +61,22 @@ if ( post_type_exists( 'ajde_events' ) ) {
 	wp_reset_postdata();
 }
 
-// 2. All ts_result posts for the last 1 PAST calendar event.
-//
-// "Recent results" means results from races that have actually happened,
-// per the calendar — not "the 5 most recently published ts_result posts"
-// (that order tracks import/edit time, not race date, and could easily show
-// a 2019 result re-imported yesterday ahead of last week's real race).
-// Matched via _tsr_event_base + _tsr_season, same fields page-event.php
-// uses; cached like it (functions.php tsr_cache_gen()) since this scans
-// every ts_result post per target event when the cache is cold.
-//
-// One event, not two: two events' worth of categories (up to a dozen rows)
-// crowded this teaser section — see commit history if that's ever revisited.
-$tsr_past_results = array();
-$tsr_past_key      = 'tsr_home_past_results_g' . tsr_cache_gen();
-$tsr_past_cached   = get_transient( $tsr_past_key );
-
-if ( is_array( $tsr_past_cached ) ) {
-	$tsr_past_results = array_values( array_filter( array_map( 'get_post', $tsr_past_cached ) ) );
+// 2. The last three PAST calendar races that have published results
+// (owner-approved layout 2026-11-14: one compact row each — small photo,
+// name, date, distance links). Races are found on the calendar (race date,
+// not import date), results via the cached results index (no blob loads).
+// Each row: [ title, url (results hub), ts, image_id, dists: [ km_label, url ] ].
+$tsr_past_races = array();
+$tsr_past_key   = 'tsr_home_past_races_g' . tsr_cache_gen();
+$tsr_past_cache = get_transient( $tsr_past_key );
+if ( is_array( $tsr_past_cache ) ) {
+	$tsr_past_races = $tsr_past_cache;
 } elseif ( post_type_exists( 'ajde_events' ) ) {
-	$tsr_past_events_q = new WP_Query(
+	$tsr_rindex  = tsr_results_index();
+	$tsr_past_q  = new WP_Query(
 		array(
 			'post_type'      => 'ajde_events',
-			'posts_per_page' => 1,
+			'posts_per_page' => 12,
 			'post_status'    => 'publish',
 			'meta_key'       => 'evcal_srow',
 			'orderby'        => 'meta_value_num',
@@ -99,49 +92,49 @@ if ( is_array( $tsr_past_cached ) ) {
 			'no_found_rows'  => true,
 		)
 	);
-
-	while ( $tsr_past_events_q->have_posts() ) {
-		$tsr_past_events_q->the_post();
-		// EventON stores the title with the apostrophe HTML-entity-encoded
-		// ("Run&#8217;26"), unlike ts_result post_titles — decode first or
-		// tsr_event_base_name()'s apostrophe-year regex never matches and
-		// the whole event silently yields zero results.
+	while ( $tsr_past_q->have_posts() && count( $tsr_past_races ) < 3 ) {
+		$tsr_past_q->the_post();
+		// EventON titles carry the apostrophe as an HTML entity.
 		$tsr_ev_title = html_entity_decode( get_the_title(), ENT_QUOTES, 'UTF-8' );
 		$tsr_ev_base  = tsr_event_base_name( $tsr_ev_title );
+		$tsr_ev_ts    = (int) get_post_meta( get_the_ID(), 'evcal_srow', true );
+		$tsr_ev_year  = tsr_title_year( $tsr_ev_title ) ?? (int) gmdate( 'Y', $tsr_ev_ts );
 		if ( '' === $tsr_ev_base ) {
 			continue;
 		}
-		$tsr_ev_year = tsr_title_year( $tsr_ev_title )
-			?? (int) date_i18n( 'Y', (int) get_post_meta( get_the_ID(), 'evcal_srow', true ) );
-
-		$tsr_matches = get_posts(
-			array(
-				'post_type'   => 'ts_result',
-				'numberposts' => -1,
-				'post_status' => 'publish',
-				'orderby'     => 'title',
-				'order'       => 'ASC',
-				'meta_query'  => array(
-					array(
-						'key'   => '_tsr_event_base',
-						'value' => $tsr_ev_base,
-					),
-					array(
-						'key'   => '_tsr_season',
-						'value' => (string) $tsr_ev_year,
-					),
-				),
-			)
+		// Sections of this edition, grouped by distance (longest first);
+		// each distance links to the men's table, else the first one.
+		$tsr_by_km = array();
+		foreach ( $tsr_rindex as $tsr_rid => $tsr_re ) {
+			if ( (string) $tsr_ev_year !== $tsr_re['season'] || 0 !== strcasecmp( $tsr_re['event_base'], $tsr_ev_base ) ) {
+				continue;
+			}
+			$tsr_km = '' !== $tsr_re['km'] ? $tsr_re['km'] : '0';
+			if ( ! isset( $tsr_by_km[ $tsr_km ] ) || 'M' === $tsr_re['gender'] ) {
+				$tsr_by_km[ $tsr_km ] = $tsr_rid;
+			}
+		}
+		if ( array() === $tsr_by_km ) {
+			continue; // no results yet
+		}
+		krsort( $tsr_by_km, SORT_NUMERIC );
+		$tsr_dists = array();
+		foreach ( $tsr_by_km as $tsr_km => $tsr_rid ) {
+			$tsr_dists[] = array(
+				'0' !== (string) $tsr_km ? str_replace( '.', ',', (string) (float) $tsr_km ) . ' км' : 'Резултати',
+				(string) get_permalink( $tsr_rid ),
+			);
+		}
+		$tsr_past_races[] = array(
+			'title' => tsr_event_base_name( $tsr_ev_title ),
+			'url'   => tsr_event_results_url( $tsr_ev_base, $tsr_ev_year ),
+			'ts'    => $tsr_ev_ts,
+			'image' => (int) get_post_thumbnail_id(),
+			'dists' => $tsr_dists,
 		);
-		$tsr_past_results = array_merge( $tsr_past_results, $tsr_matches );
 	}
 	wp_reset_postdata();
-
-	// Site-wide ordering rule (ADR-004): longest distance first, men before
-	// women within a distance.
-	$tsr_past_results = tsr_sort_results_by_distance_gender( $tsr_past_results );
-
-	set_transient( $tsr_past_key, wp_list_pluck( $tsr_past_results, 'ID' ), 12 * HOUR_IN_SECONDS );
+	set_transient( $tsr_past_key, $tsr_past_races, 12 * HOUR_IN_SECONDS );
 }
 
 // 3. Last 3 news posts — exclude Zero to HERO category.
@@ -431,17 +424,29 @@ $tsr_hero_uri  = get_stylesheet_directory_uri() . '/images/hero/' . $tsr_hero_pi
 	<div class="tsr-container">
 		<h2 class="tsr-section__title" id="tsr-past-title">Последни резултати</h2>
 
-		<?php if ( ! empty( $tsr_past_results ) ) : ?>
-			<ul class="tsr-result-list">
-				<?php foreach ( $tsr_past_results as $result_post ) : ?>
-					<li class="tsr-result-list__item">
-						<a class="tsr-result-list__title"
-						   href="<?php echo esc_url( get_permalink( $result_post ) ); ?>">
-							<?php echo esc_html( get_the_title( $result_post ) ); ?>
-						</a>
-						<span class="tsr-result-list__meta">
-							<?php echo esc_html( get_the_date( 'j.m.Y', $result_post ) ); ?>
-						</span>
+		<?php if ( array() !== $tsr_past_races ) : ?>
+			<ul class="tsr-past-races">
+				<?php foreach ( $tsr_past_races as $tsr_pr ) : ?>
+					<li class="tsr-past-race">
+						<?php
+						if ( $tsr_pr['image'] ) {
+							echo wp_get_attachment_image( $tsr_pr['image'], 'thumbnail', false, array( 'class' => 'tsr-past-race__img', 'alt' => '', 'loading' => 'lazy', 'decoding' => 'async' ) );
+						} else {
+							echo '<span class="tsr-past-race__img tsr-past-race__img--none" aria-hidden="true">' . esc_html( gmdate( 'j', $tsr_pr['ts'] ) ) . '</span>';
+						}
+						?>
+						<div class="tsr-past-race__body">
+							<h3 class="tsr-past-race__title">
+								<a href="<?php echo esc_url( $tsr_pr['url'] ); ?>"><?php echo esc_html( $tsr_pr['title'] ); ?></a>
+							</h3>
+							<p class="tsr-past-race__date"><?php echo esc_html( tsr_bg_date( $tsr_pr['ts'] ) ); ?></p>
+							<p class="tsr-past-race__dists">
+								<?php foreach ( $tsr_pr['dists'] as $tsr_di => $tsr_d ) : ?>
+									<?php if ( $tsr_di > 0 ) : ?><span aria-hidden="true">·</span><?php endif; ?>
+									<a href="<?php echo esc_url( $tsr_d[1] ); ?>"><?php echo esc_html( $tsr_d[0] ); ?><span class="screen-reader-text"> — <?php echo esc_html( $tsr_pr['title'] ); ?></span></a>
+								<?php endforeach; ?>
+							</p>
+						</div>
 					</li>
 				<?php endforeach; ?>
 			</ul>

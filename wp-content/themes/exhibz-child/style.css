@@ -4466,3 +4466,101 @@ h1, h2, h3, h4, h5, h6 {
 		padding-block: 2.5rem;
 	}
 }
+
+/* Home: last three races with results, one compact row each (2026-11-14) */
+.tsr-past-races {
+	display:               grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap:                   1rem;
+	margin:                0;
+	padding:               0;
+	list-style:            none;
+}
+
+.tsr-past-race {
+	position:      relative;
+	display:       flex;
+	align-items:   center;
+	gap:           0.9rem;
+	padding:       0.75rem;
+	border-radius: var(--tsr-radius);
+	background:    var(--tsr-bg);
+	transition:    background 0.15s ease;
+}
+
+.tsr-past-race:hover {
+	background: #e6eef5;
+}
+
+.tsr-past-race__img {
+	flex:          0 0 auto;
+	width:         76px;
+	height:        76px;
+	border-radius: 12px;
+	object-fit:    cover;
+}
+
+.tsr-past-race__img--none {
+	display:     grid;
+	place-items: center;
+	background:  linear-gradient(160deg, var(--tsr-navy) 0%, #0d2040 100%);
+	color:       rgba(255, 255, 255, 0.35);
+	font-family: "Ubuntu", system-ui, sans-serif;
+	font-size:   1.8rem;
+	font-weight: 700;
+}
+
+.tsr-past-race__body {
+	min-width: 0;
+}
+
+.tsr-past-race__title {
+	margin:    0 0 0.1rem;
+	font-size: 1.02rem;
+	line-height: 1.25;
+}
+
+.tsr-past-race__title a {
+	color:           var(--tsr-navy);
+	text-decoration: none;
+}
+
+.tsr-past-race__title a:hover,
+.tsr-past-race__title a:focus-visible {
+	color:           var(--tsr-blue-dk);
+	text-decoration: underline;
+}
+
+.tsr-past-race__date {
+	margin:    0 0 0.35rem;
+	font-size: 0.82rem;
+	color:     var(--tsr-muted);
+}
+
+.tsr-past-race__dists {
+	display:     flex;
+	flex-wrap:   wrap;
+	align-items: center;
+	gap:         0 0.3rem;
+	margin:      0;
+	font-size:   0.85rem;
+	font-weight: 700;
+	color:       var(--tsr-muted);
+}
+
+.tsr-past-race__dists a {
+	display:    inline-block;
+	min-height: 24px;
+	padding:    0.15rem 0;
+	color:      var(--tsr-blue-dk);
+}
+
+.tsr-past .tsr-view-all {
+	margin-top: 1.25rem;
+}
+
+@media (max-width: 900px) {
+	.tsr-past-races {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
