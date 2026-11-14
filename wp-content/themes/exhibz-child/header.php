@@ -118,9 +118,32 @@
 (function () {
 	var h = document.getElementById( 'masthead' );
 	if ( ! h ) { return; }
+	// Shrink on scroll with hysteresis. The header is sticky (in the page
+	// flow), so shrinking it moves the page up by ~37 px and Chrome's scroll
+	// anchoring pulls scrollY back by the same amount. With one threshold
+	// (80 px) that flipped the state back and forth on every frame — the
+	// header "trembled" whenever the page stopped near the top. The gap
+	// between the two thresholds (120 / 40) is larger than the size change.
+	var shrunk = false, queued = false;
+	function update() {
+		queued = false;
+		var y = window.scrollY;
+		if ( ! shrunk && y > 120 ) {
+			shrunk = true;
+		} else if ( shrunk && y < 40 ) {
+			shrunk = false;
+		} else {
+			return;
+		}
+		h.classList.toggle( 'tsr-header--scrolled', shrunk );
+	}
 	window.addEventListener( 'scroll', function () {
-		h.classList.toggle( 'tsr-header--scrolled', window.scrollY > 80 );
+		if ( ! queued ) {
+			queued = true;
+			window.requestAnimationFrame( update );
+		}
 	}, { passive: true } );
+	update(); // a reload restores the scroll position
 
 	// Mobile nav toggle.
 	var toggle = h.querySelector( '.tsr-nav-toggle' );
