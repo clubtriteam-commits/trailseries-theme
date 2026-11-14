@@ -116,9 +116,14 @@ $tsr_media = array(
 	2012 => array( 'file' => '2012-nachalo.jpg' ),
 	2013 => array( 'file' => '2013-kiril-nikolov.jpg', 'portrait' => true ),
 	2014 => array( 'file' => 'vitosha.jpg', 'layout' => 'band' ),
+	2016 => array( 'file' => '2016.jpg' ),
 	2019 => array( 'file' => '2019-zero-to-hero.jpg', 'portrait' => true ),
+	2022 => array( 'file' => '2022-yubiley.jpg' ),
+	2023 => array( 'file' => '2023.jpg' ),
+	2024 => array( 'file' => '2024-cactus-run.jpg' ),
+	2026 => array( 'file' => '2026.jpg' ),
 );
-$tsr_closing_year  = 2027; // rendered as the closing band, with the year before it
+$tsr_closing_year  = 2027; // rendered as the closing band
 $tsr_closing_photo = 'planini-sofia-pateka.jpg';
 $tsr_photo_credit   = 'KrisoK Photography'; // one credit line at the bottom of the page (owner, 2026-11-14)
 
@@ -191,7 +196,7 @@ foreach ( $tsr_media as $tsr_year => $tsr_m ) {
 }
 $tsr_plain_years = array_filter(
 	$tsr_timeline,
-	static fn( array $e ): bool => ! isset( $tsr_media[ $e['year'] ] ) && $e['year'] < $tsr_closing_year - 1
+	static fn( array $e ): bool => ! isset( $tsr_media[ $e['year'] ] ) && $e['year'] < $tsr_closing_year
 );
 ?>
 
@@ -398,11 +403,9 @@ $tsr_plain_years = array_filter(
 				<div class="tsr-band__in">
 					<p class="tsr-story__year"><?php echo esc_html( (string) $tsr_closing_year ); ?></p>
 					<h2 class="tsr-story__title"><?php echo esc_html( $tsr_by_year[ $tsr_closing_year ]['label'] ); ?></h2>
-					<?php foreach ( array( $tsr_closing_year - 1, $tsr_closing_year ) as $tsr_y ) : ?>
-						<?php if ( ! empty( $tsr_by_year[ $tsr_y ]['desc'] ) ) : ?>
-							<p><?php echo esc_html( $tsr_by_year[ $tsr_y ]['desc'] ); ?></p>
-						<?php endif; ?>
-					<?php endforeach; ?>
+					<?php if ( ! empty( $tsr_by_year[ $tsr_closing_year ]['desc'] ) ) : ?>
+						<p><?php echo esc_html( $tsr_by_year[ $tsr_closing_year ]['desc'] ); ?></p>
+					<?php endif; ?>
 				</div>
 				<p class="tsr-band__credit">Снимки: <?php echo esc_html( $tsr_photo_credit ); ?></p>
 			</div>
