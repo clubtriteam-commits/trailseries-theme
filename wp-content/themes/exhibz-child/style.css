@@ -3809,3 +3809,265 @@ h1, h2, h3, h4, h5, h6 {
 .tsr-cal-count {
 	margin-top: 0;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   History page — page-istoriya.php (design pass 3, 2026-11-14)
+   Photo + text blocks joined by a dashed trail, photo bands, compact years.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.tsr-history {
+	padding-bottom: 0;
+}
+
+.tsr-story {
+	display:               grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap:                   3rem;
+	align-items:           center;
+	margin:                0;
+}
+
+.tsr-story__text {
+	grid-column: span 5;
+}
+
+.tsr-story__media {
+	grid-column: span 7;
+	margin:      0;
+}
+
+.tsr-story--flip .tsr-story__text  { order: 2; }
+.tsr-story--flip .tsr-story__media { order: 1; }
+
+.tsr-story--upright .tsr-story__text  { grid-column: span 7; }
+.tsr-story--upright .tsr-story__media { grid-column: span 5; }
+
+.tsr-story__media img {
+	display:       block;
+	width:         100%;
+	height:        auto;
+	aspect-ratio:  4 / 3;
+	object-fit:    cover;
+	border-radius: var(--tsr-radius);
+}
+
+.tsr-story--upright .tsr-story__media img {
+	aspect-ratio:    4 / 5;
+	object-position: 50% 25%;
+}
+
+.tsr-story--creators .tsr-story__media img {
+	aspect-ratio:    3 / 2;
+	object-position: 50% 30%;
+}
+
+.tsr-story__media figcaption {
+	margin-top: 0.6rem;
+	font-size:  0.9rem;
+	color:      var(--tsr-muted);
+}
+
+.tsr-story__year {
+	margin:      0;
+	font-family: "Ubuntu", system-ui, sans-serif;
+	font-size:   clamp(3.5rem, 7vw, 5.5rem);
+	font-weight: 700;
+	line-height: 1;
+	color:       var(--tsr-blue-dk);
+}
+
+.tsr-story__season {
+	margin:         0.4rem 0 0;
+	font-size:      0.8rem;
+	font-weight:    700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color:          var(--tsr-muted);
+}
+
+.tsr-story__title {
+	margin:    0.35rem 0 1rem;
+	font-size: 1.75rem;
+	color:     var(--tsr-navy);
+}
+
+.tsr-story--creators .tsr-story__title {
+	font-size: 2rem;
+}
+
+.tsr-story__text p:not([class]) {
+	margin:      0;
+	line-height: 1.7;
+	color:       var(--tsr-text);
+}
+
+/* Dashed trail from one photo to the next */
+.tsr-trail {
+	height: 7rem;
+	margin: 0.75rem 0;
+}
+
+.tsr-trail__curve {
+	display:  block;
+	width:    100%;
+	height:   100%;
+	overflow: visible;
+}
+
+.tsr-trail__curve path {
+	fill:             none;
+	stroke:           var(--tsr-blue);
+	stroke-width:     3;
+	stroke-linecap:   round;
+	stroke-dasharray: 2 12;
+}
+
+.tsr-trail__straight {
+	display: none;
+}
+
+/* Full-width photo with the text on it */
+.tsr-band {
+	position:  relative;
+	isolation: isolate;
+	overflow:  hidden;
+	padding:   6rem 0;
+	color:     var(--tsr-white);
+}
+
+.tsr-band__img {
+	position:   absolute;
+	inset:      0;
+	z-index:    -2;
+	width:      100%;
+	height:     100%;
+	object-fit: cover;
+}
+
+.tsr-band::after {
+	content:    '';
+	position:   absolute;
+	inset:      0;
+	z-index:    -1;
+	background: linear-gradient(90deg, rgba(10, 22, 40, 0.9) 0%, rgba(10, 22, 40, 0.62) 55%, rgba(10, 22, 40, 0.2) 100%);
+}
+
+.tsr-band__in {
+	max-width: 38rem;
+}
+
+.tsr-band .tsr-story__year,
+.tsr-band .tsr-story__title {
+	color: var(--tsr-white);
+}
+
+.tsr-band .tsr-story__title {
+	font-size: 2rem;
+}
+
+.tsr-band .tsr-story__season {
+	color: #cfe9f5;
+}
+
+.tsr-band p:not([class]) {
+	margin:      0 0 0.75rem;
+	line-height: 1.7;
+	color:       #eef3f8;
+}
+
+.tsr-band--closing {
+	margin-top: 5rem;
+}
+
+/* Remaining years */
+.tsr-history__years {
+	margin-top: 6rem;
+}
+
+.tsr-history__h2 {
+	margin:    0 0 1.5rem;
+	font-size: 1.75rem;
+	color:     var(--tsr-navy);
+}
+
+.tsr-years {
+	display:               grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap:                   1rem 2rem;
+	margin:                0;
+	padding:               0;
+	list-style:            none;
+}
+
+.tsr-years li {
+	display:       flex;
+	align-items:   baseline;
+	gap:           1.25rem;
+	padding:       1rem 1.25rem;
+	border-radius: var(--tsr-radius);
+	background:    var(--tsr-bg);
+}
+
+.tsr-years__y {
+	min-width:   4.5rem;
+	font-family: "Ubuntu", system-ui, sans-serif;
+	font-size:   1.75rem;
+	font-weight: 700;
+	color:       var(--tsr-blue-dk);
+}
+
+.tsr-years h3 {
+	margin:    0;
+	font-size: 1.05rem;
+	color:     var(--tsr-navy);
+}
+
+.tsr-years p {
+	margin:    0.35rem 0 0;
+	font-size: 0.95rem;
+	color:     var(--tsr-text);
+}
+
+@media (max-width: 900px) {
+	.tsr-story {
+		grid-template-columns: minmax(0, 1fr);
+		gap:                   1.5rem;
+	}
+
+	.tsr-story > * {
+		grid-column: auto !important;
+		order:       0 !important;
+	}
+
+	.tsr-story .tsr-story__media {
+		order: -1 !important; /* photo first, then its text */
+	}
+
+	.tsr-trail {
+		height: 4.5rem;
+	}
+
+	.tsr-trail__curve {
+		display: none;
+	}
+
+	.tsr-trail__straight {
+		display:     block;
+		width:       0;
+		height:      100%;
+		margin:      0 auto;
+		border-left: 3px dotted var(--tsr-blue);
+	}
+
+	.tsr-band {
+		padding: 4rem 0;
+	}
+
+	.tsr-band::after {
+		background: rgba(10, 22, 40, 0.74);
+	}
+
+	.tsr-years {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
