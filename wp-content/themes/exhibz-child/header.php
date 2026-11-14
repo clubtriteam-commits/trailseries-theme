@@ -39,7 +39,7 @@
 
 		<nav id="tsr-primary-nav" class="tsr-header-nav" aria-label="<?php esc_attr_e( 'Основна навигация', 'exhibz-child' ); ?>">
 			<?php
-			// "Серия" mega menu (owner 2026-11-14, after goldentrailseries.com's
+			// "Trail Series" mega menu (owner 2026-11-14, after goldentrailseries.com's
 			// "Series"): main pages as buttons + every race with its history and
 			// latest results. The rest of the bar stays the admin menu
 			// (Appearance → Menus).
@@ -58,7 +58,7 @@
 			?>
 			<li class="tsr-mega-item">
 				<button class="tsr-mega-toggle" type="button" aria-expanded="false" aria-controls="tsr-mega">
-					Серия <span class="tsr-mega-toggle__chev" aria-hidden="true"></span>
+					Trail Series <span class="tsr-mega-toggle__chev" aria-hidden="true"></span>
 				</button>
 				<div class="tsr-mega" id="tsr-mega" hidden>
 					<div class="tsr-mega__head">
