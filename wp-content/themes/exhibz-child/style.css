@@ -4918,3 +4918,10 @@ h1, h2, h3, h4, h5, h6 {
 		padding-block: 1.75rem;
 	}
 }
+
+@media (max-width: 768px) {
+	/* narrow box: less zoom so the Mizuno wordmark is not cut */
+	.tsr-partner-card--mizuno .tsr-partner-card__logo img {
+		transform: scale(1.45);
+	}
+}
