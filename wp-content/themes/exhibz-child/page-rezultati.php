@@ -98,7 +98,7 @@ foreach ( $all_posts as $post ) {
 // same race appears twice in one season. $tsr_event_base_of maps the
 // display name back to the event name (event-page link, calendar dates).
 $tsr_event_base_of = array();
-$tsr_race_year_of  = array(); // display name => race year (calendar date, photo)
+$tsr_race_year_of  = array(); // season => display name => race year (calendar date, photo)
 foreach ( $grouped as $tsr_y => $tsr_by_key ) {
 	$tsr_name_count = array_count_values( array_map( static fn( string $k ): string => explode( "", $k )[0], array_keys( $tsr_by_key ) ) );
 	$tsr_named      = array();
@@ -107,7 +107,7 @@ foreach ( $grouped as $tsr_y => $tsr_by_key ) {
 		$tsr_display           = ( $tsr_name_count[ $tsr_name ] > 1 && '0' !== $tsr_ry ) ? $tsr_name . ' ' . $tsr_ry : $tsr_name;
 		$tsr_named[ $tsr_display ]           = array_merge( $tsr_named[ $tsr_display ] ?? array(), $tsr_posts );
 		$tsr_event_base_of[ $tsr_display ] = $tsr_name;
-		$tsr_race_year_of[ $tsr_display ]  = (int) $tsr_ry;
+		$tsr_race_year_of[ $tsr_y ][ $tsr_display ] = (int) $tsr_ry; // per season: names repeat every year
 	}
 	$grouped[ $tsr_y ] = $tsr_named;
 }
@@ -273,7 +273,7 @@ $tsr_dist_rows = static function ( array $posts ) use ( $tsr_rindex ): array {
 					}
 					$sections  = tsr_sort_results_indexed( array_merge( array( $primary ), $cats ) );
 					$tsr_base  = $tsr_event_base_of[ $event_name ] ?? $event_name;
-					$tsr_ry    = $tsr_race_year_of[ $event_name ] ?? 0;
+					$tsr_ry    = $tsr_race_year_of[ $tsr_selected ][ $event_name ] ?? 0;
 					$race_ts   = ( $tsr_event_dates ?? array() )[ $tsr_ry ][ $tsr_base ] ?? 0;
 					$tsr_ev_id = ( $tsr_event_ids ?? array() )[ $tsr_ry ][ $tsr_base ] ?? 0;
 					$tsr_img   = $tsr_ev_id ? tsr_card_image( $tsr_ev_id, 'tsr-cal-card__img', '(max-width: 600px) calc(100vw - 2.5rem), (max-width: 1100px) 50vw, 280px' ) : '';
