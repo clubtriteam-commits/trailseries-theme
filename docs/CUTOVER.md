@@ -123,6 +123,10 @@ new site after launch.
      with it would de-index the site. This is the only thing blocking indexing
      on staging (meta `noindex`; no robots.txt or header rule), so it must be
      the last database change before C9, and it is checked again in D3.
+   - site language: `WPLANG` must be `bg_BG` (set on staging 2026-11-14 so pages declare
+     `lang="bg-BG"` and Chrome offers translation to foreign visitors; the old site and
+     staging said `en-US`). Check: `curl -s https://trailseries.bg/ | grep -o '<html[^>]*>'`.
+     Admin users keep English via their profile locale.
    - admin user: new strong password (`wp user update TSadmin --user_pass=…`).
 8. **.htaccess**: the "TSR security" block (`RedirectMatch 404` for
    `/migration` and `.git`) at the top, above the WordPress block, plus the
