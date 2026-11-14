@@ -5311,3 +5311,239 @@ h1, h2, h3, h4, h5, h6 {
 	background: var(--tsr-blue-dk);
 	color:      var(--tsr-white);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Result pages: season / race / distance bar (owner-approved 2026-11-14)
+   ══════════════════════════════════════════════════════════════════════════ */
+.tsr-rnav {
+	position:      sticky;
+	top:           94px; /* JS keeps it equal to the header height */
+	z-index:       60;
+	margin:        0 0 1rem;
+	padding:       0.75rem 0.9rem;
+	border:        1px solid var(--tsr-border);
+	border-radius: var(--tsr-radius);
+	background:    var(--tsr-white);
+	box-shadow:    0 6px 22px rgba(10, 22, 40, 0.12);
+}
+
+.tsr-rnav__row {
+	display:     flex;
+	flex-wrap:   wrap;
+	align-items: center;
+	gap:         0.5rem 0.75rem;
+}
+
+.tsr-rnav__select {
+	position:      relative;
+	display:       inline-flex;
+	align-items:   center;
+	gap:           0.4rem;
+	min-height:    42px;
+	padding:       0 0.4rem 0 0.95rem;
+	border:        1.5px solid var(--tsr-blue);
+	border-radius: 999px;
+	background:    var(--tsr-white);
+}
+
+.tsr-rnav__select-label {
+	font-size: 0.85rem;
+	color:     var(--tsr-muted);
+}
+
+.tsr-rnav__select select {
+	min-height:  38px;
+	max-width:   22rem;
+	padding:     0 1.6rem 0 0.1rem;
+	border:      0;
+	background:  transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%230a1628' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 0.4rem center;
+	font:        inherit;
+	font-weight: 700;
+	color:       var(--tsr-navy);
+	appearance:  none;
+	cursor:      pointer;
+}
+
+.tsr-rnav__select select:focus-visible {
+	outline:        3px solid var(--tsr-blue);
+	outline-offset: 3px;
+	border-radius:  999px;
+}
+
+.tsr-rnav__steps {
+	display:     flex;
+	gap:         0.4rem;
+	margin-left: auto;
+}
+
+.tsr-rnav__step {
+	display:         inline-flex;
+	align-items:     center;
+	gap:             0.3rem;
+	min-height:      40px;
+	padding:         0 0.85rem;
+	border-radius:   999px;
+	background:      var(--tsr-bg);
+	color:           var(--tsr-navy);
+	font-size:       0.85rem;
+	font-weight:     600;
+	text-decoration: none;
+}
+
+.tsr-rnav__step:hover,
+.tsr-rnav__step:focus-visible {
+	background: #e0eef6;
+}
+
+.tsr-rnav__dists {
+	display:    flex;
+	flex-wrap:  wrap;
+	gap:        0.5rem;
+	margin:     0.65rem 0 0;
+	padding:    0;
+	list-style: none;
+}
+
+.tsr-rnav__dist {
+	display:       inline-flex;
+	align-items:   stretch;
+	overflow:      hidden;
+	border:        1px solid #d5dbe2;
+	border-radius: 999px;
+	font-size:     0.88rem;
+	font-weight:   700;
+}
+
+.tsr-rnav__km {
+	display:     inline-flex;
+	align-items: center;
+	padding:     0 0.7rem;
+	background:  var(--tsr-bg);
+	color:       var(--tsr-navy);
+}
+
+.tsr-rnav__dist a {
+	display:         inline-flex;
+	align-items:     center;
+	min-height:      36px;
+	padding:         0 0.8rem;
+	border-left:     1px solid #d5dbe2;
+	color:           var(--tsr-blue-dk);
+	text-decoration: none;
+}
+
+.tsr-rnav__dist > a:first-child {
+	border-left: 0;
+}
+
+.tsr-rnav__dist a:hover,
+.tsr-rnav__dist a:focus-visible {
+	background: #e0eef6;
+}
+
+.tsr-rnav__dist a[aria-current] {
+	background: var(--tsr-blue-dk);
+	color:      var(--tsr-white);
+}
+
+.tsr-rnav__all {
+	display:         inline-flex;
+	align-items:     center;
+	min-height:      36px;
+	padding:         0 0.9rem;
+	border-radius:   999px;
+	color:           var(--tsr-muted);
+	font-size:       0.85rem;
+	font-weight:     600;
+	text-decoration: none;
+}
+
+.tsr-rnav__all[aria-current] {
+	background: var(--tsr-blue-dk);
+	color:      var(--tsr-white);
+}
+
+.tsr-rnav__compact {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	.tsr-rnav {
+		position:      relative;
+		top:           auto;
+		padding:       0.6rem;
+		border-radius: 14px;
+	}
+
+	.tsr-rnav__select {
+		flex: 1 1 100%;
+	}
+
+	.tsr-rnav__select select {
+		flex:      1;
+		max-width: none;
+	}
+
+	.tsr-rnav__steps {
+		width:       100%;
+		margin-left: 0;
+		justify-content: space-between;
+	}
+
+	.tsr-rnav__dists {
+		flex-wrap:  nowrap;
+		overflow-x: auto;
+	}
+
+	.tsr-rnav__dist,
+	.tsr-rnav__dists > li {
+		flex: 0 0 auto;
+	}
+
+	/* scrolled past: one line, fixed under the header; tap opens the bar */
+	.tsr-rnav.is-compact {
+		position: sticky;
+		top:      68px;
+	}
+
+	.tsr-rnav.is-compact .tsr-rnav__compact {
+		display:         flex;
+		align-items:     center;
+		justify-content: space-between;
+		gap:             0.5rem;
+		width:           100%;
+		min-height:      40px;
+		padding:         0 0.4rem;
+		border:          0;
+		background:      none;
+		font:            inherit;
+		font-weight:     700;
+		color:           var(--tsr-navy);
+		text-align:      left;
+		cursor:          pointer;
+	}
+
+	.tsr-rnav__compact > span:first-child {
+		overflow:      hidden;
+		white-space:   nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.tsr-rnav__compact-cta {
+		flex:          0 0 auto;
+		padding:       0.3rem 0.8rem;
+		border-radius: 999px;
+		background:    var(--tsr-blue-dk);
+		color:         var(--tsr-white);
+		font-size:     0.85rem;
+	}
+
+	.tsr-rnav.is-compact .tsr-rnav__body {
+		display: none;
+	}
+
+	.tsr-rnav.is-compact.is-open .tsr-rnav__body {
+		display:    block;
+		margin-top: 0.5rem;
+	}
+}

@@ -396,6 +396,288 @@ function tsr_menu_races(): array {
 	return $races;
 }
 
+/**
+ * Usual month of a series race, for ordering races that have no calendar
+ * entry (seasons before the calendar existed). From the old site's dates.
+ */
+function tsr_race_usual_month( string $base ): int {
+	static $months = array(
+		'golyam sechko'  => 1, 'golyamsechko'  => 1, 'golyam secko' => 1,
+		'malak sechko'   => 2, 'malaksechko'   => 2,
+		'baba marta'     => 3,
+		'vladaya'        => 4,
+		'palakaria'      => 5, 'палакария' => 5, 'buhovo run' => 5, 'buhovorun' => 5, 'lyulin' => 6,
+		'7 hills'        => 6,
+		'pancharevo night' => 7, 'heat stroke' => 7, 'bankya summer' => 8, 'maliovitsa' => 8,
+		'simeonovo'      => 9, 'boyana x' => 9, 'september run' => 9, 'iran' => 9,
+		'birthday run'   => 10, 'buhovo half' => 10, 'vertical' => 10,
+		'cactus'         => 11,
+		'christmas'      => 12, 'chrismas' => 12, 'коледн' => 12,
+	);
+	$b = mb_strtolower( $base );
+	foreach ( $months as $needle => $m ) {
+		if ( false !== mb_strpos( $b, $needle ) ) {
+			return $m;
+		}
+	}
+	// 2012–2013 races are named by their date ("Банкя 24 март").
+	$bg = array( 'януари' => 1, 'февруари' => 2, 'март' => 3, 'април' => 4, 'май' => 5, 'юни' => 6, 'юли' => 7, 'август' => 8, 'септември' => 9, 'октомври' => 10, 'ноември' => 11, 'декември' => 12 );
+	foreach ( $bg as $name => $m ) {
+		if ( false !== mb_strpos( $b, $name ) ) {
+			return $m;
+		}
+	}
+	if ( preg_match( '/\b\d{1,2}[.\/](\d{1,2})\b/', $b, $mm ) ) {
+		return (int) $mm[1];
+	}
+	return 13; // unknown: after the dated races of its year
+}
+
+/**
+ * Navigation data for a result page (season / race / distance switchers,
+ * previous / next race). Everything comes from the cached results index.
+ *
+ * @param WP_Post $post The result post being viewed (hub or section).
+ * @param bool    $is_hub Whether the page shows all sections of its race.
+ * @return array<string, mixed>|null Null when the post is not in the index.
+ */
+function tsr_results_nav( WP_Post $post, bool $is_hub ): ?array {
+	$index = tsr_results_index();
+	$cur   = $index[ $post->ID ] ?? null;
+	if ( null === $cur || '' === $cur['event_base'] || '' === $cur['series'] ) {
+		return null;
+	}
+	$norm = static fn( string $s ): string => mb_strtolower( trim( $s ) );
+
+	// Calendar dates per race year + base (newer seasons only).
+	static $cal = null;
+	if ( null === $cal ) {
+		$cal = array();
+		if ( post_type_exists( 'ajde_events' ) ) {
+			foreach ( get_posts( array( 'post_type' => 'ajde_events', 'post_status' => 'publish', 'numberposts' => -1, 'fields' => 'ids' ) ) as $eid ) {
+				$t  = html_entity_decode( get_the_title( $eid ), ENT_QUOTES, 'UTF-8' );
+				$ts = (int) get_post_meta( $eid, 'evcal_srow', true );
+				$y  = tsr_title_year( $t ) ?? (int) gmdate( 'Y', $ts );
+				$cal[ $y ][ mb_strtolower( tsr_event_base_name( $t ) ) ] = $ts;
+			}
+		}
+	}
+
+	// Races: series season => race key ("base|year") => data.
+	$races = array();
+	foreach ( $index as $id => $e ) {
+		if ( '' === $e['series'] || '' === $e['event_base'] ) {
+			continue;
+		}
+		$rk = $norm( $e['event_base'] ) . '|' . $e['season'];
+		$r  = &$races[ $e['series'] ][ $rk ];
+		if ( null === $r ) {
+			$y  = (int) $e['season'];
+			$ts = $cal[ $y ][ $norm( $e['event_base'] ) ] ?? 0;
+			$r  = array(
+				'name'  => $e['event_base'],
+				'year'  => $y,
+				'ts'    => $ts,
+				'sort'  => $ts > 0 ? $y * 10000 + (int) gmdate( 'n', $ts ) * 100 + (int) gmdate( 'j', $ts ) : $y * 10000 + tsr_race_usual_month( $e['event_base'] ) * 100,
+				'posts' => array(),
+			);
+		}
+		$r['posts'][ $id ] = $e;
+		unset( $r );
+	}
+	foreach ( $races as &$season_races ) {
+		uasort( $season_races, static fn( array $a, array $b ): int => $a['sort'] <=> $b['sort'] );
+	}
+	unset( $season_races );
+
+	$season  = $cur['series'];
+	$race_k  = $norm( $cur['event_base'] ) . '|' . $cur['season'];
+	$race    = $races[ $season ][ $race_k ] ?? null;
+	if ( null === $race ) {
+		return null;
+	}
+	$cur_km  = $cur['km'];
+	$cur_g   = $cur['gender'];
+
+	// URL of a race: same distance + gender when it has one, else its hub.
+	$race_url = static function ( array $r, bool $match ) use ( $cur_km, $cur_g, $is_hub ): string {
+		$hub = 0;
+		foreach ( $r['posts'] as $id => $e ) {
+			$p = get_post( $id );
+			if ( $p instanceof WP_Post && null === tsr_hub_head_for( $p ) ) {
+				$hub = $id;
+				break;
+			}
+		}
+		if ( $match && ! $is_hub && '' !== $cur_km ) {
+			foreach ( $r['posts'] as $id => $e ) {
+				if ( $e['km'] === $cur_km && $e['gender'] === $cur_g ) {
+					return (string) get_permalink( $id );
+				}
+			}
+		}
+		return (string) get_permalink( $hub ? $hub : array_key_first( $r['posts'] ) );
+	};
+	$label = static function ( array $r ): string {
+		$d = $r['ts'] > 0 ? ' · ' . gmdate( 'j', $r['ts'] ) . ' ' . tsr_bg_month_short( (int) gmdate( 'n', $r['ts'] ) ) : '';
+		return $r['name'] . $d;
+	};
+
+	// Season switcher: same race in each season if it ran, else that season's list.
+	$seasons = array_keys( $races );
+	rsort( $seasons, SORT_NUMERIC );
+	$season_opts = array();
+	foreach ( $seasons as $s ) {
+		$same = null;
+		foreach ( $races[ $s ] as $r ) {
+			if ( $norm( $r['name'] ) === $norm( $cur['event_base'] ) ) {
+				$same = $r;
+			}
+		}
+		$season_opts[] = array(
+			'label'   => tsr_season_label( (int) $s ),
+			'url'     => null !== $same ? $race_url( $same, true ) : add_query_arg( 'sezon', $s, home_url( '/rezultati/' ) ),
+			'current' => (string) $s === (string) $season,
+		);
+	}
+
+	// Race switcher + previous / next.
+	$race_opts = array();
+	$keys      = array_keys( $races[ $season ] );
+	$pos       = array_search( $race_k, $keys, true );
+	foreach ( $races[ $season ] as $k => $r ) {
+		$race_opts[] = array(
+			'label'   => $label( $r ),
+			'url'     => $race_url( $r, true ),
+			'current' => $k === $race_k,
+		);
+	}
+	$prev = ( false !== $pos && $pos > 0 ) ? $races[ $season ][ $keys[ $pos - 1 ] ] : null;
+	$next = ( false !== $pos && $pos < count( $keys ) - 1 ) ? $races[ $season ][ $keys[ $pos + 1 ] ] : null;
+
+	// Distances of this race: km (longest first) => gender links.
+	$dists = array();
+	foreach ( $race['posts'] as $id => $e ) {
+		$km = '' !== $e['km'] ? $e['km'] : '';
+		$g  = in_array( $e['gender'], array( 'M', 'F' ), true ) ? $e['gender'] : '';
+		$p  = get_post( $id );
+		$dk = '' !== $km ? 'km' . str_pad( (string) (int) round( (float) $km * 100 ), 7, '0', STR_PAD_LEFT ) : 'x' . $id;
+		$dists[ $dk ]['label'] = '' !== $km ? str_replace( '.', ',', (string) (float) $km ) . ' км' : '';
+		$dists[ $dk ]['links'][] = array(
+			'text'    => 'M' === $g ? 'Мъже' : ( 'F' === $g ? 'Жени' : ( $p ? TSR_Section_Meta::title_category_suffix( $p->post_title ) : '' ) ),
+			'url'     => (string) get_permalink( $id ),
+			'current' => ! $is_hub && $id === $post->ID,
+			'order'   => 'M' === $g ? 0 : ( 'F' === $g ? 1 : 2 ),
+		);
+	}
+	krsort( $dists );
+	foreach ( $dists as &$d ) {
+		usort( $d['links'], static fn( array $a, array $b ): int => $a['order'] <=> $b['order'] );
+	}
+	unset( $d );
+
+	return array(
+		'seasons' => $season_opts,
+		'races'   => $race_opts,
+		'prev'    => null !== $prev ? array( 'label' => $prev['name'], 'url' => $race_url( $prev, true ) ) : null,
+		'next'    => null !== $next ? array( 'label' => $next['name'], 'url' => $race_url( $next, true ) ) : null,
+		'dists'   => array_values( $dists ),
+		'hub_url' => $race_url( $race, false ),
+		'is_hub'  => $is_hub,
+		'title'   => $race['name'] . ' ' . $race['year'],
+	);
+}
+
+/** Print the results navigation bar. */
+function tsr_results_nav_print( array $n ): void {
+	$cur_dist = '';
+	foreach ( $n['dists'] as $d ) {
+		foreach ( $d['links'] as $l ) {
+			if ( $l['current'] ) {
+				$cur_dist = trim( $d['label'] . ' ' . $l['text'] );
+			}
+		}
+	}
+	?>
+	<nav class="tsr-rnav" aria-label="Смяна на сезон, състезание и дистанция" data-tsr-rnav>
+		<button class="tsr-rnav__compact" type="button" aria-expanded="false" hidden>
+			<span><?php echo esc_html( ( '' !== $cur_dist ? $cur_dist . ' · ' : '' ) . $n['title'] ); ?></span>
+			<span class="tsr-rnav__compact-cta">Смени</span>
+		</button>
+		<div class="tsr-rnav__body">
+			<div class="tsr-rnav__row">
+				<label class="tsr-rnav__select">
+					<span class="tsr-rnav__select-label">Сезон</span>
+					<select data-tsr-go>
+						<?php foreach ( $n['seasons'] as $o ) : ?>
+							<option value="<?php echo esc_url( $o['url'] ); ?>"<?php selected( $o['current'] ); ?>><?php echo esc_html( $o['label'] ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+				<label class="tsr-rnav__select">
+					<span class="tsr-rnav__select-label">Състезание</span>
+					<select data-tsr-go>
+						<?php foreach ( $n['races'] as $o ) : ?>
+							<option value="<?php echo esc_url( $o['url'] ); ?>"<?php selected( $o['current'] ); ?>><?php echo esc_html( $o['label'] ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+				<div class="tsr-rnav__steps">
+					<?php if ( $n['prev'] ) : ?>
+						<a class="tsr-rnav__step" href="<?php echo esc_url( $n['prev']['url'] ); ?>" rel="prev"><span aria-hidden="true">‹</span> <?php echo esc_html( $n['prev']['label'] ); ?><span class="screen-reader-text"> — предишно състезание</span></a>
+					<?php endif; ?>
+					<?php if ( $n['next'] ) : ?>
+						<a class="tsr-rnav__step" href="<?php echo esc_url( $n['next']['url'] ); ?>" rel="next"><?php echo esc_html( $n['next']['label'] ); ?><span class="screen-reader-text"> — следващо състезание</span> <span aria-hidden="true">›</span></a>
+					<?php endif; ?>
+				</div>
+			</div>
+			<ul class="tsr-rnav__dists">
+				<?php foreach ( $n['dists'] as $d ) : ?>
+					<li class="tsr-rnav__dist">
+						<?php if ( '' !== $d['label'] ) : ?>
+							<span class="tsr-rnav__km"><?php echo esc_html( $d['label'] ); ?></span>
+						<?php endif; ?>
+						<?php foreach ( $d['links'] as $l ) : ?>
+							<a href="<?php echo esc_url( $l['url'] ); ?>"<?php echo $l['current'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $l['text'] ); ?><?php if ( '' !== $d['label'] ) : ?><span class="screen-reader-text"> — <?php echo esc_html( $d['label'] ); ?></span><?php endif; ?></a>
+						<?php endforeach; ?>
+					</li>
+				<?php endforeach; ?>
+				<li>
+					<a class="tsr-rnav__all" href="<?php echo esc_url( $n['hub_url'] ); ?>"<?php echo $n['is_hub'] ? ' aria-current="page"' : ''; ?>>Всички дистанции ›</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+	<script>
+	(function () {
+		var nav = document.currentScript.previousElementSibling;
+		nav.querySelectorAll( 'select[data-tsr-go]' ).forEach( function ( s ) {
+			s.addEventListener( 'change', function () { if ( s.value ) { window.location.href = s.value; } } );
+		} );
+		// Phones: once scrolled past, the bar shrinks to one line that opens it.
+		var compact = nav.querySelector( '.tsr-rnav__compact' );
+		var mq      = window.matchMedia( '(max-width: 768px)' );
+		compact.hidden = false;
+		compact.addEventListener( 'click', function () {
+			var open = nav.classList.toggle( 'is-open' );
+			compact.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+		} );
+		var top = nav.getBoundingClientRect().top + window.scrollY;
+		var head = document.getElementById( 'masthead' );
+		var onScroll = function () {
+			// stick right under the (shrinking) site header
+			nav.style.top = ( head ? Math.round( head.getBoundingClientRect().height ) : 0 ) + 'px';
+			var stuck = mq.matches && window.scrollY > top + nav.offsetHeight;
+			nav.classList.toggle( 'is-compact', stuck );
+			if ( ! stuck ) { nav.classList.remove( 'is-open' ); compact.setAttribute( 'aria-expanded', 'false' ); }
+		};
+		window.addEventListener( 'scroll', onScroll, { passive: true } );
+		onScroll();
+	}());
+	</script>
+	<?php
+}
+
 /** Short Bulgarian month name ("ян", "февр", … ) for date badges. */
 function tsr_bg_month_short( int $month ): string {
 	$m = array( 1 => 'ян', 'февр', 'март', 'апр', 'май', 'юни', 'юли', 'авг', 'септ', 'окт', 'ноем', 'дек' );

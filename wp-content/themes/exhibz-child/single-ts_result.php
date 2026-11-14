@@ -133,6 +133,13 @@ while ( have_posts() ) :
 			<?php if ( function_exists( 'tsr_render_breadcrumbs' ) ) {
 					tsr_render_breadcrumbs( get_post() );
 				} ?>
+			<?php
+			// Season / race / distance switchers (owner-approved 2026-11-14).
+			$tsr_nav = tsr_results_nav( get_post(), $tsr_is_hub );
+			if ( null !== $tsr_nav ) {
+				tsr_results_nav_print( $tsr_nav );
+			}
+			?>
 			<article <?php post_class( 'tsr-prose-section' ); ?>>
 
 				<?php if ( trim( (string) get_the_content() ) !== '' ) : ?>
