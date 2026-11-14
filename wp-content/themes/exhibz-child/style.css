@@ -4931,3 +4931,30 @@ h1, h2, h3, h4, h5, h6 {
 		transform: scale(1.2);
 	}
 }
+
+/* Latest results: the whole row (photo, date, empty space) opens the race's
+   results; the distance links stay on top and keep their own targets. */
+.tsr-past-race {
+	cursor: pointer;
+}
+
+.tsr-past-race__title a::after {
+	content:  '';
+	position: absolute;
+	inset:    0;
+	z-index:  1;
+}
+
+.tsr-past-race__dists a {
+	position: relative;
+	z-index:  2;
+}
+
+.tsr-past-race:has(.tsr-past-race__title a:focus-visible) {
+	outline:        3px solid var(--tsr-blue);
+	outline-offset: 2px;
+}
+
+.tsr-past-race__title a:focus-visible {
+	outline: none;
+}
