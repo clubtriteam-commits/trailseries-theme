@@ -115,12 +115,12 @@ $tsr_timeline = array(
 $tsr_media = array(
 	2012 => array( 'file' => '2012-nachalo.jpg' ),
 	2013 => array( 'file' => '2013-kiril-nikolov.jpg', 'portrait' => true ),
-	2014 => array( 'file' => 'vitosha.jpg', 'layout' => 'band', 'credit' => 'KrisoK Photography' ),
+	2014 => array( 'file' => 'vitosha.jpg', 'layout' => 'band' ),
 	2019 => array( 'file' => '2019-zero-to-hero.jpg', 'portrait' => true ),
 );
 $tsr_closing_year  = 2027; // rendered as the closing band, with the year before it
 $tsr_closing_photo = 'planini-sofia-pateka.jpg';
-$tsr_closing_credit = 'KrisoK Photography';
+$tsr_photo_credit   = 'KrisoK Photography'; // one credit line at the bottom of the page (owner, 2026-11-14)
 
 $tsr_by_year = array_column( $tsr_timeline, null, 'year' );
 
@@ -404,7 +404,7 @@ $tsr_plain_years = array_filter(
 						<?php endif; ?>
 					<?php endforeach; ?>
 				</div>
-				<p class="tsr-band__credit">Снимка: <?php echo esc_html( $tsr_closing_credit ); ?></p>
+				<p class="tsr-band__credit">Снимки: <?php echo esc_html( $tsr_photo_credit ); ?></p>
 			</div>
 		</section>
 	<?php endif; ?>
