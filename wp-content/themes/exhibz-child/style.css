@@ -4071,3 +4071,124 @@ h1, h2, h3, h4, h5, h6 {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
+
+/* History: About, people, photo credit (owner's texts, 2026-11-14) */
+.tsr-about {
+	margin: 0 0 6rem;
+}
+
+.tsr-about__title {
+	max-width: 22ch;
+	margin:    0.5rem 0 2rem;
+	font-size: clamp(2rem, 5vw, 3.25rem);
+	line-height: 1.1;
+	color:     var(--tsr-navy);
+}
+
+.tsr-about__text {
+	columns:    2 24rem;
+	column-gap: 3rem;
+}
+
+.tsr-about__text p {
+	margin:       0 0 1rem;
+	line-height:  1.75;
+	break-inside: avoid;
+}
+
+.tsr-about__h3 {
+	margin:    3rem 0 1.25rem;
+	font-size: 1.5rem;
+	color:     var(--tsr-navy);
+}
+
+.tsr-values {
+	display:               grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap:                   1.25rem;
+	margin:                0;
+	padding:               0;
+	list-style:            none;
+}
+
+.tsr-values li {
+	padding:       1.5rem;
+	border-radius: var(--tsr-radius);
+	background:    var(--tsr-bg);
+	box-shadow:    inset 0 4px 0 var(--tsr-blue);
+}
+
+.tsr-values h4 {
+	margin:    0 0 0.6rem;
+	font-size: 1.15rem;
+	color:     var(--tsr-navy);
+}
+
+.tsr-values p {
+	margin:      0;
+	line-height: 1.65;
+}
+
+.tsr-about__closing {
+	max-width:   52rem;
+	margin:      2.5rem 0 0;
+	font-size:   1.15rem;
+	line-height: 1.7;
+	color:       var(--tsr-navy);
+}
+
+.tsr-people {
+	display:               grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap:                   1.25rem;
+	margin:                3rem 0 0;
+}
+
+.tsr-person {
+	padding:       1.5rem;
+	border-radius: var(--tsr-radius);
+	background:    var(--tsr-bg);
+}
+
+.tsr-person h3 {
+	margin:    0 0 0.6rem;
+	font-size: 1.3rem;
+	color:     var(--tsr-navy);
+}
+
+.tsr-person p {
+	margin:      0;
+	line-height: 1.7;
+}
+
+.tsr-people__closing {
+	max-width:   40rem;
+	margin:      3rem auto 0;
+	text-align:  center;
+	font-size:   1.15rem;
+	font-weight: 600;
+	line-height: 1.6;
+	color:       var(--tsr-navy);
+}
+
+.tsr-band__credit {
+	margin:     2rem 0 -4rem;
+	text-align: right;
+	font-size:  0.8rem;
+	color:      rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 900px) {
+	.tsr-values,
+	.tsr-people {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.tsr-about {
+		margin-bottom: 4rem;
+	}
+
+	.tsr-band__credit {
+		margin-bottom: -2.5rem;
+	}
+}

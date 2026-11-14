@@ -72,13 +72,13 @@ $tsr_timeline = array(
 	),
 	array(
 		'year'  => 2021,
-		'label' => '9-ти сезон — Юбилей',
-		'desc'  => '10 години планинско бягане с TrailSeries.bg.',
+		'label' => '9-ти сезон',
+		'desc'  => '',
 	),
 	array(
 		'year'  => 2022,
-		'label' => '10-ти сезон',
-		'desc'  => '',
+		'label' => '10-ти сезон — Юбилей',
+		'desc'  => '10 години планинско бягане с TrailSeries.bg.',
 	),
 	array(
 		'year'  => 2023,
@@ -110,16 +110,17 @@ $tsr_timeline = array(
 /**
  * Photos per year (files in images/history/).
  *
- * @var array<int, array{file: string, layout?: 'band', portrait?: bool}>
+ * @var array<int, array{file: string, layout?: 'band', portrait?: bool, credit?: string}>
  */
 $tsr_media = array(
 	2012 => array( 'file' => '2012-nachalo.jpg' ),
 	2013 => array( 'file' => '2013-kiril-nikolov.jpg', 'portrait' => true ),
-	2014 => array( 'file' => 'vitosha.jpg', 'layout' => 'band' ),
+	2014 => array( 'file' => 'vitosha.jpg', 'layout' => 'band', 'credit' => 'KrisoK Photography' ),
 	2019 => array( 'file' => '2019-zero-to-hero.jpg', 'portrait' => true ),
 );
 $tsr_closing_year  = 2027; // rendered as the closing band, with the year before it
 $tsr_closing_photo = 'planini-sofia-pateka.jpg';
+$tsr_closing_credit = 'KrisoK Photography';
 
 $tsr_by_year = array_column( $tsr_timeline, null, 'year' );
 
@@ -181,6 +182,7 @@ foreach ( $tsr_media as $tsr_year => $tsr_m ) {
 		'flip'    => ! $tsr_is_band && $tsr_flip,
 		'upright' => $tsr_upright,
 		'file'    => $tsr_m['file'],
+		'credit'  => (string) ( $tsr_m['credit'] ?? '' ),
 		'x'       => $tsr_x,
 	);
 	if ( ! $tsr_is_band ) {
@@ -208,16 +210,75 @@ $tsr_plain_years = array_filter(
 
 		<?php tsr_page_breadcrumbs( 'История' ); ?>
 
-		<!-- Създателите -->
-		<section class="tsr-story tsr-story--flip tsr-story--creators">
-			<div class="tsr-story__text">
-				<p class="tsr-story__season">Създателите</p>
-				<h2 class="tsr-story__title">Илиян Лазаров и Тони Петков</h2>
+		<!-- За Trail Series (owner's text, 2026-11-14) -->
+		<section class="tsr-about" aria-labelledby="tsr-about-h">
+			<p class="tsr-story__season">За Trail Series</p>
+			<h2 class="tsr-about__title" id="tsr-about-h">15 години. 150 състезания. Една пътека.</h2>
+			<div class="tsr-about__text">
 				<p>
-					TrailSeries.bg е поредицата планински бягания, която обединява трейл
-					общността в България. Всеки сезон включва поредица от маршрути с
-					различна дължина и денивелация — от достъпни за начинаещи до
-					предизвикателни за опитни планинари.
+					Всичко започна с една проста идея: да тичаме там, където свършва асфалтът. Без големи
+					бюджети и без парични награди. Само маркирана пътека, планина и хора, които обичат да
+					тичат сред природата. Така се роди RunBG Trail Series, серия от състезания по трейл и
+					планинско бягане, които се провеждат всеки месец, сезон след сезон.
+				</p>
+				<p>
+					Петнадесет години по-късно зад гърба си имаме повече от 150 събития. Пътеките ни са
+					минали през Люлин, Локорско, Бухово, Симеоново, Панчарево, Банкя, Бояна, склоновете на
+					Пирин над Банско и много други места. Всяко състезание е различно, с нова дистанция, нов
+					терен и ново предизвикателство. Затова серията не остарява. Тя се променя заедно с
+					хората, които тичат в нея.
+				</p>
+				<p>
+					През годините на нашите стартове са застанали хиляди бегачи. Някои дойдоха за първото си
+					състезание, а днес гонят ултрадистанции. Други започнаха като деца, а сега тичат заедно
+					с децата си. Има и такива, които са с нас от първия сезон и досега не са изпуснали
+					годишно класиране. Trail Series винаги е била отворена за всеки любител. Не ти трябват
+					клуб, картотека или лиценз. Достатъчно е желание.
+				</p>
+			</div>
+
+			<h3 class="tsr-about__h3">Какво се е запазило от самото начало</h3>
+			<ul class="tsr-values">
+				<li>
+					<h4>Състезателен дух за всички</h4>
+					<p>
+						Класираме мъжете и жените поотделно на дълга, средна и къса дистанция. Медали
+						получават само първите трима. В годишното класиране влизат бегачите с поне три
+						пробега през сезона, а в края му излъчваме годишен победител и ранглиста на топ 10
+						при мъжете и при жените.
+					</p>
+				</li>
+				<li>
+					<h4>Феърплей и уважение</h4>
+					<p>
+						Към другите бегачи, към доброволците и към планината. Тичаме само по маркираното
+						трасе и не оставяме боклук след себе си.
+					</p>
+				</li>
+				<li>
+					<h4>Свобода на пътеката</h4>
+					<p>
+						Ние маркираме трасето и осигуряваме сигурен старт и финал. Останалото зависи от теб.
+					</p>
+				</li>
+			</ul>
+
+			<p class="tsr-about__closing">
+				150 събития по-късно Trail Series вече е нещо повече от календар със състезания. Тя е
+				общност, която всеки месец се събира в планината, за да тича, да се подкрепя и да се
+				връща отново. Благодарим на всеки бегач, доброволец и приятел, който е извървял и
+				изтичал този път с нас.
+			</p>
+		</section>
+
+		<!-- Хората зад Trail Series (owner's text, 2026-11-14) -->
+		<section class="tsr-story tsr-story--flip tsr-story--creators" aria-labelledby="tsr-people-h">
+			<div class="tsr-story__text">
+				<p class="tsr-story__season">Организатори</p>
+				<h2 class="tsr-story__title" id="tsr-people-h">Хората зад Trail Series</h2>
+				<p>
+					Trail Series се роди от срещата на двама души, които тръгнаха от различни места, но
+					имаха една обща цел: повече хора да тичат и повече от тях да тичат в планината.
 				</p>
 			</div>
 			<figure class="tsr-story__media">
@@ -226,8 +287,35 @@ $tsr_plain_years = array_filter(
 			</figure>
 		</section>
 
+		<div class="tsr-people">
+			<article class="tsr-person">
+				<h3>Илиян Лазаров</h3>
+				<p>
+					Илиян е бегач любител, минал през няколко спорта, преди бягането да се превърне в
+					негова страст. По онова време той пише статии за runbg.net и търси начини да
+					популяризира любителското бягане в България. През 2010 г. организира първите групови
+					бягания в Борисова градина. От тези срещи постепенно израсна общността, от която
+					по-късно тръгна и Trail Series.
+				</p>
+			</article>
+			<article class="tsr-person">
+				<h3>Тони Петков</h3>
+				<p>
+					Тони идва от леката атлетика, но истинската му любов са планината и планинското
+					бягане. Той е човекът, който измисли първите трасета. Задачата никак не беше лесна:
+					пътеките трябваше да са живописни и да предизвикват бегачите, но в същото време да са
+					достъпни за възможно най-много хора. Този баланс между красота, предизвикателство и
+					достъпност и днес отличава всяко трасе на серията.
+				</p>
+			</article>
+		</div>
+		<p class="tsr-people__closing">
+			На 13 октомври 2012 г. се проведе първото състезание от Trail Series. Оттогава идеята на
+			двамата се превърна в традиция, която продължава и до днес.
+		</p>
+
 		<?php
-		$tsr_prev_x     = 29.0; // founders photo is on the left
+		$tsr_prev_x     = 50.0; // starts under the centred "13 октомври 2012" sentence
 		$tsr_open_wrap  = true; // inside .tsr-container
 		foreach ( $tsr_blocks as $tsr_b ) :
 			$tsr_e                       = $tsr_by_year[ $tsr_b['year'] ];
@@ -252,6 +340,9 @@ $tsr_plain_years = array_filter(
 								<p><?php echo esc_html( $tsr_e['desc'] ); ?></p>
 							<?php endif; ?>
 						</div>
+						<?php if ( '' !== $tsr_b['credit'] ) : ?>
+							<p class="tsr-band__credit">Снимка: <?php echo esc_html( $tsr_b['credit'] ); ?></p>
+						<?php endif; ?>
 					</div>
 				</section>
 				<div class="tsr-container">
@@ -313,6 +404,7 @@ $tsr_plain_years = array_filter(
 						<?php endif; ?>
 					<?php endforeach; ?>
 				</div>
+				<p class="tsr-band__credit">Снимка: <?php echo esc_html( $tsr_closing_credit ); ?></p>
 			</div>
 		</section>
 	<?php endif; ?>
