@@ -430,7 +430,7 @@ function tsr_runner_profile_print( string $name, array $rows ): void {
 		<div class="tsr-rp-kpis">
 			<?php
 			$kpis = array(
-				array( (string) $starts, 1 === $starts ? 'старт' : 'старта', count( $fins ) . ' финиша (' . (int) round( 100 * count( $fins ) / $starts ) . '%)' ),
+				array( (string) $starts, 1 === $starts ? 'старт' : 'старта', tsr_runner_count( count( $fins ), 'финиш', 'финиша' ) . ' (' . (int) round( 100 * count( $fins ) / $starts ) . '%)' ),
 				array( tsr_runner_num( $km ), 'км в състезания', $up > 0 ? 'по измерените трасета' : 'по дистанциите в протоколите' ),
 				array( $up > 0 ? tsr_runner_num( $up ) : '—', 'м изкачване', $up >= 8849 ? str_replace( '.', ',', (string) ( floor( $up / 884.9 ) / 10 ) ) . ' × Еверест' : 'където има измерено трасе' ),
 				array(
