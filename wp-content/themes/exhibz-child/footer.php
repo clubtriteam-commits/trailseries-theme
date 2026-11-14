@@ -58,6 +58,7 @@
 					<li><a href="https://www.instagram.com/trailseries.bg/" target="_blank" rel="noopener">Instagram<span class="screen-reader-text"> (нов прозорец)</span></a></li>
 					<li><a href="https://www.facebook.com/TrailSeries.bg" target="_blank" rel="noopener">Facebook<span class="screen-reader-text"> (нов прозорец)</span></a></li>
 					<li><a href="https://www.strava.com/clubs/TrailSeriesBG" target="_blank" rel="noopener">Strava<span class="screen-reader-text"> (нов прозорец)</span></a></li>
+					<li><a href="https://www.youtube.com/@RunBG" target="_blank" rel="noopener">YouTube<span class="screen-reader-text"> (нов прозорец)</span></a></li>
 				</ul>
 			</div>
 
