@@ -98,6 +98,7 @@ foreach ( $all_posts as $post ) {
 // same race appears twice in one season. $tsr_event_base_of maps the
 // display name back to the event name (event-page link, calendar dates).
 $tsr_event_base_of = array();
+$tsr_race_year_of  = array(); // display name => race year (calendar date, photo)
 foreach ( $grouped as $tsr_y => $tsr_by_key ) {
 	$tsr_name_count = array_count_values( array_map( static fn( string $k ): string => explode( "", $k )[0], array_keys( $tsr_by_key ) ) );
 	$tsr_named      = array();
@@ -106,6 +107,7 @@ foreach ( $grouped as $tsr_y => $tsr_by_key ) {
 		$tsr_display           = ( $tsr_name_count[ $tsr_name ] > 1 && '0' !== $tsr_ry ) ? $tsr_name . ' ' . $tsr_ry : $tsr_name;
 		$tsr_named[ $tsr_display ]           = array_merge( $tsr_named[ $tsr_display ] ?? array(), $tsr_posts );
 		$tsr_event_base_of[ $tsr_display ] = $tsr_name;
+		$tsr_race_year_of[ $tsr_display ]  = (int) $tsr_ry;
 	}
 	$grouped[ $tsr_y ] = $tsr_named;
 }
@@ -131,6 +133,7 @@ krsort( $grouped, SORT_NUMERIC );
 // (usort is stable in PHP 8) rather than being scrambled.
 if ( post_type_exists( 'ajde_events' ) ) {
 	$tsr_event_dates = array(); // [ year => [ event_base => evcal_srow ] ]
+	$tsr_event_ids   = array(); // [ year => [ event_base => calendar post ID ] ] (card photo)
 	foreach ( get_posts( array(
 		'post_type'      => 'ajde_events',
 		'posts_per_page' => -1,
@@ -146,6 +149,7 @@ if ( post_type_exists( 'ajde_events' ) ) {
 		// A later calendar entry for the same event+year (edit, duplicate)
 		// wins — last one processed simply overwrites, no ordering assumed.
 		$tsr_event_dates[ $tsr_ev_year ][ $tsr_ev_base ] = $tsr_ev_ts;
+		$tsr_event_ids[ $tsr_ev_year ][ $tsr_ev_base ]   = $tsr_ev_post->ID;
 	}
 
 	foreach ( $grouped as $tsr_year => &$tsr_events_for_year ) {
@@ -241,14 +245,14 @@ $tsr_dist_rows = static function ( array $posts ) use ( $tsr_rindex ): array {
 
 		<?php else : ?>
 
-			<?php
-			$tsr_n = count( $tsr_events );
-			tsr_season_select( $tsr_years, $tsr_selected, sprintf( '%d %s', $tsr_n, 1 === $tsr_n ? 'състезание' : 'състезания' ) );
-			?>
+			<?php $tsr_n = count( $tsr_events ); ?>
+			<div class="tsr-rez-bar">
+				<h2 class="tsr-season-heading"><?php echo esc_html( tsr_season_label( $tsr_selected ) ); ?></h2>
+				<?php tsr_season_select( $tsr_years, $tsr_selected, sprintf( '%d %s', $tsr_n, 1 === $tsr_n ? 'състезание' : 'състезания' ) ); ?>
+			</div>
 
-			<h2 class="tsr-season-heading"><?php echo esc_html( tsr_season_label( $tsr_selected ) ); ?></h2>
-
-			<div class="tsr-race-cards">
+			<?php // Calendar-style cards, four per row (owner-approved mockup 2026-11-14). ?>
+			<ul class="tsr-cal-cards tsr-rez-cards">
 
 				<?php foreach ( $tsr_events as $event_name => $event_posts ) : ?>
 					<?php
@@ -267,48 +271,56 @@ $tsr_dist_rows = static function ( array $posts ) use ( $tsr_rindex ): array {
 					if ( null === $primary ) {
 						$primary = array_shift( $cats );
 					}
-					$sections = tsr_sort_results_indexed( array_merge( array( $primary ), $cats ) );
-					$tsr_base = $tsr_event_base_of[ $event_name ] ?? $event_name;
-					$race_ts  = $tsr_dates[ $tsr_base ] ?? 0;
-					$ev_slug  = sanitize_title( $tsr_base );
+					$sections  = tsr_sort_results_indexed( array_merge( array( $primary ), $cats ) );
+					$tsr_base  = $tsr_event_base_of[ $event_name ] ?? $event_name;
+					$tsr_ry    = $tsr_race_year_of[ $event_name ] ?? 0;
+					$race_ts   = ( $tsr_event_dates ?? array() )[ $tsr_ry ][ $tsr_base ] ?? 0;
+					$tsr_ev_id = ( $tsr_event_ids ?? array() )[ $tsr_ry ][ $tsr_base ] ?? 0;
+					$tsr_img   = $tsr_ev_id ? tsr_card_image( $tsr_ev_id, 'tsr-cal-card__img', '(max-width: 600px) calc(100vw - 2.5rem), (max-width: 1100px) 50vw, 280px' ) : '';
+					$tsr_rows  = $tsr_dist_rows( $sections );
 					?>
-					<article class="tsr-race-card">
-						<header class="tsr-race-card__head">
-							<h3 class="tsr-race-card__title">
+					<li class="tsr-cal-card tsr-rez-card<?php echo '' !== $tsr_img ? ' tsr-cal-card--photo' : ''; ?>">
+						<?php
+						if ( '' !== $tsr_img ) {
+							echo $tsr_img; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output.
+						} elseif ( $race_ts > 0 ) {
+							echo '<span class="tsr-cal-card__mark" aria-hidden="true">' . esc_html( gmdate( 'j', $race_ts ) ) . '</span>';
+						}
+						?>
+						<div class="tsr-cal-card__top">
+							<?php if ( $race_ts > 0 ) : ?>
+								<time class="tsr-cal-card__date" datetime="<?php echo esc_attr( gmdate( 'Y-m-d', $race_ts ) ); ?>">
+									<span class="tsr-cal-card__day"><?php echo esc_html( gmdate( 'j', $race_ts ) ); ?></span>
+									<span class="tsr-cal-card__mon"><?php echo esc_html( tsr_bg_month_short( (int) gmdate( 'n', $race_ts ) ) . ' ' . gmdate( 'Y', $race_ts ) ); ?></span>
+								</time>
+							<?php else : ?>
+								<span></span>
+							<?php endif; ?>
+							<span class="tsr-cal-card__in tsr-cal-card__in--past"><?php echo esc_html( count( $tsr_rows ) . ' дист.' ); ?></span>
+						</div>
+						<div class="tsr-cal-card__body">
+							<h3 class="tsr-cal-card__title">
 								<a href="<?php echo esc_url( (string) get_permalink( $primary ) ); ?>"><?php echo esc_html( $event_name ); ?></a>
 							</h3>
-							<?php if ( $race_ts > 0 ) : ?>
-								<time class="tsr-race-card__date" datetime="<?php echo esc_attr( wp_date( 'Y-m-d', $race_ts ) ); ?>">
-									<?php echo esc_html( tsr_bg_date( $race_ts ) ); ?>
-								</time>
-							<?php endif; ?>
-						</header>
-
-						<dl class="tsr-dist-rows">
-							<?php foreach ( $tsr_dist_rows( $sections ) as $row ) : ?>
-								<div class="tsr-dist-row">
-									<dt class="tsr-dist-row__km"><?php echo esc_html( $row['label'] ); ?></dt>
-									<dd class="tsr-dist-row__links">
-										<?php foreach ( $row['links'] as $i => $link ) : ?>
-											<?php if ( $i > 0 ) : ?><span class="tsr-dist-row__sep" aria-hidden="true">·</span><?php endif; ?>
-											<a href="<?php echo esc_url( $link['url'] ); ?>"><?php echo esc_html( $link['text'] ); ?><span class="screen-reader-text"> — <?php echo esc_html( trim( $row['label'] . ' ' . $event_name ) ); ?></span></a>
+							<p class="tsr-rez-card__results" aria-hidden="true">Results ›</p>
+							<ul class="tsr-rez-chips" aria-label="Дистанции">
+								<?php foreach ( $tsr_rows as $row ) : ?>
+									<li>
+										<?php if ( '' !== $row['label'] ) : ?>
+											<span><?php echo esc_html( $row['label'] ); ?></span>
+										<?php endif; ?>
+										<?php foreach ( $row['links'] as $link ) : ?>
+											<?php $tsr_short = 'Мъже' === $link['text'] ? 'М' : ( 'Жени' === $link['text'] ? 'Ж' : $link['text'] ); ?>
+											<a href="<?php echo esc_url( $link['url'] ); ?>"><?php echo esc_html( $tsr_short ); ?><span class="screen-reader-text"> — <?php echo esc_html( trim( $row['label'] . ' ' . $link['text'] . ' ' . $event_name ) ); ?></span></a>
 										<?php endforeach; ?>
-									</dd>
-								</div>
-							<?php endforeach; ?>
-						</dl>
-
-						<?php if ( '' !== $ev_slug ) : ?>
-							<p class="tsr-race-card__more">
-								<a href="<?php echo esc_url( add_query_arg( 'sabitie', $ev_slug, home_url( '/event/' ) ) ); ?>">
-									История на събитието<span class="screen-reader-text">: <?php echo esc_html( $event_name ); ?></span> ›
-								</a>
-							</p>
-						<?php endif; ?>
-					</article>
+									</li>
+								<?php endforeach; ?>
+							</ul>
+						</div>
+					</li>
 				<?php endforeach; ?>
 
-			</div><!-- .tsr-race-cards -->
+			</ul><!-- .tsr-rez-cards -->
 
 		<?php endif; ?>
 

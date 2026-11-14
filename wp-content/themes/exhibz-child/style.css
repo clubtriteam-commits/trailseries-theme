@@ -5193,3 +5193,115 @@ h1, h2, h3, h4, h5, h6 {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   /rezultati/ — calendar-style cards, 4 per row (owner, 2026-11-14)
+   ══════════════════════════════════════════════════════════════════════════ */
+.tsr-rez-bar {
+	display:         flex;
+	flex-wrap:       wrap;
+	align-items:     center;
+	justify-content: space-between;
+	gap:             0.75rem 1rem;
+	margin:          0 0 1.25rem;
+}
+
+.tsr-rez-bar .tsr-season-heading {
+	margin: 0;
+}
+
+.tsr-rez-bar .tsr-toolbar {
+	margin: 0;
+}
+
+.tsr-rez-bar .tsr-toolbar__label {
+	position:    absolute;
+	width:       1px;
+	height:      1px;
+	overflow:    hidden;
+	clip:        rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+.tsr-rez-bar .tsr-select {
+	border-color:  var(--tsr-blue);
+	border-radius: 999px;
+}
+
+.tsr-rez-cards {
+	margin: 0 0 2.5rem;
+}
+
+.tsr-rez-card {
+	height: 300px;
+}
+
+.tsr-rez-card .tsr-cal-card__title {
+	margin-bottom: 0.15rem;
+}
+
+/* the whole card opens the race results */
+.tsr-rez-card .tsr-cal-card__title a::after {
+	z-index: 1;
+}
+
+.tsr-rez-card__results {
+	margin:      0 0 0.55rem;
+	font-size:   0.85rem;
+	font-weight: 700;
+	color:       var(--tsr-blue);
+}
+
+.tsr-rez-chips {
+	position:   relative;
+	z-index:    2; /* above the card link */
+	display:    flex;
+	flex-wrap:  wrap;
+	gap:        0.35rem;
+	margin:     0;
+	padding:    0;
+	list-style: none;
+}
+
+.tsr-rez-chips li {
+	display:       inline-flex;
+	align-items:   stretch;
+	overflow:      hidden;
+	border:        1px solid rgba(255, 255, 255, 0.5);
+	border-radius: 999px;
+	font-size:     0.78rem;
+	font-weight:   700;
+}
+
+.tsr-rez-chips span:not(.screen-reader-text) {
+	display:     inline-flex;
+	align-items: center;
+	padding:     0.2rem 0.5rem;
+}
+
+.tsr-rez-chips a {
+	display:         inline-flex;
+	align-items:     center;
+	min-height:      24px;
+	padding:         0.15rem 0.5rem;
+	border-left:     1px solid rgba(255, 255, 255, 0.35);
+	color:           var(--tsr-white);
+	text-decoration: none;
+}
+
+.tsr-rez-chips li > a:first-child {
+	border-left: 0;
+}
+
+.tsr-rez-chips a:hover,
+.tsr-rez-chips a:focus-visible {
+	background: var(--tsr-white);
+	color:      var(--tsr-navy);
+}
+
+@media (max-width: 600px) {
+	.tsr-rez-card {
+		height: auto;
+		min-height: 230px;
+	}
+}
