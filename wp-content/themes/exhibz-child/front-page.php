@@ -708,16 +708,92 @@ $tsr_hero_uri  = get_stylesheet_directory_uri() . '/images/hero/' . $tsr_hero_pi
 <?php endif; ?>
 
 <!-- ════════════════════════════════════════════════════════════════════════════
-     SECTION 6 — MAP: ТРАСЕТАТА
+     SECTION 6 — MAP: ТРАСЕТАТА (redesign 2026-11-14: dark basemap, numbered
+     pins, list beside the map, zoomed to Sofia; Pirin behind a button)
      ════════════════════════════════════════════════════════════════════════ -->
+<?php
+// Group races that share a start (Бухово: three races; Кокаляне: two) into
+// one numbered pin; split off the Pirin races (≈ 90 km south) so the map can
+// zoom to Sofia.
+$tsr_map_groups = array();
+$tsr_pirin      = array();
+foreach ( $tsr_map_pins as $tsr_pin ) {
+	if ( $tsr_pin['lat'] < 42.2 ) {
+		$tsr_pirin[] = $tsr_pin;
+		continue;
+	}
+	$tsr_hit = null;
+	foreach ( $tsr_map_groups as $tsr_gi => $tsr_g ) {
+		if ( abs( $tsr_g['lat'] - $tsr_pin['lat'] ) < 0.004 && abs( $tsr_g['lng'] - $tsr_pin['lng'] ) < 0.004 ) {
+			$tsr_hit = $tsr_gi;
+			break;
+		}
+	}
+	if ( null === $tsr_hit ) {
+		$tsr_map_groups[] = array(
+			'lat'   => $tsr_pin['lat'],
+			'lng'   => $tsr_pin['lng'],
+			'items' => array( $tsr_pin ),
+		);
+	} else {
+		$tsr_map_groups[ $tsr_hit ]['items'][] = $tsr_pin;
+	}
+}
+if ( array() !== $tsr_pirin ) {
+	$tsr_map_groups[] = array(
+		'lat'   => $tsr_pirin[0]['lat'],
+		'lng'   => $tsr_pirin[0]['lng'],
+		'items' => $tsr_pirin,
+		'pirin' => true,
+	);
+}
+foreach ( $tsr_map_groups as $tsr_gi => $tsr_g ) {
+	$tsr_map_groups[ $tsr_gi ]['n']      = $tsr_gi + 1;
+	$tsr_map_groups[ $tsr_gi ]['active'] = array() !== array_filter( $tsr_g['items'], static fn( array $e ): bool => '' === $e['note'] );
+	$tsr_map_groups[ $tsr_gi ]['title']  = ! empty( $tsr_g['pirin'] ) ? 'Пирин' : implode( ' · ', array_column( $tsr_g['items'], 'name' ) );
+}
+?>
 <section class="tsr-section tsr-map-section" aria-labelledby="tsr-map-title">
 	<div class="tsr-container">
 		<h2 class="tsr-section__title" id="tsr-map-title">Трасетата</h2>
+
+		<div class="tsr-map-layout">
+			<div class="tsr-map-wrap">
+				<div id="tsr-map"
+				     class="tsr-map"
+				     role="application"
+				     aria-label="Карта на трасетата около София"></div>
+				<?php if ( array() !== $tsr_pirin ) : ?>
+					<button class="tsr-map-pirin" type="button" data-tsr-pirin hidden>
+						Пирин · <?php echo esc_html( tsr_races_label( count( $tsr_pirin ) ) ); ?> ↘
+					</button>
+				<?php endif; ?>
+			</div>
+
+			<ol class="tsr-map-list" aria-label="Състезания на картата">
+				<?php foreach ( $tsr_map_groups as $tsr_g ) : ?>
+					<li>
+						<button class="tsr-map-list__item<?php echo $tsr_g['active'] ? '' : ' tsr-map-list__item--hist'; ?>" type="button" data-tsr-pin="<?php echo esc_attr( (string) $tsr_g['n'] ); ?>">
+							<span class="tsr-map-list__num" aria-hidden="true"><?php echo esc_html( ! empty( $tsr_g['pirin'] ) ? 'П' : (string) $tsr_g['n'] ); ?></span>
+							<span class="tsr-map-list__text">
+								<strong><?php echo esc_html( $tsr_g['title'] ); ?></strong>
+								<span>
+									<?php
+									if ( count( $tsr_g['items'] ) > 1 ) {
+										echo esc_html( ! empty( $tsr_g['pirin'] ) ? implode( ', ', array_column( $tsr_g['items'], 'name' ) ) : tsr_races_label( count( $tsr_g['items'] ) ) . ' с общ старт' );
+									} else {
+										$tsr_e = $tsr_g['items'][0];
+										echo esc_html( '' !== $tsr_e['note'] ? $tsr_e['note'] : ( '' !== $tsr_e['month'] ? $tsr_e['month'] . ' · ' . $tsr_e['dist'] : $tsr_e['dist'] ) );
+									}
+									?>
+								</span>
+							</span>
+						</button>
+					</li>
+				<?php endforeach; ?>
+			</ol>
+		</div>
 	</div>
-	<div id="tsr-map"
-	     class="tsr-map"
-	     role="application"
-	     aria-label="Карта на трасетата около София"></div>
 </section>
 
 <script>
@@ -726,105 +802,90 @@ $tsr_hero_uri  = get_stylesheet_directory_uri() . '/images/hero/' . $tsr_hero_pi
 	'use strict';
 
 	var initialized = false;
+	var groups      = <?php echo wp_json_encode( array_values( $tsr_map_groups ) ); ?>;
 
 	function initTsrMap() {
 		if ( initialized || typeof L === 'undefined' ) { return; }
 		initialized = true;
 
-		var map = L.map( 'tsr-map', {
-			center: [ 42.60, 23.32 ],
-			zoom: 10,
-			scrollWheelZoom: false,
-		} );
-
-		// Enable scroll zoom only while the map has focus.
+		var map = L.map( 'tsr-map', { scrollWheelZoom: false } );
 		map.on( 'focus', function () { map.scrollWheelZoom.enable(); } );
 		map.on( 'blur',  function () { map.scrollWheelZoom.disable(); } );
 
-		// Close the previously-open popup whenever a new one opens — covers
-		// both desktop hover (mouseover/mouseout below) and mobile tap,
-		// where mouseout never fires so popups would otherwise stack open.
-		var tsrOpenPopupMarker = null;
-		map.on( 'popupopen', function ( ev ) {
-			if ( tsrOpenPopupMarker && tsrOpenPopupMarker !== ev.popup._source ) {
-				tsrOpenPopupMarker.closePopup();
-			}
-			tsrOpenPopupMarker = ev.popup._source;
-		} );
-
-		// Satellite basemap (Esri World Imagery) — chosen 2026-08-27 over
-		// CARTO dark_all after a live staging comparison. Free, no API
-		// key. Verified real tile coverage up to zoom 19 over the Sofia
-		// region before wiring this in.
+		// Dark basemap in the site's colours (Esri Canvas, no API key).
 		L.tileLayer(
-			'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
 			{
 				attribution: 'Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>',
-				maxZoom: 19,
+				maxZoom: 16,
 			}
 		).addTo( map );
 
-		// Classic teardrop map-pin glyph (MDI "map-marker") — a genuine
-		// circular cutout, not a separately-shaded circle, so the tile
-		// underneath shows through the hole the way Google/Apple Maps pins
-		// do. One <path>, two subpaths; the SVG default fill-rule already
-		// makes the inner circle a hole, no evenodd needed.
-		var PIN_SVG_PATH = 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z';
-
-		var makePin = function ( cls, label ) {
-			var esc = document.createElement( 'div' );
-			esc.textContent = label;
-			return L.divIcon( {
-				className:   '',
-				html:        '<div class="tsr-map-pin ' + cls + '" role="img" aria-label="' + esc.innerHTML.replace( /"/g, '&quot;' ) + '">' +
-					'<svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="' + PIN_SVG_PATH + '"/></svg>' +
-					'</div>',
-				iconSize:    [ 28, 28 ],
-				iconAnchor:  [ 14, 27 ],
-				popupAnchor: [ 0, -29 ],
-			} );
+		var esc = function ( text ) {
+			var d = document.createElement( 'div' );
+			d.textContent = text;
+			return d.innerHTML;
 		};
+		var markers = {};
+		var sofia   = [];
 
-		// Pins are built server-side from data/tracks.json (real GPX start
-		// points, median per event) — see the data-collection block at the
-		// top of this template. An empty 'note' means an active event.
-		var events = <?php echo wp_json_encode( $tsr_map_pins ); ?>;
-
-		events.forEach( function ( e ) {
-			var hist  = '' !== e.note;
-			var lines = [ '<strong>' + e.name + '</strong>' ];
-			if ( e.month ) {
-				lines.push( e.month );
-			}
-			lines.push( '<span class="tsr-popup-dist">' + e.dist + '</span>' );
-			if ( hist ) {
-				lines.push( '<em>' + e.note + '</em>' );
-			}
-			L.marker( [ e.lat, e.lng ], { icon: makePin( hist ? 'tsr-map-pin--hist' : 'tsr-map-pin--active', e.name ), title: e.name } )
-				.bindPopup( lines.join( '<br>' ) )
-				.on( 'mouseover', function () { this.openPopup(); } )
-				.on( 'mouseout',  function () { this.closePopup(); } )
+		groups.forEach( function ( g ) {
+			var label = g.pirin ? 'П' : String( g.n );
+			var icon  = L.divIcon( {
+				className:   '',
+				html:        '<div class="tsr-pin' + ( g.active ? '' : ' tsr-pin--hist' ) + '" role="img" aria-label="' + esc( g.title ) + '"><b>' + label + '</b></div>',
+				iconSize:    [ 34, 34 ],
+				iconAnchor:  [ 17, 40 ],
+				popupAnchor: [ 0, -38 ],
+			} );
+			var lines = g.items.map( function ( e ) {
+				return '<strong>' + esc( e.name ) + '</strong>' +
+					( e.month ? '<br>' + esc( e.month ) : '' ) +
+					'<br><span class="tsr-popup-dist">' + esc( e.dist ) + '</span>' +
+					( e.note ? '<br><em>' + esc( e.note ) + '</em>' : '' );
+			} );
+			markers[ g.n ] = L.marker( [ g.lat, g.lng ], { icon: icon, title: g.title, riseOnHover: true } )
+				.bindPopup( lines.join( '<hr>' ) )
 				.addTo( map );
+			if ( ! g.pirin ) {
+				sofia.push( [ g.lat, g.lng ] );
+			}
 		} );
 
-		// Show every event, including the Pirin races ~90 km south of the
-		// Sofia cluster the old fixed center/zoom cropped out.
-		if ( events.length > 0 ) {
-			map.fitBounds(
-				events.map( function ( e ) { return [ e.lat, e.lng ]; } ),
-				{ padding: [ 30, 30 ], maxZoom: 11 }
-			);
-		}
-
-		var legend = L.control( { position: 'bottomright' } );
-		legend.onAdd = function () {
-			var div = L.DomUtil.create( 'div', 'tsr-map-legend' );
-			div.innerHTML =
-				'<span class="tsr-map-legend__dot tsr-map-legend__dot--active"></span>Активни<br>' +
-				'<span class="tsr-map-legend__dot tsr-map-legend__dot--hist"></span>Исторически';
-			return div;
+		var showSofia = function () {
+			map.fitBounds( sofia, { padding: [ 40, 40 ], maxZoom: 12 } );
 		};
-		legend.addTo( map );
+		showSofia();
+
+		// List ↔ pins
+		document.querySelectorAll( '[data-tsr-pin]' ).forEach( function ( btn ) {
+			var m = markers[ btn.getAttribute( 'data-tsr-pin' ) ];
+			if ( ! m ) { return; }
+			btn.addEventListener( 'mouseenter', function () { m.getElement() && m.getElement().classList.add( 'is-on' ); } );
+			btn.addEventListener( 'mouseleave', function () { m.getElement() && m.getElement().classList.remove( 'is-on' ); } );
+			btn.addEventListener( 'click', function () {
+				map.flyTo( m.getLatLng(), Math.max( map.getZoom(), 12 ), { duration: 0.6 } );
+				m.openPopup();
+			} );
+		} );
+
+		// Pirin is ≈ 90 km south: a button instead of zooming the map out.
+		var pirinBtn = document.querySelector( '[data-tsr-pirin]' );
+		var pirin    = groups.filter( function ( g ) { return g.pirin; } )[ 0 ];
+		if ( pirinBtn && pirin ) {
+			var atPirin = false;
+			pirinBtn.hidden = false;
+			pirinBtn.addEventListener( 'click', function () {
+				atPirin = ! atPirin;
+				if ( atPirin ) {
+					map.flyTo( [ pirin.lat, pirin.lng ], 12, { duration: 0.8 } );
+					pirinBtn.textContent = 'Обратно към София ↖';
+				} else {
+					showSofia();
+					pirinBtn.textContent = 'Пирин · ' + pirin.items.length + ' състезания ↘';
+				}
+			} );
+		}
 	}
 
 	// Audit M19: Leaflet + tiles load only when the map nears the viewport
