@@ -116,11 +116,17 @@ $tsr_media = array(
 	2012 => array( 'file' => '2012-nachalo.jpg' ),
 	2013 => array( 'file' => '2013-kiril-nikolov.jpg', 'portrait' => true ),
 	2014 => array( 'file' => 'vitosha.jpg', 'layout' => 'band' ),
+	2015 => array( 'file' => '2015.jpg' ),
 	2016 => array( 'file' => '2016.jpg' ),
+	2017 => array( 'file' => '2017-pirin-vertical.jpg' ),
+	2018 => array( 'file' => '2018.jpg' ),
 	2019 => array( 'file' => '2019-zero-to-hero.jpg', 'portrait' => true ),
+	2020 => array( 'file' => '2020.jpg' ),
+	2021 => array( 'file' => '2021.jpg' ),
 	2022 => array( 'file' => '2022-yubiley.jpg' ),
 	2023 => array( 'file' => '2023.jpg' ),
 	2024 => array( 'file' => '2024-cactus-run.jpg' ),
+	2025 => array( 'file' => '2025.jpg' ),
 	2026 => array( 'file' => '2026.jpg' ),
 );
 $tsr_closing_year  = 2027; // rendered as the closing band
