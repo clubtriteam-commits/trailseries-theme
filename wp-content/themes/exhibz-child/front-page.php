@@ -808,7 +808,7 @@ foreach ( $tsr_map_groups as $tsr_gi => $tsr_g ) {
 		if ( initialized || typeof L === 'undefined' ) { return; }
 		initialized = true;
 
-		var map = L.map( 'tsr-map', { scrollWheelZoom: false, zoomSnap: 0.25 } ); // quarter zoom steps: Sofia fills the map
+		var map = L.map( 'tsr-map', { scrollWheelZoom: false } );
 		map.on( 'focus', function () { map.scrollWheelZoom.enable(); } );
 		map.on( 'blur',  function () { map.scrollWheelZoom.disable(); } );
 
@@ -853,7 +853,12 @@ foreach ( $tsr_map_groups as $tsr_gi => $tsr_g ) {
 		} );
 
 		var showSofia = function () {
-			map.fitBounds( sofia, { padding: [ 30, 30 ], maxZoom: 12 } );
+			// Whole zoom levels only — fractional zoom scales the tiles and leaves
+			// faint seams. Zoom 11 when the races fit at it, else 10.
+			map.fitBounds( sofia, { padding: [ 24, 24 ], maxZoom: 12 } );
+			if ( map.getZoom() < 11 && map.getBoundsZoom( sofia, false, L.point( 8, 8 ) ) >= 11 ) {
+				map.setZoom( 11 );
+			}
 		};
 		showSofia();
 
