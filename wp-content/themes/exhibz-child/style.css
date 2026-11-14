@@ -5305,3 +5305,9 @@ h1, h2, h3, h4, h5, h6 {
 		min-height: 230px;
 	}
 }
+
+/* /rezultati/: distance count pill in brand blue (owner, 2026-11-14) */
+.tsr-rez-card .tsr-cal-card__in {
+	background: var(--tsr-blue-dk);
+	color:      var(--tsr-white);
+}
