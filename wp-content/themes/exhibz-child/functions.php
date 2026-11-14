@@ -246,6 +246,100 @@ function tsr_races_label( int $n ): string {
 	return sprintf( '%d %s', $n, 1 === $n ? 'състезание' : 'състезания' );
 }
 
+/**
+ * Card data for a calendar event (shared by /calendar/ and the home page).
+ *
+ * Times: EventON stores the wall-clock time the organiser typed as a UTC
+ * timestamp, so it is read with gmdate(). A past card links to the race's
+ * results when they are published.
+ *
+ * @return array<string, mixed>
+ */
+function tsr_cal_card_data( int $event_id, bool $past, string $sizes = '(max-width: 600px) calc(100vw - 2.5rem), (max-width: 1100px) 50vw, 280px' ): array {
+	$title = html_entity_decode( get_the_title( $event_id ), ENT_QUOTES, 'UTF-8' );
+	$ts    = (int) get_post_meta( $event_id, 'evcal_srow', true );
+	$base  = tsr_event_base_name( $title );
+	$url   = (string) get_permalink( $event_id );
+	$res   = '';
+	if ( $past ) {
+		$res = tsr_event_results_url( $base, tsr_title_year( $title ) ?? (int) gmdate( 'Y', $ts ) );
+		if ( '' !== $res ) {
+			$url = $res;
+		}
+	}
+	$today = strtotime( wp_date( 'Y-m-d', time(), new DateTimeZone( 'Europe/Sofia' ) ) . ' UTC' );
+	return array(
+		'title'    => $title,
+		'url'      => $url,
+		'ts'       => $ts,
+		'days'     => (int) round( ( strtotime( gmdate( 'Y-m-d', $ts ) . ' UTC' ) - $today ) / DAY_IN_SECONDS ),
+		'location' => trim( (string) get_post_meta( $event_id, 'evcal_location_raw', true ) ),
+		'image'    => tsr_card_image( $event_id, 'tsr-cal-card__img', $sizes ),
+		'dist'     => tsr_event_distance_labels( $base ),
+		'results'  => '' !== $res,
+	);
+}
+
+/** "след 30 дни" / "утре" / "днес". */
+function tsr_in_days( int $days ): string {
+	if ( $days <= 0 ) {
+		return 'днес';
+	}
+	return 1 === $days ? 'утре' : sprintf( 'след %d дни', $days );
+}
+
+/**
+ * Print one calendar card <li>.
+ *
+ * @param array<string, mixed> $c    tsr_cal_card_data() output.
+ * @param bool                 $past Past race ("преминало", faded, results link).
+ */
+function tsr_cal_card_print( array $c, bool $past ): void {
+	$classes = 'tsr-cal-card' . ( '' !== $c['image'] ? ' tsr-cal-card--photo' : '' ) . ( $past ? ' tsr-cal-card--past' : '' );
+	$meta    = trim( $c['location'] . ( '' !== $c['location'] ? ' · ' : '' ) . gmdate( 'H:i', $c['ts'] ) );
+	?>
+	<li class="<?php echo esc_attr( $classes ); ?>">
+		<?php
+		if ( '' !== $c['image'] ) {
+			echo $c['image']; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output.
+		} else {
+			echo '<span class="tsr-cal-card__mark" aria-hidden="true">' . esc_html( gmdate( 'j', $c['ts'] ) ) . '</span>';
+		}
+		?>
+		<div class="tsr-cal-card__top">
+			<time class="tsr-cal-card__date" datetime="<?php echo esc_attr( gmdate( 'Y-m-d', $c['ts'] ) ); ?>">
+				<span class="tsr-cal-card__day"><?php echo esc_html( gmdate( 'j', $c['ts'] ) ); ?></span>
+				<span class="tsr-cal-card__mon"><?php echo esc_html( tsr_bg_month_short( (int) gmdate( 'n', $c['ts'] ) ) . ' ' . gmdate( 'Y', $c['ts'] ) ); ?></span>
+			</time>
+			<span class="tsr-cal-card__in<?php echo $past ? ' tsr-cal-card__in--past' : ''; ?>">
+				<?php echo esc_html( $past ? 'преминало' : tsr_in_days( (int) $c['days'] ) ); ?>
+			</span>
+		</div>
+		<div class="tsr-cal-card__body">
+			<h3 class="tsr-cal-card__title">
+				<a href="<?php echo esc_url( $c['url'] ); ?>">
+					<?php echo esc_html( $c['title'] ); ?><?php if ( $c['results'] ) : ?><span class="screen-reader-text"> — резултати</span><?php endif; ?>
+				</a>
+			</h3>
+			<p class="tsr-cal-card__meta"><?php echo esc_html( $meta ); ?></p>
+			<?php if ( array() !== $c['dist'] ) : ?>
+				<ul class="tsr-cal-card__dist" aria-label="Дистанции">
+					<?php foreach ( $c['dist'] as $tsr_d ) : ?>
+						<li><?php echo esc_html( $tsr_d ); ?></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+	</li>
+	<?php
+}
+
+/** Full Bulgarian month name ("януари" … ). */
+function tsr_bg_month( int $month ): string {
+	$m = array( 1 => 'януари', 'февруари', 'март', 'април', 'май', 'юни', 'юли', 'август', 'септември', 'октомври', 'ноември', 'декември' );
+	return $m[ $month ] ?? '';
+}
+
 /** Short Bulgarian month name ("ян", "февр", … ) for date badges. */
 function tsr_bg_month_short( int $month ): string {
 	$m = array( 1 => 'ян', 'февр', 'март', 'апр', 'май', 'юни', 'юли', 'авг', 'септ', 'окт', 'ноем', 'дек' );

@@ -25,41 +25,8 @@ declare( strict_types=1 );
 
 $tsr_now        = time();
 $tsr_year_start = gmmktime( 0, 0, 0, 1, 1, (int) gmdate( 'Y' ) );
-$tsr_today      = strtotime( wp_date( 'Y-m-d', $tsr_now, new DateTimeZone( 'Europe/Sofia' ) ) . ' UTC' );
 
-/**
- * Card data for one event post (call inside the loop).
- *
- * @return array<string, mixed>
- */
-$tsr_cal_card = static function ( bool $past ) use ( $tsr_today ): array {
-	$id    = get_the_ID();
-	$title = html_entity_decode( get_the_title(), ENT_QUOTES, 'UTF-8' );
-	$ts    = (int) get_post_meta( $id, 'evcal_srow', true );
-	$base  = tsr_event_base_name( $title );
-	$url   = (string) get_permalink();
-
-	if ( $past ) {
-		$year        = tsr_title_year( $title ) ?? (int) gmdate( 'Y', $ts );
-		$results_url = tsr_event_results_url( $base, $year );
-		if ( '' !== $results_url ) {
-			$url = $results_url;
-		}
-	}
-
-	return array(
-		'title'    => $title,
-		'url'      => $url,
-		'ts'       => $ts,
-		'days'     => (int) round( ( strtotime( gmdate( 'Y-m-d', $ts ) . ' UTC' ) - $tsr_today ) / DAY_IN_SECONDS ),
-		'location' => trim( (string) get_post_meta( $id, 'evcal_location_raw', true ) ),
-		'image'    => tsr_card_image( $id, 'tsr-cal-card__img', '(max-width: 600px) calc(100vw - 2.5rem), (max-width: 1100px) 50vw, 280px' ),
-		'dist'     => tsr_event_distance_labels( $base ),
-		'results'  => $past && isset( $results_url ) && '' !== $results_url,
-	);
-};
-
-$tsr_query = static function ( array $meta_query, string $order ) use ( $tsr_cal_card ): array {
+$tsr_query = static function ( array $meta_query, string $order ): array {
 	$q = new WP_Query(
 		array(
 			'post_type'      => 'ajde_events',
@@ -75,7 +42,7 @@ $tsr_query = static function ( array $meta_query, string $order ) use ( $tsr_cal
 	$cards = array();
 	while ( $q->have_posts() ) {
 		$q->the_post();
-		$cards[] = $tsr_cal_card( 'DESC' === $order );
+		$cards[] = tsr_cal_card_data( get_the_ID(), 'DESC' === $order );
 	}
 	wp_reset_postdata();
 	return $cards;
@@ -112,61 +79,6 @@ $tsr_past = $tsr_query(
 	'DESC'
 );
 
-/** "след 30 дни" / "утре" / "днес". */
-$tsr_in_days = static function ( int $days ): string {
-	if ( $days <= 0 ) {
-		return 'днес';
-	}
-	return 1 === $days ? 'утре' : sprintf( 'след %d дни', $days );
-};
-
-/**
- * Print one card.
- *
- * @param array<string, mixed> $c    Card data.
- * @param bool                 $past Past event (label + results link).
- */
-$tsr_print_card = static function ( array $c, bool $past ) use ( $tsr_in_days ): void {
-	$classes = 'tsr-cal-card' . ( '' !== $c['image'] ? ' tsr-cal-card--photo' : '' ) . ( $past ? ' tsr-cal-card--past' : '' );
-	$time    = gmdate( 'H:i', $c['ts'] );
-	$meta    = trim( $c['location'] . ( '' !== $c['location'] ? ' · ' : '' ) . $time );
-	?>
-	<li class="<?php echo esc_attr( $classes ); ?>">
-		<?php
-		if ( '' !== $c['image'] ) {
-			echo $c['image']; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output.
-		} else {
-			echo '<span class="tsr-cal-card__mark" aria-hidden="true">' . esc_html( gmdate( 'j', $c['ts'] ) ) . '</span>';
-		}
-		?>
-		<div class="tsr-cal-card__top">
-			<time class="tsr-cal-card__date" datetime="<?php echo esc_attr( gmdate( 'Y-m-d', $c['ts'] ) ); ?>">
-				<span class="tsr-cal-card__day"><?php echo esc_html( gmdate( 'j', $c['ts'] ) ); ?></span>
-				<span class="tsr-cal-card__mon"><?php echo esc_html( tsr_bg_month_short( (int) gmdate( 'n', $c['ts'] ) ) . ' ' . gmdate( 'Y', $c['ts'] ) ); ?></span>
-			</time>
-			<span class="tsr-cal-card__in<?php echo $past ? ' tsr-cal-card__in--past' : ''; ?>">
-				<?php echo esc_html( $past ? 'преминало' : $tsr_in_days( (int) $c['days'] ) ); ?>
-			</span>
-		</div>
-		<div class="tsr-cal-card__body">
-			<h3 class="tsr-cal-card__title">
-				<a href="<?php echo esc_url( $c['url'] ); ?>">
-					<?php echo esc_html( $c['title'] ); ?><?php if ( $c['results'] ) : ?><span class="screen-reader-text"> — резултати</span><?php endif; ?>
-				</a>
-			</h3>
-			<p class="tsr-cal-card__meta"><?php echo esc_html( $meta ); ?></p>
-			<?php if ( array() !== $c['dist'] ) : ?>
-				<ul class="tsr-cal-card__dist" aria-label="Дистанции">
-					<?php foreach ( $c['dist'] as $tsr_d ) : ?>
-						<li><?php echo esc_html( $tsr_d ); ?></li>
-					<?php endforeach; ?>
-				</ul>
-			<?php endif; ?>
-		</div>
-	</li>
-	<?php
-};
-
 $tsr_count_label = static fn( int $n ): string => sprintf( '%d %s', $n, 1 === $n ? 'състезание' : 'състезания' );
 
 get_header();
@@ -194,13 +106,13 @@ get_header();
 			<?php if ( array() !== $tsr_upcoming ) : ?>
 				<p class="tsr-cal-count">
 					<?php
-					echo esc_html( $tsr_count_label( count( $tsr_upcoming ) ) . ' · следващото е ' . $tsr_in_days( (int) $tsr_upcoming[0]['days'] ) );
+					echo esc_html( $tsr_count_label( count( $tsr_upcoming ) ) . ' · следващото е ' . tsr_in_days( (int) $tsr_upcoming[0]['days'] ) );
 					?>
 				</p>
 				<ul class="tsr-cal-cards">
 					<?php
 					foreach ( $tsr_upcoming as $tsr_c ) {
-						$tsr_print_card( $tsr_c, false );
+						tsr_cal_card_print( $tsr_c, false );
 					}
 					?>
 				</ul>
@@ -218,7 +130,7 @@ get_header();
 				<ul class="tsr-cal-cards">
 					<?php
 					foreach ( $tsr_past as $tsr_c ) {
-						$tsr_print_card( $tsr_c, true );
+						tsr_cal_card_print( $tsr_c, true );
 					}
 					?>
 				</ul>

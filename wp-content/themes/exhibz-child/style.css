@@ -4564,3 +4564,264 @@ h1, h2, h3, h4, h5, h6 {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Home page tightening + footer (owner-approved mockup, 2026-11-14)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.tsr-section {
+	padding-block: 3.25rem;
+}
+
+.tsr-section__title {
+	margin-bottom: 1.25rem;
+}
+
+.tsr-view-all,
+.tsr-past .tsr-view-all {
+	margin-top: 1rem;
+}
+
+.tsr-hero {
+	min-height: 68vh;
+}
+
+.tsr-zero-section,
+.tsr-map-section {
+	padding-block: 3.25rem;
+}
+
+.tsr-stats {
+	padding-block: 2.25rem;
+}
+
+/* Upcoming = calendar cards, shorter */
+.tsr-upcoming .tsr-cal-cards {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	margin-top:            0;
+}
+
+.tsr-upcoming .tsr-cal-card {
+	height:  250px;
+	padding: 0.9rem;
+}
+
+.tsr-upcoming .tsr-cal-card__mark {
+	top:       22%;
+	font-size: 6.5rem;
+}
+
+/* Latest results rows */
+.tsr-past-race {
+	padding: 0.55rem;
+}
+
+.tsr-past-race__img {
+	width:  60px;
+	height: 60px;
+}
+
+/* News: shorter photos, two-line excerpt */
+.tsr-news .tsr-card__thumb {
+	height: 130px;
+}
+
+.tsr-news .tsr-card__body {
+	padding: 0.85rem 1rem;
+}
+
+.tsr-news .tsr-card__body p:not(.tsr-card__meta) {
+	display:            -webkit-box;
+	margin-bottom:      0.4rem;
+	overflow:           hidden;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+
+/* Zero to HERO: shorter cards, title only, arrows outside the photos */
+.tsr-zero-card {
+	height: 220px;
+}
+
+.tsr-zero-card__excerpt {
+	display: none;
+}
+
+.tsr-zero-nav--prev { left: -3.25rem; }
+.tsr-zero-nav--next { right: -3.25rem; }
+
+@media (max-width: 1300px) {
+	.tsr-zero-nav--prev { left: -0.5rem; }
+	.tsr-zero-nav--next { right: -0.5rem; }
+}
+
+/* Partners: logos only, one row of five (three on phones) */
+.tsr-partners-strip {
+	display:               grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap:                   1rem;
+}
+
+.tsr-partners-strip .tsr-partner-card {
+	gap:     0.4rem;
+	padding: 0.6rem 0.5rem;
+}
+
+.tsr-partners-home .tsr-partner-card__name {
+	position:    absolute;
+	width:       1px;
+	height:      1px;
+	overflow:    hidden;
+	clip:        rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+.tsr-partners-strip img {
+	width:      auto;
+	max-height: 56px;
+}
+
+/* Map */
+.tsr-map-section .tsr-map {
+	height: 440px;
+}
+
+.tsr-map-list {
+	max-height: 440px;
+}
+
+/* Footer */
+.tsr-footer {
+	padding:    3.5rem 0 1.5rem;
+	background: var(--tsr-navy);
+	color:      #cfd8e3;
+}
+
+.tsr-footer__grid {
+	display:               grid;
+	grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+	gap:                   2rem;
+	align-items:           start;
+}
+
+.tsr-footer__brand {
+	display:        flex;
+	flex-direction: column;
+	gap:            0.75rem;
+}
+
+.tsr-footer__logo {
+	width:  72px;
+	height: auto;
+}
+
+.tsr-footer__word {
+	margin:         0;
+	font-family:    "Ubuntu", system-ui, sans-serif;
+	font-size:      2.4rem;
+	font-weight:    700;
+	line-height:    1;
+	letter-spacing: -0.01em;
+	color:          var(--tsr-white);
+}
+
+.tsr-footer__word span {
+	color: var(--tsr-blue);
+}
+
+.tsr-footer__tag {
+	max-width: 22rem;
+	margin:    0;
+	font-size: 0.95rem;
+	color:     #9fb0c3;
+}
+
+.tsr-footer__h {
+	margin:         0 0 0.9rem;
+	font-family:    "Geist", system-ui, sans-serif;
+	font-size:      0.78rem;
+	font-weight:    700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color:          var(--tsr-blue);
+}
+
+.tsr-footer__col ul {
+	display:    grid;
+	gap:        0.35rem;
+	margin:     0;
+	padding:    0;
+	list-style: none;
+}
+
+.tsr-footer__col a {
+	display:         inline-block;
+	min-height:      24px;
+	padding:         0.1rem 0;
+	color:           var(--tsr-white);
+	text-decoration: none;
+}
+
+.tsr-footer__col a:hover,
+.tsr-footer__col a:focus-visible {
+	color:           var(--tsr-blue);
+	text-decoration: underline;
+}
+
+.tsr-footer__bottom {
+	display:         flex;
+	flex-wrap:       wrap;
+	justify-content: space-between;
+	gap:             0.5rem 1rem;
+	margin-top:      2.5rem;
+	padding-top:     1.25rem;
+	border-top:      1px solid rgba(255, 255, 255, 0.12);
+}
+
+.tsr-footer .tsr-footer__copy {
+	margin:    0;
+	font-size: 0.85rem;
+	color:     #8798ab;
+}
+
+@media (max-width: 900px) {
+	.tsr-upcoming .tsr-cal-cards {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.tsr-upcoming .tsr-cal-card {
+		height: 210px;
+	}
+
+	.tsr-map-section .tsr-map {
+		height: 340px;
+	}
+
+	.tsr-map-list {
+		max-height: 260px;
+	}
+
+	.tsr-footer__grid {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.tsr-footer__brand {
+		grid-column: 1 / -1;
+	}
+}
+
+@media (max-width: 768px) {
+	.tsr-section,
+	.tsr-zero-section,
+	.tsr-map-section {
+		padding-block: 2.25rem;
+	}
+
+	.tsr-hero {
+		min-height: 0;
+	}
+
+	.tsr-partners-strip {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}

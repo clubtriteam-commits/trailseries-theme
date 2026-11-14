@@ -48,15 +48,9 @@ if ( post_type_exists( 'ajde_events' ) ) {
 	);
 	while ( $tsr_eq->have_posts() ) {
 		$tsr_eq->the_post();
-		$tsr_id         = get_the_ID();
-		$tsr_upcoming[] = array(
-			'title'         => get_the_title(),
-			'url'           => get_permalink(),
-			'start_ts'      => (int) get_post_meta( $tsr_id, 'evcal_srow', true ),
-			'time_ts'       => (int) get_post_meta( $tsr_id, '_evcal_etime', true ),
-			'location'      => (string) ( get_post_meta( $tsr_id, 'evcal_location_raw', true ) ?: '' ),
-			'image'         => tsr_card_image( $tsr_id, 'tsr-event-card__img', '(max-width: 768px) calc(100vw - 2.5rem), 380px' ),
-		);
+		// Same card as /calendar/ (start time from evcal_srow; the old card
+		// read _evcal_etime and showed the wrong hour).
+		$tsr_upcoming[] = tsr_cal_card_data( get_the_ID(), false, '(max-width: 900px) calc(100vw - 2.5rem), 380px' );
 	}
 	wp_reset_postdata();
 }
@@ -368,41 +362,13 @@ $tsr_hero_uri  = get_stylesheet_directory_uri() . '/images/hero/' . $tsr_hero_pi
 		<h2 class="tsr-section__title" id="tsr-upcoming-title">Предстоящи събития</h2>
 
 		<?php if ( ! empty( $tsr_upcoming ) ) : ?>
-			<div class="tsr-event-cards">
-				<?php foreach ( $tsr_upcoming as $ev ) :
-					$tsr_day        = date_i18n( 'j', $ev['start_ts'] );
-					$tsr_month      = date_i18n( 'M', $ev['start_ts'] );
-					$tsr_time       = $ev['time_ts'] > 0 ? date_i18n( 'H:i', $ev['time_ts'] ) . 'ч' : '';
-					?>
-					<article class="tsr-event-card">
-						<?php echo $ev['image']; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output. ?>
-						<a class="tsr-event-card__link"
-						   href="<?php echo esc_url( $ev['url'] ); ?>"
-						   aria-label="<?php echo esc_attr( $ev['title'] ); ?>"></a>
-
-						<div class="tsr-event-card__date">
-							<span class="tsr-event-card__day"><?php echo esc_html( $tsr_day ); ?></span>
-							<span class="tsr-event-card__month"><?php echo esc_html( $tsr_month ); ?></span>
-						</div>
-
-						<div class="tsr-event-card__content">
-							<h3 class="tsr-event-card__title"><?php echo esc_html( $ev['title'] ); ?></h3>
-							<?php if ( '' !== $tsr_time ) : ?>
-								<p class="tsr-event-card__meta-row">
-									<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
-									<?php echo esc_html( $tsr_time ); ?>
-								</p>
-							<?php endif; ?>
-							<?php if ( '' !== $ev['location'] ) : ?>
-								<p class="tsr-event-card__meta-row">
-									<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
-									<?php echo esc_html( $ev['location'] ); ?>
-								</p>
-							<?php endif; ?>
-						</div>
-					</article>
-				<?php endforeach; ?>
-			</div>
+			<ul class="tsr-cal-cards">
+				<?php
+				foreach ( $tsr_upcoming as $tsr_c ) {
+					tsr_cal_card_print( $tsr_c, false );
+				}
+				?>
+			</ul>
 		<?php else : ?>
 			<p class="tsr-empty">
 				Няма предстоящи събития в момента &mdash; следете за обновления!
@@ -481,7 +447,7 @@ $tsr_hero_uri  = get_stylesheet_directory_uri() . '/images/hero/' . $tsr_hero_pi
 						<?php echo $tsr_thumb; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output. ?>
 						<div class="tsr-card__body">
 							<p class="tsr-card__meta">
-								<?php echo esc_html( get_the_date( 'j F Y', $news_post ) ); ?>
+								<?php echo esc_html( tsr_bg_date( (int) get_post_time( 'U', false, $news_post ) ) ); ?>
 							</p>
 							<h3 class="tsr-card__title">
 								<?php echo esc_html( get_the_title( $news_post ) ); ?>
@@ -548,7 +514,7 @@ $tsr_hero_uri  = get_stylesheet_directory_uri() . '/images/hero/' . $tsr_hero_pi
 						// Publish month/year as the eyebrow — real metadata, not an
 						// arbitrary "01/02/03" counter (page-calendar.php uses this
 						// same date_i18n( 'F Y', ... ) pattern for month grouping).
-						$tsr_z_eyebrow = date_i18n( 'F Y', strtotime( $tsr_zp->post_date ) );
+						$tsr_z_eyebrow = tsr_bg_month( (int) get_post_time( 'n', false, $tsr_zp ) ) . ' ' . get_post_time( 'Y', false, $tsr_zp );
 						?>
 						<article class="tsr-zero-card">
 							<?php echo $tsr_z_img; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_get_attachment_image() output. ?>
