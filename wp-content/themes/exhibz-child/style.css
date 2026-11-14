@@ -6237,3 +6237,11 @@ h1, h2, h3, h4, h5, h6 {
 		transition: none;
 	}
 }
+
+/* /pravila/: distance range beside the category name */
+.tsr-scoring-card__title small {
+	display:     block;
+	font-size:   0.8rem;
+	font-weight: 500;
+	opacity:     0.8;
+}
