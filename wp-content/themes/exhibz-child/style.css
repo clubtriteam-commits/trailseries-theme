@@ -4243,3 +4243,27 @@ h1, h2, h3, h4, h5, h6 {
 .tsr-hero--photo .tsr-hero__eyebrow {
 	color: #cfe9f5;
 }
+
+/* Home countdown on phones: four blocks on one row (Geist is wider than the
+   old Roboto, so the 4th block wrapped at 412 px). */
+@media (max-width: 480px) {
+	.tsr-countdown {
+		flex-wrap: nowrap;
+		gap:       0.5rem;
+	}
+
+	.tsr-countdown__block {
+		flex:      1 1 0;
+		min-width: 0;
+		padding:   0.7rem 0.4rem;
+	}
+
+	.tsr-countdown__num {
+		font-size: 1.85rem;
+	}
+
+	.tsr-countdown__label {
+		font-size:      0.58rem;
+		letter-spacing: 0.08em;
+	}
+}
