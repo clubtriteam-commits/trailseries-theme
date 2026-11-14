@@ -897,7 +897,7 @@ foreach ( $tsr_map_groups as $tsr_gi => $tsr_g ) {
 				$tsr_tag  = '' !== $tsr_url ? 'a' : 'div';
 				?>
 				<<?php echo $tsr_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- 'a' or 'div' literal. ?>
-					class="tsr-partner-card"
+					class="tsr-partner-card tsr-partner-card--<?php echo esc_attr( sanitize_title( $tsr_name ) ); ?>"
 					<?php if ( '' !== $tsr_url ) : ?>
 						href="<?php echo esc_url( $tsr_url ); ?>" target="_blank" rel="noopener sponsored"
 					<?php endif; ?>

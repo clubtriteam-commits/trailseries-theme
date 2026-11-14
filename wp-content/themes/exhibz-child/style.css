@@ -4841,3 +4841,80 @@ h1, h2, h3, h4, h5, h6 {
 	max-width: 100%;
 	height:    auto;
 }
+
+/* Home partners, round 2 (owner 2026-11-14): bigger, visually even logos in
+   one row. Every logo gets the same box; images are contained in it. */
+.tsr-partners-strip {
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap:                   1.5rem;
+	align-items:           center;
+}
+
+.tsr-partners-strip .tsr-partner-card__logo {
+	width:     100%;
+	max-width: 190px;
+	height:    96px;
+	overflow:  hidden;
+}
+
+.tsr-partners-strip .tsr-partner-card__logo img {
+	width:      100%;
+	height:     100%;
+	max-height: none;
+	object-fit: contain;
+}
+
+/* Mizuno's file is a square with the wordmark small in the middle: zoom in
+   so it reads at the same size as the others. */
+.tsr-partner-card--mizuno .tsr-partner-card__logo img {
+	transform: scale(2.1);
+}
+
+@media (max-width: 768px) {
+	.tsr-partners-strip {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap:                   0.5rem;
+	}
+
+	.tsr-partners-strip .tsr-partner-card {
+		padding: 0.25rem;
+	}
+
+	.tsr-partners-strip .tsr-partner-card__logo {
+		height: 52px;
+	}
+}
+
+/* Less space between the home sections (round 2) */
+.tsr-upcoming,
+.tsr-past,
+.tsr-news,
+.tsr-zero-section,
+.tsr-map-section,
+.tsr-partners-home {
+	padding-block: 2.25rem;
+}
+
+.tsr-upcoming .tsr-section__title,
+.tsr-past .tsr-section__title,
+.tsr-news .tsr-section__title,
+.tsr-zero-section .tsr-section__title,
+.tsr-map-section .tsr-section__title,
+.tsr-partners-home .tsr-section__title {
+	margin-bottom: 1rem;
+}
+
+.tsr-map-layout {
+	margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+	.tsr-upcoming,
+	.tsr-past,
+	.tsr-news,
+	.tsr-zero-section,
+	.tsr-map-section,
+	.tsr-partners-home {
+		padding-block: 1.75rem;
+	}
+}
