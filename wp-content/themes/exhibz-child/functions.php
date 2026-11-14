@@ -340,6 +340,61 @@ function tsr_bg_month( int $month ): string {
 	return $m[ $month ] ?? '';
 }
 
+/**
+ * Races of the series for the "Серия" menu: every race on the calendar in
+ * the last 14 months or ahead, in calendar order (January → December), with
+ * its history page and its latest published results.
+ *
+ * @return list<array{name: string, month: string, details: string, results: string}>
+ */
+function tsr_menu_races(): array {
+	$key    = 'tsr_menu_races_g' . tsr_cache_gen();
+	$cached = get_transient( $key );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+	$latest = array(); // base name => latest start timestamp
+	if ( post_type_exists( 'ajde_events' ) ) {
+		foreach ( get_posts( array( 'post_type' => 'ajde_events', 'post_status' => 'publish', 'numberposts' => -1, 'fields' => 'ids' ) ) as $eid ) {
+			$base = tsr_event_base_name( html_entity_decode( get_the_title( $eid ), ENT_QUOTES, 'UTF-8' ) );
+			$ts   = (int) get_post_meta( $eid, 'evcal_srow', true );
+			if ( '' !== $base && $ts > ( $latest[ $base ] ?? 0 ) ) {
+				$latest[ $base ] = $ts;
+			}
+		}
+	}
+	$since = time() - 425 * DAY_IN_SECONDS;
+	$seen  = array(); // base name => latest race year with results
+	foreach ( tsr_results_index() as $e ) {
+		$y = (int) $e['season'];
+		if ( '' !== $e['event_base'] && $y > ( $seen[ $e['event_base'] ] ?? 0 ) ) {
+			$seen[ $e['event_base'] ] = $y;
+		}
+	}
+	$races = array();
+	foreach ( $latest as $base => $ts ) {
+		if ( $ts < $since ) {
+			continue;
+		}
+		$res_year = 0;
+		foreach ( $seen as $rb => $y ) {
+			if ( 0 === strcasecmp( $rb, $base ) ) {
+				$res_year = $y;
+			}
+		}
+		$races[] = array(
+			'name'    => $base,
+			'month'   => tsr_bg_month( (int) gmdate( 'n', $ts ) ),
+			'order'   => (int) gmdate( 'n', $ts ) * 100 + (int) gmdate( 'j', $ts ),
+			'details' => add_query_arg( 'sabitie', sanitize_title( $base ), home_url( '/event/' ) ),
+			'results' => $res_year ? tsr_event_results_url( $base, $res_year ) : '',
+		);
+	}
+	usort( $races, static fn( array $a, array $b ): int => $a['order'] <=> $b['order'] );
+	set_transient( $key, $races, 12 * HOUR_IN_SECONDS );
+	return $races;
+}
+
 /** Short Bulgarian month name ("ян", "февр", … ) for date badges. */
 function tsr_bg_month_short( int $month ): string {
 	$m = array( 1 => 'ян', 'февр', 'март', 'апр', 'май', 'юни', 'юли', 'авг', 'септ', 'окт', 'ноем', 'дек' );
