@@ -324,7 +324,7 @@ function tsr_runner_count( int $n, string $one, string $many ): string {
  * @return array{rank:int, points:int, of:int}|null
  */
 function tsr_runner_standing( string $name, int $season ): ?array {
-	$hit = get_transient( sprintf( 'tsr_standings4_g%d_s%d', tsr_cache_gen(), $season ) );
+	$hit = get_transient( sprintf( 'tsr_standings5_g%d_s%d', tsr_cache_gen(), $season ) );
 	if ( ! is_array( $hit ) || ! isset( $hit['standings'] ) ) {
 		return null;
 	}

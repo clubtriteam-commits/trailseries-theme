@@ -125,7 +125,7 @@ function tsr_points( int $place, string $cat, bool $is_bonus = false ): int {
 // entry expires on its own TTL. On a cache hit the compute path below
 // runs over an empty post list and the cached standings are restored
 // after the (no-op) sort.
-$tsr_standings_key  = sprintf( 'tsr_standings4_g%d_s%d', tsr_cache_gen(), $current_season );
+$tsr_standings_key  = sprintf( 'tsr_standings5_g%d_s%d', tsr_cache_gen(), $current_season );
 // Audit H5: only a season that has results may compute or cache anything.
 // `?sezon=<any other int>` used to write a fresh transient per value; it
 // now renders the same empty standings straight away.
@@ -229,6 +229,28 @@ foreach ( $tsr_hash_groups as $tsr_group ) {
 	}
 }
 
+// -- Bonus races by distance rank (season 14 / 2026, owner's rule) -------------
+//
+// In these races every distance scores by its rank among the race's own
+// distances (TSR_Scoring: longest 20, then 15, 10, 5), not by its length
+// category. Listed by race name (lower case `_tsr_event_base`); other seasons
+// can be added through the 'tsr_bonus_events' option. Earlier calculated
+// seasons have no bonus races.
+$tsr_bonus_events = (array) get_option( 'tsr_bonus_events', array() ) + array(
+	2026 => array( 'the cactus run', '7 hills run', 'buhovo half marathon' ),
+);
+$tsr_bonus_names  = array_map( 'mb_strtolower', (array) ( $tsr_bonus_events[ $current_season ] ?? array() ) );
+$tsr_bonus_kms    = array(); // race name => distances of all its tables this season
+if ( array() !== $tsr_bonus_names ) {
+	foreach ( $race_posts as $rpost ) {
+		$tsr_b  = mb_strtolower( (string) get_post_meta( $rpost->ID, '_tsr_event_base', true ) );
+		$tsr_km = (float) get_post_meta( $rpost->ID, '_tsr_distance_km', true );
+		if ( $tsr_km > 0 && in_array( $tsr_b, $tsr_bonus_names, true ) ) {
+			$tsr_bonus_kms[ $tsr_b ][] = $tsr_km;
+		}
+	}
+}
+
 foreach ( $race_posts as $rpost ) {
 	if ( isset( $tsr_dedup_skip[ $rpost->ID ] ) ) {
 		continue; // byte-identical duplicate of a post that already scores (or gender-conflicted group).
@@ -263,6 +285,14 @@ foreach ( $race_posts as $rpost ) {
 		}
 	}
 
+	// Bonus race of this season: the distance's rank decides the maximum.
+	$tsr_rank_max = null;
+	$tsr_base_lc  = mb_strtolower( (string) get_post_meta( $rpost->ID, '_tsr_event_base', true ) );
+	if ( isset( $tsr_bonus_kms[ $tsr_base_lc ] ) ) {
+		$tsr_rank_max = TSR_Scoring::bonus_max( $tsr_bonus_kms[ $tsr_base_lc ], (float) $tsr_km_meta );
+		$has_cat_meta = true;
+	}
+
 	$json_raw = get_post_meta( $rpost->ID, '_tsr_result_set', true );
 	if ( ! is_string( $json_raw ) || '' === $json_raw ) {
 		continue;
@@ -284,7 +314,9 @@ foreach ( $race_posts as $rpost ) {
 			continue;
 		}
 
-		$pts  = ( '' !== $cat || $is_bonus ) ? tsr_points( $place, $cat, $is_bonus ) : 0;
+		$pts  = null !== $tsr_rank_max
+			? TSR_Scoring::points( $place, $tsr_rank_max )
+			: ( ( '' !== $cat || $is_bonus ) ? tsr_points( $place, $cat, $is_bonus ) : 0 );
 		// Owner-confirmed spellings of one person count as one athlete (M2).
 		$name = tsr_runner_canonical( trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) ) );
 		$key  = mb_strtolower( $name );

@@ -60,6 +60,7 @@ foreach ( array(
 	'includes/class-official-standings.php',
 	'includes/class-runner-alias.php',
 	'includes/class-runner-merge.php',
+	'includes/class-scoring.php',
 ) as $file ) {
 	require TSR_TEST_PLUGIN . $file;
 }
