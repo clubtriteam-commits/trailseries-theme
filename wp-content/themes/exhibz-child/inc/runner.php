@@ -478,13 +478,6 @@ function tsr_runner_profile_print( string $name, array $rows ): void {
 						<li>Още няма старт този сезон.</li>
 						<li>Последен старт: <?php echo esc_html( $last['event'] . ' ' . $last['year'] ); ?>.</li>
 					<?php else : ?>
-						<li>
-							<?php if ( count( $done ) >= 3 ) : ?>
-								<span class="tsr-rp-tag tsr-rp-tag--ok">В класирането</span> нужни са 3 финиша, има <?php echo count( $done ); ?>
-							<?php else : ?>
-								<span class="tsr-rp-tag tsr-rp-tag--warn">Още <?php echo esc_html( tsr_runner_count( 3 - count( $done ), 'старт', 'старта' ) ); ?> до класиране</span> нужни са 3 финиша
-							<?php endif; ?>
-						</li>
 						<?php if ( null !== $standing ) : ?>
 							<li><b><?php echo esc_html( tsr_runner_count( $standing['points'], 'точка', 'точки' ) ); ?></b> · място <?php echo (int) $standing['rank']; ?> от <?php echo (int) $standing['of']; ?> в <a href="<?php echo esc_url( home_url( '/klasiraniya/' ) ); ?>">годишния ранкинг</a></li>
 						<?php else : ?>
@@ -758,7 +751,7 @@ function tsr_runner_profile_print( string $name, array $rows ): void {
 	?>
 	<p class="tsr-rp-report">
 		Липсват твои резултати или виждаш чужди? Имената се обединяват автоматично само когато данните са еднозначни.
-		<a href="<?php echo esc_url( $mail ); ?>">Пиши ни и ще го оправим</a>.
+		Пиши ни на <a href="<?php echo esc_url( $mail ); ?>">info@trailseries.bg</a> и ще го оправим.
 	</p>
 	<?php
 }
