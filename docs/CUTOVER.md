@@ -69,7 +69,9 @@ races** have taken place on the old site, plus any news.
    their manifest rows to its `_manifest.csv`; merge the three new page rows
    into `results-page-list.csv` and commit it.
 5. Import them (`wp tsr bulk-import` with `TSR_DATA_DIR` or
-   `--manifest`/`--json-dir`), then `wp tsr apply-seasons` (see A1), and import new news
+   `--manifest`/`--json-dir`), then `wp tsr apply-seasons` (see A1), then
+   `wp tsr alias-auto` (merges Cyrillic/Latin spellings of one runner; it is not run
+   automatically, so repeat it after every results import), and import new news
    posts with their exact slugs.
    New race landing pages go into `migration/event-pages-list.csv` and through
    `import-event-pages.php` (copy the list to `tsr-data/migration/` first; run
