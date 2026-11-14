@@ -157,6 +157,14 @@ if ( $tsr_do_search ) {
 			?: tsr_event_base_name( $tsr_post->post_title )
 			?: $tsr_post->post_title;
 		$tsr_dist  = tsr_dist_label_from_title( $tsr_post->post_title );
+		// Field size and winner's time of this table, for "place N of M".
+		$tsr_fin_n = 0;
+		foreach ( $tsr_data['rows'] as $tsr_row ) {
+			if ( is_array( $tsr_row ) && 'FIN' === ( $tsr_row['status'] ?? '' ) ) {
+				++$tsr_fin_n;
+			}
+		}
+		$tsr_idx   = tsr_results_index()[ $tsr_post->ID ] ?? array();
 
 		foreach ( $tsr_data['rows'] as $tsr_row ) {
 			if ( ! is_array( $tsr_row ) ) {
@@ -215,6 +223,11 @@ if ( $tsr_do_search ) {
 				'time'    => $tsr_time,
 				'status'  => $tsr_status,
 				'url'     => get_permalink( $tsr_post ),
+				'n'       => $tsr_fin_n,
+				'km'      => (string) ( $tsr_idx['km'] ?? '' ),
+				'series'  => (string) ( $tsr_idx['series'] ?? '' ),
+				'cat'     => (string) get_post_meta( $tsr_post->ID, '_tsr_distance_cat', true ),
+				'team'    => trim( (string) ( $tsr_row['team'] ?? '' ) ),
 			);
 		}
 	}
@@ -309,32 +322,29 @@ get_header();
 <div class="tsr-page-hero">
 	<div class="tsr-container">
 		<p class="tsr-page-hero__kicker">TrailSeries.bg</p>
-		<h1 class="tsr-page-hero__title">Профил на бегач</h1>
-		<p class="tsr-page-hero__subtitle">
-			<?php if ( $tsr_searching ) : ?>
-				<?php echo esc_html( $tsr_runner_query ); ?>
-			<?php else : ?>
-				Търсете бегач по трите имена
-			<?php endif; ?>
-		</p>
+		<h1 class="tsr-page-hero__title">Бегаческа статистика</h1>
+		<p class="tsr-page-hero__subtitle">Стартове, лични рекорди и постижения на всеки бегач от 2012 г. насам</p>
 	</div>
 </div>
 
 <main id="main" class="tsr-page-content">
 	<div class="tsr-container">
 
-		<?php tsr_page_breadcrumbs( 'Профил на бегач' ); ?>
+		<?php tsr_page_breadcrumbs( 'Бегаческа статистика' ); ?>
 
-		<form class="tsr-runner-search" method="get" action="">
+		<form class="tsr-runner-search" method="get" action="" data-tsr-runner-search data-index="<?php echo esc_url( add_query_arg( 'g', tsr_cache_gen(), rest_url( 'tsr/v1/runners' ) ) ); ?>">
 			<label class="screen-reader-text" for="tsr-runner-name">Имена на бегача</label>
 			<input
 				id="tsr-runner-name"
 				class="tsr-runner-search__input"
 				type="search"
 				name="runner"
-				placeholder="Например: Иван Иванов"
+				placeholder="Търси бегач: име, фамилия…"
 				value="<?php echo esc_attr( $tsr_runner_query ); ?>"
 				autocomplete="off"
+				autocorrect="off"
+				autocapitalize="none"
+				enterkeyhint="search"
 				spellcheck="false">
 			<button class="tsr-runner-search__btn" type="submit">Търси</button>
 		</form>
@@ -378,75 +388,7 @@ get_header();
 
 			<?php else : ?>
 
-				<!-- ── Stats strip ──────────────────────────────────────────── -->
-				<div class="tsr-runner-stats">
-					<div class="tsr-runner-stat">
-						<div class="tsr-runner-stat__num"><?php echo esc_html( (string) $tsr_total_starts ); ?></div>
-						<div class="tsr-runner-stat__label">старта</div>
-					</div>
-					<div class="tsr-runner-stat">
-						<div class="tsr-runner-stat__num"><?php echo esc_html( (string) $tsr_total_fin ); ?></div>
-						<div class="tsr-runner-stat__label">финиша</div>
-					</div>
-					<div class="tsr-runner-stat">
-						<div class="tsr-runner-stat__num">
-							<?php echo null !== $tsr_best_place ? esc_html( (string) $tsr_best_place ) : '—'; ?>
-						</div>
-						<div class="tsr-runner-stat__label">най-добро място</div>
-					</div>
-					<div class="tsr-runner-stat">
-						<div class="tsr-runner-stat__num">
-							<?php echo null !== $tsr_first_year ? esc_html( (string) $tsr_first_year ) : '—'; ?>
-						</div>
-						<div class="tsr-runner-stat__label">първи сезон</div>
-					</div>
-				</div>
-
-				<!-- ── Results per season ──────────────────────────────────── -->
-				<?php foreach ( $tsr_seasons as $tsr_yr => $tsr_entries ) : ?>
-					<div class="tsr-runner-season">
-						<h2 class="tsr-runner-season__heading">
-							<?php echo $tsr_yr > 0 ? esc_html( (string) $tsr_yr ) : 'Без година'; ?>
-							<span class="tsr-runner-season__count">
-								— <?php echo esc_html( (string) count( $tsr_entries ) ); ?>&nbsp;старт<?php echo count( $tsr_entries ) !== 1 ? 'а' : ''; ?>
-							</span>
-						</h2>
-
-						<div class="tsr-compact-wrap">
-							<table class="tsr-compact-table">
-								<thead>
-									<tr>
-										<th>Събитие</th>
-										<th>Дистанция</th>
-										<th>Място</th>
-										<th>Време</th>
-										<th>Статус</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php foreach ( $tsr_entries as $tsr_e ) : ?>
-										<tr class="<?php echo 'FIN' !== $tsr_e['status'] ? 'tsr-runner-row--dnx' : ''; ?>">
-											<td>
-												<a class="tsr-compact-table__link"
-												   href="<?php echo esc_url( $tsr_e['url'] ); ?>">
-													<?php echo esc_html( $tsr_e['event'] ); ?>
-												</a>
-											</td>
-											<td><?php echo esc_html( $tsr_e['dist'] ); ?></td>
-											<td class="tsr-compact-table__place">
-												<?php echo null !== $tsr_e['place'] ? esc_html( (string) $tsr_e['place'] ) : '—'; ?>
-											</td>
-											<td class="tsr-compact-table__time">
-												<?php echo '' !== $tsr_e['time'] ? esc_html( $tsr_e['time'] ) : '—'; ?>
-											</td>
-											<td><?php echo esc_html( $tsr_e['status'] ); ?></td>
-										</tr>
-									<?php endforeach; ?>
-								</tbody>
-							</table>
-						</div><!-- .tsr-compact-wrap -->
-					</div><!-- .tsr-runner-season -->
-				<?php endforeach; ?>
+				<?php tsr_runner_profile_print( $tsr_final[0]['full'], tsr_runner_rows( $tsr_final ) ); ?>
 
 			<?php endif; ?>
 

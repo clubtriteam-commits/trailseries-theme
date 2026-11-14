@@ -2014,3 +2014,6 @@ add_action( 'save_post_ts_partner', static function ( int $post_id ): void {
 		delete_post_meta( $post_id, '_tsr_partner_url' );
 	}
 } );
+
+// Runner profile and search (/runner/).
+require_once get_stylesheet_directory() . '/inc/runner.php';
