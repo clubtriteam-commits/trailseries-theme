@@ -175,8 +175,17 @@ if ( $tsr_do_search ) {
 				$tsr_lf   = $tsr_fl;
 			}
 
-			if ( false === mb_strpos( $tsr_fl, $tsr_q_lower )
-				&& false === mb_strpos( $tsr_lf, $tsr_q_lower ) ) {
+			// A merged runner (Cyrillic + Latin spellings, `wp tsr alias-auto`)
+			// is found under any of the spellings, whichever one this row has.
+			$tsr_hit   = false;
+			$tsr_whole = false;
+			foreach ( array_merge( array( $tsr_fl, $tsr_lf ), tsr_runner_spellings( $tsr_full ) ) as $tsr_h ) {
+				if ( false !== mb_strpos( $tsr_h, $tsr_q_lower ) ) {
+					$tsr_hit   = true;
+					$tsr_whole = $tsr_whole || $tsr_h === $tsr_q_lower;
+				}
+			}
+			if ( ! $tsr_hit ) {
 				continue;
 			}
 
@@ -193,6 +202,7 @@ if ( $tsr_do_search ) {
 			$tsr_candidates[] = array(
 				'fl'      => $tsr_fl,
 				'lf'      => $tsr_lf,
+				'whole'   => $tsr_whole,
 				'full'    => $tsr_full,
 				'post_id' => $tsr_post->ID,
 				'hash'    => $tsr_post_hash[ $tsr_post->ID ] ?? null,
@@ -218,7 +228,7 @@ if ( $tsr_do_search ) {
 	}
 	$tsr_exact = array_values( array_filter(
 		$tsr_candidates,
-		static fn( array $c ): bool => $c['fl'] === $tsr_q_lower || $c['lf'] === $tsr_q_lower
+		static fn( array $c ): bool => $c['whole']
 	) );
 	if ( array() !== $tsr_exact ) {
 		$tsr_candidates = $tsr_exact;

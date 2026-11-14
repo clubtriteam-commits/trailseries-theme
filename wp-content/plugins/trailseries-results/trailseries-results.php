@@ -33,6 +33,7 @@ require TSR_PLUGIN_DIR . 'includes/class-section-meta.php';
 require TSR_PLUGIN_DIR . 'includes/class-series-seasons.php';
 require TSR_PLUGIN_DIR . 'includes/class-official-standings.php';
 require TSR_PLUGIN_DIR . 'includes/class-runner-alias.php';
+require TSR_PLUGIN_DIR . 'includes/class-runner-merge.php';
 require TSR_PLUGIN_DIR . 'includes/class-renderer.php';
 require TSR_PLUGIN_DIR . 'includes/class-post-types.php';
 require TSR_PLUGIN_DIR . 'includes/template-functions.php';

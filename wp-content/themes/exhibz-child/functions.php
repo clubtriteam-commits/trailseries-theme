@@ -1212,15 +1212,49 @@ function tsr_sort_results_indexed( array $posts ): array {
  * name itself (audit M2; map managed with `wp tsr alias`).
  */
 function tsr_runner_canonical( string $full_name ): string {
-	static $map = null;
-	if ( null === $map ) {
-		$map = (array) get_option( TSR_Runner_Alias::OPTION, array() );
-	}
+	$map = tsr_runner_alias_map();
 	return array() === $map ? $full_name : TSR_Runner_Alias::canonical( $full_name, $map );
 }
 
+/**
+ * Spelling → canonical name: the automatic Cyrillic / Latin merges
+ * (`wp tsr alias-auto`), overridden by the owner's aliases (`wp tsr alias`).
+ *
+ * @return array<string, string>
+ */
+function tsr_runner_alias_map(): array {
+	static $map = null;
+	if ( null === $map ) {
+		$map = TSR_Runner_Merge::effective(
+			(array) get_option( TSR_Runner_Alias::OPTION, array() ),
+			(array) get_option( TSR_Runner_Merge::OPTION, array() )
+		);
+	}
+	return $map;
+}
+
+/**
+ * Every spelling a canonical name is known under, lower case, in both word
+ * orders ("гергана ангелова", "ангелова гергана") — so a search typed in
+ * the other script still finds the person. Empty for unmerged names.
+ *
+ * @return list<string>
+ */
+function tsr_runner_spellings( string $canonical ): array {
+	static $by = null;
+	if ( null === $by ) {
+		$by = array();
+		foreach ( tsr_runner_alias_map() as $key => $name ) {
+			$key = (string) $key;
+			$by[ $name ][ $key ] = true;
+			$by[ $name ][ implode( ' ', array_reverse( explode( ' ', $key ) ) ) ] = true;
+		}
+	}
+	return isset( $by[ $canonical ] ) ? array_map( 'strval', array_keys( $by[ $canonical ] ) ) : array();
+}
+
 function tsr_runner_name_index(): array {
-	$key    = 'tsr_runner_names2_g' . tsr_cache_gen(); // v2: + canonical alias names
+	$key    = 'tsr_runner_names3_g' . tsr_cache_gen(); // v3: + every spelling of a merged runner
 	$cached = get_transient( $key );
 	if ( is_array( $cached ) ) {
 		return $cached;
@@ -1249,6 +1283,9 @@ function tsr_runner_name_index(): array {
 				$canon   = tsr_runner_canonical( trim( $fn . ' ' . $ln ) );
 				if ( trim( $fn . ' ' . $ln ) !== $canon ) {
 					$lines[] = mb_strtolower( $canon ); // searchable under the canonical name
+				}
+				foreach ( tsr_runner_spellings( $canon ) as $spelling ) {
+					$lines[] = $spelling; // …and under the person's other spellings
 				}
 			}
 			$index[ (int) $blob->post_id ] = implode( "\n", $lines );

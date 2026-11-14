@@ -41,6 +41,144 @@ final class TSR_CLI {
 		WP_CLI::add_command( 'tsr apply-seasons', array( $instance, 'apply_seasons' ) );
 		WP_CLI::add_command( 'tsr import-standings', array( $instance, 'import_standings' ) );
 		WP_CLI::add_command( 'tsr alias', array( $instance, 'alias' ) );
+		WP_CLI::add_command( 'tsr alias-auto', array( $instance, 'alias_auto' ) );
+	}
+
+	/**
+	 * Merge a runner's spellings automatically (Cyrillic / Latin, letter case).
+	 *
+	 * Groups spellings with the same transliteration-folded name and maps
+	 * them to one canonical name, unless the data contradicts it (two of the
+	 * spellings in the same race, or ages that do not fit one person). Stored
+	 * results are not changed. Owner aliases (`wp tsr alias`) always win.
+	 * Re-run after importing new results.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--dry-run]
+	 * : Print what would be merged; store nothing.
+	 *
+	 * [--clear]
+	 * : Remove every automatic merge.
+	 *
+	 * [--unmerge=<name>]
+	 * : Never merge the spellings of this name (any spelling of it), then rebuild.
+	 *
+	 * [--remerge=<name>]
+	 * : Take a name off the "never merge" list, then rebuild.
+	 *
+	 * [--report=<file>]
+	 * : Write merged and skipped groups to a CSV file (outside the web root).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp tsr alias-auto --dry-run
+	 *     wp tsr alias-auto --report=/home/trailser/tsr-data/merge-report.csv
+	 *     wp tsr alias-auto --unmerge="Ivan Testov"
+	 *
+	 * @param array<int, string>    $args
+	 * @param array<string, string> $assoc_args
+	 */
+	public function alias_auto( array $args, array $assoc_args ): void {
+		global $wpdb;
+		if ( isset( $assoc_args['clear'] ) ) {
+			delete_option( TSR_Runner_Merge::OPTION );
+			do_action( 'tsr_results_updated' );
+			WP_CLI::success( 'Automatic merges removed; caches flushed.' );
+			return;
+		}
+		$blocked = array_values( (array) get_option( TSR_Runner_Merge::BLOCK_OPTION, array() ) );
+		foreach ( array( 'unmerge' => true, 'remerge' => false ) as $flag => $add ) {
+			if ( ! isset( $assoc_args[ $flag ] ) ) {
+				continue;
+			}
+			$fold = TSR_Runner_Merge::fold_key( (string) $assoc_args[ $flag ] );
+			if ( '' === $fold ) {
+				WP_CLI::error( "--{$flag}: empty name" );
+			}
+			$blocked = $add ? array_values( array_unique( array_merge( $blocked, array( $fold ) ) ) ) : array_values( array_diff( $blocked, array( $fold ) ) );
+			if ( ! isset( $assoc_args['dry-run'] ) ) {
+				update_option( TSR_Runner_Merge::BLOCK_OPTION, $blocked, false );
+			}
+		}
+
+		// One entry per result row; byte-identical tables published twice
+		// (same names hash) are read once so they cannot fake a conflict.
+		$rows = array();
+		$seen = array();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$ids = array_map( 'intval', $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'ts_result' AND post_status = 'publish' ORDER BY ID" ) );
+		foreach ( array_chunk( $ids, 100 ) as $chunk ) {
+			$in   = implode( ',', $chunk );
+			$meta = array();
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			foreach ( $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ( {$in} ) AND meta_key IN ( '_tsr_result_set', '_tsr_names_sha256', '_tsr_event_base', '_tsr_season' )" ) as $m ) {
+				$meta[ (int) $m->post_id ][ $m->meta_key ] = (string) $m->meta_value;
+			}
+			foreach ( $chunk as $id ) {
+				$m    = $meta[ $id ] ?? array();
+				$hash = $m['_tsr_names_sha256'] ?? '';
+				if ( '' !== $hash && isset( $seen[ $hash ] ) ) {
+					continue;
+				}
+				$seen[ $hash ] = true;
+				$data = json_decode( $m['_tsr_result_set'] ?? '', true );
+				if ( ! isset( $data['rows'] ) || ! is_array( $data['rows'] ) ) {
+					continue;
+				}
+				$year = (int) ( $m['_tsr_season'] ?? 0 );
+				$race = mb_strtolower( $m['_tsr_event_base'] ?? '' ) . '|' . $year;
+				foreach ( $data['rows'] as $row ) {
+					if ( ! is_array( $row ) ) {
+						continue;
+					}
+					$rows[] = array(
+						'name' => trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) ),
+						'race' => $race,
+						'year' => $year,
+						'age'  => isset( $row['age'] ) && is_int( $row['age'] ) ? $row['age'] : null,
+						'bib'  => (string) ( $row['bib'] ?? '' ),
+					);
+				}
+			}
+		}
+
+		$manual = (array) get_option( TSR_Runner_Alias::OPTION, array() );
+		$plan   = TSR_Runner_Merge::plan( $rows, $manual, $blocked );
+		$why    = array_count_values( array_column( $plan['skipped'], 'reason' ) );
+		WP_CLI::log( sprintf( '%d result rows read.', count( $rows ) ) );
+		WP_CLI::log( sprintf( '%d people merged (%d spellings mapped).', count( $plan['merged'] ), count( $plan['map'] ) ) );
+		WP_CLI::log( sprintf( '%d groups left alone: %d two spellings in one race, %d ages do not fit, %d blocked.', count( $plan['skipped'] ), $why['same-race'] ?? 0, $why['age'] ?? 0, $why['blocked'] ?? 0 ) );
+
+		if ( isset( $assoc_args['report'] ) ) {
+			$file = (string) $assoc_args['report'];
+			$root = realpath( ABSPATH );
+			$dir  = realpath( dirname( $file ) );
+			if ( false === $dir || ( false !== $root && str_starts_with( $dir . '/', rtrim( $root, '/' ) . '/' ) ) ) {
+				WP_CLI::error( '--report must be in an existing directory outside the web root (names of real people).' );
+			}
+			$fh = fopen( $file, 'w' );
+			if ( false === $fh ) {
+				WP_CLI::error( "Cannot write {$file}" );
+			}
+			fputcsv( $fh, array( 'status', 'canonical', 'spellings' ) );
+			foreach ( $plan['merged'] as $g ) {
+				fputcsv( $fh, array( 'merged', $g['canonical'], implode( ' | ', $g['spellings'] ) ) );
+			}
+			foreach ( $plan['skipped'] as $g ) {
+				fputcsv( $fh, array( 'skipped: ' . $g['reason'], '', implode( ' | ', $g['spellings'] ) ) );
+			}
+			fclose( $fh );
+			chmod( $file, 0600 );
+			WP_CLI::log( "Report: {$file}" );
+		}
+		if ( isset( $assoc_args['dry-run'] ) ) {
+			WP_CLI::success( 'Dry run — nothing stored.' );
+			return;
+		}
+		update_option( TSR_Runner_Merge::OPTION, $plan['map'], false );
+		do_action( 'tsr_results_updated' );
+		WP_CLI::success( 'Automatic merges stored; caches flushed.' );
 	}
 
 	/**

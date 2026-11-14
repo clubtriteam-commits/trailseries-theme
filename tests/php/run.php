@@ -59,6 +59,7 @@ foreach ( array(
 	'includes/class-series-seasons.php',
 	'includes/class-official-standings.php',
 	'includes/class-runner-alias.php',
+	'includes/class-runner-merge.php',
 ) as $file ) {
 	require TSR_TEST_PLUGIN . $file;
 }
