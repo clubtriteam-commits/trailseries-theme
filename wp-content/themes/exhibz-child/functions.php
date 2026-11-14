@@ -348,7 +348,7 @@ function tsr_bg_month( int $month ): string {
  * @return list<array{name: string, month: string, details: string, results: string}>
  */
 function tsr_menu_races(): array {
-	$key    = 'tsr_menu_races_g' . tsr_cache_gen();
+	$key    = 'tsr_menu_races2_g' . tsr_cache_gen();
 	$cached = get_transient( $key );
 	if ( is_array( $cached ) ) {
 		return $cached;
@@ -378,7 +378,8 @@ function tsr_menu_races(): array {
 		}
 		$res_year = 0;
 		foreach ( $seen as $rb => $y ) {
-			if ( 0 === strcasecmp( $rb, $base ) ) {
+			// Latest year across spellings ("GOLYAM SECHKO RUN" in 2018).
+			if ( 0 === strcasecmp( $rb, $base ) && $y > $res_year ) {
 				$res_year = $y;
 			}
 		}
