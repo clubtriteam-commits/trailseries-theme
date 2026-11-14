@@ -4825,3 +4825,19 @@ h1, h2, h3, h4, h5, h6 {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 }
+
+/* Home partners grid: logo boxes shrink with their column (a fixed 130px
+   box overflowed three columns at 360–412px) */
+.tsr-partners-strip .tsr-partner-card {
+	min-width: 0;
+}
+
+.tsr-partners-strip .tsr-partner-card__logo {
+	width:     100%;
+	max-width: 130px;
+}
+
+.tsr-partners-strip .tsr-partner-card__logo img {
+	max-width: 100%;
+	height:    auto;
+}
