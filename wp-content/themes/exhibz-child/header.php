@@ -43,16 +43,22 @@
 			// "Series"): main pages as buttons + every race with its history and
 			// latest results. The rest of the bar stays the admin menu
 			// (Appearance → Menus).
-			$tsr_mega_links = array(
-				'Календар'             => '/calendar/',
-				'Резултати'            => '/rezultati/',
-				'Ранкинг'              => '/klasiraniya/',
-				'Бегаческа статистика' => '/runner/',
-				'Трасета'              => '/traseta/',
-				'Правила'              => '/pravila/',
-				'Новини'               => '/novini/',
-				'Рекорди'              => '/rekordi/',
-				'Партньори'            => '/partniori/',
+			// Two rows (owner, 2026-11-14): first row = the series itself,
+			// second row = everything else.
+			$tsr_mega_rows = array(
+				array(
+					'Правила'              => '/pravila/',
+					'Годишен ранкинг'      => '/klasiraniya/',
+					'Бегаческа статистика' => '/runner/',
+					'Трасета'              => '/traseta/',
+				),
+				array(
+					'Календар'             => '/calendar/',
+					'Резултати'            => '/rezultati/',
+					'Новини'               => '/novini/',
+					'Рекорди'              => '/rekordi/',
+					'Партньори'            => '/partniori/',
+				),
 			);
 			ob_start();
 			?>
@@ -63,13 +69,15 @@
 				<div class="tsr-mega" id="tsr-mega" hidden>
 					<div class="tsr-mega__head">
 						<p class="tsr-mega__title">Trail Series</p>
-						<a class="tsr-mega__more" href="<?php echo esc_url( home_url( '/klasiraniya/' ) ); ?>">Ранкинг <?php echo esc_html( gmdate( 'Y' ) ); ?> ›</a>
+						<a class="tsr-mega__more" href="<?php echo esc_url( home_url( '/klasiraniya/' ) ); ?>">Годишен ранкинг <?php echo esc_html( gmdate( 'Y' ) ); ?> ›</a>
 					</div>
-					<ul class="tsr-mega__main">
-						<?php foreach ( $tsr_mega_links as $tsr_label => $tsr_path ) : ?>
-							<li><a href="<?php echo esc_url( home_url( $tsr_path ) ); ?>"><?php echo esc_html( $tsr_label ); ?></a></li>
-						<?php endforeach; ?>
-					</ul>
+					<?php foreach ( $tsr_mega_rows as $tsr_row_i => $tsr_mega_links ) : ?>
+						<ul class="tsr-mega__main tsr-mega__main--row<?php echo (int) $tsr_row_i + 1; ?>">
+							<?php foreach ( $tsr_mega_links as $tsr_label => $tsr_path ) : ?>
+								<li><a href="<?php echo esc_url( home_url( $tsr_path ) ); ?>"><?php echo esc_html( $tsr_label ); ?></a></li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endforeach; ?>
 					<?php $tsr_menu_races = tsr_menu_races(); ?>
 					<?php if ( array() !== $tsr_menu_races ) : ?>
 						<p class="tsr-mega__h">Състезания</p>

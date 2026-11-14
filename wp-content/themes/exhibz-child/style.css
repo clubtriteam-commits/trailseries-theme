@@ -5547,3 +5547,19 @@ h1, h2, h3, h4, h5, h6 {
 		margin-top: 0.5rem;
 	}
 }
+
+/* Trail Series panel: row 1 = Правила, Годишен ранкинг, Бегаческа статистика,
+   Трасета (4 wide); row 2 = the rest (5). Owner, 2026-11-14. */
+.tsr-mega__main--row1 {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.tsr-mega__main--row2 {
+	margin-top: 0.65rem;
+}
+
+@media (max-width: 768px) {
+	.tsr-mega__main--row1 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
