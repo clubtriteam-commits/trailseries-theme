@@ -271,7 +271,23 @@ get_header();
 <!-- ════════════════════════════════════════════════════════════════════════════
      SECTION 1 — HERO + COUNTDOWN
      ════════════════════════════════════════════════════════════════════════ -->
-<section class="tsr-hero" aria-label="Начало">
+<?php
+// Hero photo (owner-approved 2026-11-14): one of two, picked per page load.
+// Decorative — the title carries the meaning; it is the LCP image, so eager.
+$tsr_hero_photos = array(
+	array( 'zhelyava', '50% 60%' ),  // Желява
+	array( 'palakaria', '50% 40%' ), // Палакария
+);
+$tsr_hero_pick = $tsr_hero_photos[ wp_rand( 0, count( $tsr_hero_photos ) - 1 ) ];
+$tsr_hero_uri  = get_stylesheet_directory_uri() . '/images/hero/' . $tsr_hero_pick[0];
+?>
+<section class="tsr-hero tsr-hero--photo" aria-label="Начало">
+	<img class="tsr-hero__photo"
+	     src="<?php echo esc_url( $tsr_hero_uri . '-1920.jpg' ); ?>"
+	     srcset="<?php echo esc_url( $tsr_hero_uri . '-960.jpg' ); ?> 960w, <?php echo esc_url( $tsr_hero_uri . '-1920.jpg' ); ?> 1920w"
+	     sizes="100vw" width="1920" height="1280" alt=""
+	     style="object-position: <?php echo esc_attr( $tsr_hero_pick[1] ); ?>"
+	     fetchpriority="high" decoding="async">
 	<div class="tsr-hero__inner">
 		<p class="tsr-hero__eyebrow">Серия планинско бягане &middot; България</p>
 
