@@ -6245,3 +6245,31 @@ h1, h2, h3, h4, h5, h6 {
 	font-weight: 500;
 	opacity:     0.8;
 }
+
+/* ── Menu fixes (owner, 2026-11-17) ───────────────────────────────────────
+   1. Phones: the "Новини" pill is 44 px tall (tap target) but its text sat at
+      the top — centre it.
+   2. "Trail Series" panel buttons: filled blue, dark blue on hover. #0077aa
+      keeps white text readable (5:1); the hover blue is darker still. */
+@media (max-width: 768px) {
+	#masthead .tsr-nav-list > .menu-highlight > a {
+		display:         inline-flex;
+		align-items:     center;
+		justify-content: center;
+		align-self:      flex-start;
+		line-height:     1.2;
+	}
+}
+
+#masthead .tsr-mega__main a {
+	border-color: #0077aa;
+	background:   #0077aa;
+	color:        var(--tsr-white);
+}
+
+#masthead .tsr-mega__main a:hover,
+#masthead .tsr-mega__main a:focus-visible {
+	border-color: #0a3d62;
+	background:   #0a3d62;
+	color:        var(--tsr-white);
+}
