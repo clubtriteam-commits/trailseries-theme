@@ -302,7 +302,6 @@ $tsr_dist_rows = static function ( array $posts ) use ( $tsr_rindex ): array {
 							<h3 class="tsr-cal-card__title">
 								<a href="<?php echo esc_url( (string) get_permalink( $primary ) ); ?>"><?php echo esc_html( $event_name ); ?></a>
 							</h3>
-							<p class="tsr-rez-card__results" aria-hidden="true">Results ›</p>
 							<ul class="tsr-rez-chips" aria-label="Дистанции">
 								<?php foreach ( $tsr_rows as $row ) : ?>
 									<li>

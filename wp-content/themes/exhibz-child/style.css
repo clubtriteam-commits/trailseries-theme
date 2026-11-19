@@ -5245,12 +5245,6 @@ h1, h2, h3, h4, h5, h6 {
 	z-index: 1;
 }
 
-.tsr-rez-card__results {
-	margin:      0 0 0.55rem;
-	font-size:   0.85rem;
-	font-weight: 700;
-	color:       var(--tsr-blue);
-}
 
 .tsr-rez-chips {
 	position:   relative;
