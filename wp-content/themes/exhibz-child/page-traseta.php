@@ -249,6 +249,12 @@ if ( ! function_exists( 'tsr_trk_card' ) ) {
 		$by_km = static fn( array $a, array $b ): int => ( $a['distance_km'] ?? 0 ) <=> ( $b['distance_km'] ?? 0 );
 		usort( $current, $by_km );
 		usort( $legacy, $by_km );
+		// A race whose tracks are all old versions shows them directly — a card
+		// with only a folded "Стари версии" looks empty.
+		if ( ! $current ) {
+			$current = $legacy;
+			$legacy  = array();
+		}
 		$name  = (string) $event['name'];
 		$image = $cal['image'] ?? '';
 		?>
