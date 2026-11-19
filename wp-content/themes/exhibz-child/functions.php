@@ -1094,17 +1094,94 @@ add_action( 'template_redirect', static function (): void {
 	exit;
 } );
 
-// Admin: "Страница на събитието" box on the EventON edit screen —
-// programme and the "Как да стигна" link (rarely needed, e.g. a moved start).
+// Admin: "Страница на събитието" box on the EventON edit screen (owner,
+// 2026-11-19). Description = the normal editor; everything else here.
+// Multi-line fields use one item per line, parts split with "|".
+
+/** Text fields of the event box: meta key => [label, help, rows (0 = one line)]. */
+function tsr_event_text_fields(): array {
+	return array(
+		'_tsr_programme'     => array( 'Програма', 'По един ред: час – текст. Напр. „09:00–10:30 – Получаване на стартови номера“.', 5 ),
+		'_tsr_highlights'    => array( 'Акценти (карти под описанието)', 'По един ред: емоджи | заглавие | текст. Напр. „🎅 | Бягаме дегизирани | Дядо Коледа, Снежанка…“.', 4 ),
+		'_tsr_fees'          => array( 'Такса участие', 'По един ред: сума | заглавие | бележка. Първият ред е основната такса (оранжева рамка). Напр. „15 € | Редовна такса | при регистрация в drace.bg“.', 4 ),
+		'_tsr_reg_url'       => array( 'Линк за регистрация', 'Напр. https://drace.bg/bg/event/… — оранжевият бутон „Регистрация“.', 0 ),
+		'_tsr_kids'          => array( 'Детско бягане', 'Кратко, напр. „1000 м · безплатно“. Празно = няма.', 0 ),
+		'_tsr_surface'       => array( 'Настилка', 'Напр. „горски пътеки и алеи“.', 0 ),
+		'_tsr_support'       => array( 'Със съдействието на', 'Напр. „Столична община – район Банкя“. Празно = не се показва.', 0 ),
+		'_tsr_getting_there' => array( 'Как да стигна — указания', 'По един ред: емоджи | заглавие | текст. Напр. „🚌 | Автобус 47 | от метростанция „Сливница“.', 4 ),
+		'_tsr_start_photo'   => array( 'Снимка на мястото на старта (линк)', 'Линк към изображение (Медия → копирай URL).', 0 ),
+		'_tsr_directions_url' => array( 'Как да стигна — линк към картата', 'Google Maps и др. Празно = търсене по мястото на събитието.', 0 ),
+	);
+}
+
+/** "a | b | c" lines → list of trimmed parts per line. */
+function tsr_event_lines( int $event_id, string $key ): array {
+	$out = array();
+	foreach ( preg_split( '/\R/', (string) get_post_meta( $event_id, $key, true ) ) as $line ) {
+		$line = trim( $line );
+		if ( '' !== $line ) {
+			$out[] = array_map( 'trim', explode( '|', $line ) );
+		}
+	}
+	return $out;
+}
+
+/** Partners picked for an event (ts_partner posts); none picked = all. */
+function tsr_event_partners( int $event_id ): array {
+	$picked = array_filter( array_map( 'intval', (array) get_post_meta( $event_id, '_tsr_partners', true ) ) );
+	$all    = get_posts( array( 'post_type' => 'ts_partner', 'numberposts' => -1, 'post_status' => 'publish', 'orderby' => array( 'menu_order' => 'ASC', 'title' => 'ASC' ) ) );
+	return $picked ? array_values( array_filter( $all, static fn( WP_Post $p ): bool => in_array( $p->ID, $picked, true ) ) ) : $all;
+}
+
+/**
+ * The season's cause block ("Една от 8"), edited once in Tools → Кауза на
+ * сезона; each event can hide it.
+ *
+ * @return array{on: bool, kicker: string, title: string, text: string, image: string, links: list<array{0: string, 1: string}>}
+ */
+function tsr_cause(): array {
+	$c = wp_parse_args(
+		(array) get_option( 'tsr_cause', array() ),
+		array( 'on' => false, 'kicker' => '', 'title' => '', 'text' => '', 'image' => '', 'links' => '' )
+	);
+	$links = array();
+	foreach ( preg_split( '/\R/', (string) $c['links'] ) as $line ) {
+		$p = array_map( 'trim', explode( '|', $line ) );
+		if ( 2 === count( $p ) && '' !== $p[0] && '' !== $p[1] ) {
+			$links[] = $p;
+		}
+	}
+	return array(
+		'on'     => (bool) $c['on'],
+		'kicker' => (string) $c['kicker'],
+		'title'  => (string) $c['title'],
+		'text'   => (string) $c['text'],
+		'image'  => (string) $c['image'],
+		'links'  => $links,
+	);
+}
+
 add_action( 'add_meta_boxes_ajde_events', static function (): void {
 	add_meta_box( 'tsr-event-extra', 'Страница на събитието (TrailSeries)', static function ( WP_Post $post ): void {
 		wp_nonce_field( 'tsr_event_extra', 'tsr_event_extra_nonce' );
-		$prog = (string) get_post_meta( $post->ID, '_tsr_programme', true );
-		$dir  = (string) get_post_meta( $post->ID, '_tsr_directions_url', true );
-		echo '<p><label for="tsr-programme"><strong>Програма</strong> — по един ред: час, тире, текст. Празно = секцията не се показва.</label></p>';
-		echo '<textarea id="tsr-programme" name="tsr_programme" rows="6" style="width:100%" placeholder="09:30–10:45 – Регистрация и раздаване на номера&#10;11:00 – Старт на всички дистанции&#10;13:00 – Награждаване">' . esc_textarea( $prog ) . '</textarea>';
-		echo '<p><label for="tsr-directions"><strong>Как да стигна</strong> — линк (Google Maps и др.). Празно = търсене по мястото на събитието.</label></p>';
-		echo '<input id="tsr-directions" type="url" name="tsr_directions_url" style="width:100%" placeholder="https://maps.app.goo.gl/…" value="' . esc_attr( $dir ) . '">';
+		echo '<p>Описанието („За състезанието“) е обикновеното съдържание горе в редактора. Празно поле = секцията не се показва.</p>';
+		foreach ( tsr_event_text_fields() as $key => [ $label, $help, $rows ] ) {
+			$val = (string) get_post_meta( $post->ID, $key, true );
+			$id  = 'tsr' . str_replace( '_', '-', $key );
+			echo '<p style="margin:1.1em 0 .3em"><label for="' . esc_attr( $id ) . '"><strong>' . esc_html( $label ) . '</strong></label><br><span class="description">' . esc_html( $help ) . '</span></p>';
+			if ( $rows > 0 ) {
+				echo '<textarea id="' . esc_attr( $id ) . '" name="tsr_ev[' . esc_attr( $key ) . ']" rows="' . (int) $rows . '" style="width:100%">' . esc_textarea( $val ) . '</textarea>';
+			} else {
+				echo '<input id="' . esc_attr( $id ) . '" type="text" name="tsr_ev[' . esc_attr( $key ) . ']" style="width:100%" value="' . esc_attr( $val ) . '">';
+			}
+		}
+		$picked = array_map( 'intval', (array) get_post_meta( $post->ID, '_tsr_partners', true ) );
+		echo '<p style="margin:1.1em 0 .3em"><strong>Партньори на събитието</strong><br><span class="description">Отметни кои логота да се показват. Нищо отметнато = всички от „Партньори“.</span></p><p>';
+		foreach ( get_posts( array( 'post_type' => 'ts_partner', 'numberposts' => -1, 'post_status' => 'publish', 'orderby' => array( 'menu_order' => 'ASC', 'title' => 'ASC' ) ) ) as $p ) {
+			echo '<label style="display:inline-block;margin:0 1.2em .4em 0"><input type="checkbox" name="tsr_partners[]" value="' . (int) $p->ID . '"' . checked( in_array( $p->ID, $picked, true ), true, false ) . '> ' . esc_html( get_the_title( $p ) ) . '</label>';
+		}
+		echo '</p>';
+		echo '<p style="margin:1.1em 0 .3em"><label><input type="checkbox" name="tsr_hide_cause" value="1"' . checked( '1', get_post_meta( $post->ID, '_tsr_hide_cause', true ), false ) . '> <strong>Скрий блока „Кауза на сезона“</strong> на това събитие</label></p>';
 	}, 'ajde_events', 'normal', 'high' );
 } );
 
@@ -1115,10 +1192,51 @@ add_action( 'save_post_ajde_events', static function ( int $post_id ): void {
 	if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! current_user_can( 'edit_post', $post_id ) ) {
 		return;
 	}
-	$prog = sanitize_textarea_field( wp_unslash( $_POST['tsr_programme'] ?? '' ) );
-	'' !== $prog ? update_post_meta( $post_id, '_tsr_programme', $prog ) : delete_post_meta( $post_id, '_tsr_programme' );
-	$url = esc_url_raw( trim( (string) wp_unslash( $_POST['tsr_directions_url'] ?? '' ) ), array( 'https' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- esc_url_raw, https only.
-	'' !== $url ? update_post_meta( $post_id, '_tsr_directions_url', $url ) : delete_post_meta( $post_id, '_tsr_directions_url' );
+	$posted = (array) wp_unslash( $_POST['tsr_ev'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- sanitized per field below.
+	foreach ( tsr_event_text_fields() as $key => [ , , $rows ] ) {
+		$raw = (string) ( $posted[ $key ] ?? '' );
+		if ( in_array( $key, array( '_tsr_reg_url', '_tsr_directions_url', '_tsr_start_photo' ), true ) ) {
+			$val = esc_url_raw( trim( $raw ), array( 'https' ) );
+		} else {
+			$val = $rows > 0 ? sanitize_textarea_field( $raw ) : sanitize_text_field( $raw );
+		}
+		'' !== $val ? update_post_meta( $post_id, $key, $val ) : delete_post_meta( $post_id, $key );
+	}
+	$partners = array_values( array_filter( array_map( 'intval', (array) wp_unslash( $_POST['tsr_partners'] ?? array() ) ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- ints.
+	$partners ? update_post_meta( $post_id, '_tsr_partners', $partners ) : delete_post_meta( $post_id, '_tsr_partners' );
+	empty( $_POST['tsr_hide_cause'] ) ? delete_post_meta( $post_id, '_tsr_hide_cause' ) : update_post_meta( $post_id, '_tsr_hide_cause', '1' );
+} );
+
+// Tools → Кауза на сезона: the cause block shown on every event page.
+add_action( 'admin_menu', static function (): void {
+	add_management_page( 'Кауза на сезона', 'Кауза на сезона', 'manage_options', 'tsr-cause', static function (): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Недостатъчни права.' );
+		}
+		if ( isset( $_POST['tsr_cause'] ) && check_admin_referer( 'tsr_cause' ) ) {
+			$in = (array) wp_unslash( $_POST['tsr_cause'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- sanitized per field below.
+			update_option( 'tsr_cause', array(
+				'on'     => ! empty( $in['on'] ),
+				'kicker' => sanitize_text_field( (string) ( $in['kicker'] ?? '' ) ),
+				'title'  => sanitize_text_field( (string) ( $in['title'] ?? '' ) ),
+				'text'   => sanitize_textarea_field( (string) ( $in['text'] ?? '' ) ),
+				'image'  => esc_url_raw( trim( (string) ( $in['image'] ?? '' ) ), array( 'https' ) ),
+				'links'  => sanitize_textarea_field( (string) ( $in['links'] ?? '' ) ),
+			), false );
+			echo '<div class="notice notice-success is-dismissible"><p>Запазено.</p></div>';
+		}
+		$c = wp_parse_args( (array) get_option( 'tsr_cause', array() ), array( 'on' => false, 'kicker' => '', 'title' => '', 'text' => '', 'image' => '', 'links' => '' ) );
+		echo '<div class="wrap"><h1>Кауза на сезона</h1><p>Карта в десния панел на всяко събитие (напр. „Една от 8“). Отделно събитие може да я скрие от своята страница.</p><form method="post">';
+		wp_nonce_field( 'tsr_cause' );
+		echo '<table class="form-table"><tr><th>Показвай</th><td><label><input type="checkbox" name="tsr_cause[on]" value="1"' . checked( (bool) $c['on'], true, false ) . '> да</label></td></tr>';
+		echo '<tr><th><label for="tc-k">Надпис горе</label></th><td><input id="tc-k" class="regular-text" name="tsr_cause[kicker]" value="' . esc_attr( (string) $c['kicker'] ) . '" placeholder="🎗 Каузата на сезона"></td></tr>';
+		echo '<tr><th><label for="tc-t">Заглавие</label></th><td><input id="tc-t" class="regular-text" name="tsr_cause[title]" value="' . esc_attr( (string) $c['title'] ) . '"></td></tr>';
+		echo '<tr><th><label for="tc-x">Текст</label></th><td><textarea id="tc-x" class="large-text" rows="4" name="tsr_cause[text]">' . esc_textarea( (string) $c['text'] ) . '</textarea></td></tr>';
+		echo '<tr><th><label for="tc-i">Снимка (линк)</label></th><td><input id="tc-i" class="large-text" name="tsr_cause[image]" value="' . esc_attr( (string) $c['image'] ) . '"></td></tr>';
+		echo '<tr><th><label for="tc-l">Линкове</label></th><td><textarea id="tc-l" class="large-text" rows="3" name="tsr_cause[links]" placeholder="ednaot8.bg | https://www.ednaot8.bg/">' . esc_textarea( (string) $c['links'] ) . '</textarea><p class="description">По един ред: текст | линк</p></td></tr></table>';
+		submit_button( 'Запази' );
+		echo '</form></div>';
+	} );
 } );
 
 // ── Track helpers shared by /traseta/ and the event page ─────────────────────

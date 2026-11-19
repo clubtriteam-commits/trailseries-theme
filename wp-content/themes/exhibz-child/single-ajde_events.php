@@ -3,13 +3,15 @@ declare( strict_types=1 );
 /**
  * Single calendar event (EventON `ajde_events`) — the site's own page.
  *
- * Owner-approved 2026-11-19 (mockup 2026-11-14 + answers): photo hero with
- * season, date, countdown, place and start time, buttons (calendar file,
- * "Как да стигна", last results); sticky section tabs; distances from
- * data/tracks.json; programme (admin field); last edition's winners; history
- * with edition years, totals and course records (KOM / QOM, owner's
- * variant Г). Loaded through the template_include filter in functions.php
- * (priority 100, after EventON's own loader).
+ * Owner-approved 2026-11-19 (mockup v3): photo hero (season, date, countdown,
+ * place, start; registration / calendar file / directions / last results);
+ * sticky section tabs; left column: about (description, "със съдействието
+ * на", highlight cards), distances from data/tracks.json, programme, fees and
+ * registration, getting there; right sidebar: key facts and the season's
+ * cause block (Tools → Кауза на сезона); then course records (KOM / QOM,
+ * owner's variant Г) and the event's partners. Owner content comes from the
+ * admin box "Страница на събитието" (functions.php). Loaded through the
+ * template_include filter in functions.php (priority 100, after EventON).
  *
  * Times: EventON stores the wall-clock time the organiser typed as a UTC
  * timestamp — always gmdate(), never wp_date().
@@ -64,27 +66,12 @@ while ( have_posts() ) :
 	};
 	$tsr_km_label = static fn( array $tr ): string => str_replace( '.', ',', rtrim( rtrim( number_format( (float) tsr_track_nominal_km( $tr ), 1, '.', '' ), '0' ), '.' ) ) . ' км';
 
-	// Results of the race: every edition, and the tables of the last one
-	// (up to this event's year) matched to the current tracks (±1 km).
-	$tsr_seasons  = array(); // season => event_base
-	$tsr_finishes = 0;
-	$tsr_by_year  = array(); // season => list of [id, km, gender]
-	foreach ( tsr_results_index() as $tsr_rid => $tsr_e ) {
-		if ( tsr_runner_event_name( (string) $tsr_e['event_base'] ) !== $tsr_race ) {
-			continue;
+	// Latest edition with results (up to this event's year) for the hero button.
+	$tsr_seasons = array(); // season => event_base
+	foreach ( tsr_results_index() as $tsr_e ) {
+		if ( tsr_runner_event_name( (string) $tsr_e['event_base'] ) === $tsr_race ) {
+			$tsr_seasons[ (int) $tsr_e['season'] ] = $tsr_seasons[ (int) $tsr_e['season'] ] ?? (string) $tsr_e['event_base'];
 		}
-		$tsr_s                   = (int) $tsr_e['season'];
-		$tsr_seasons[ $tsr_s ]   = $tsr_seasons[ $tsr_s ] ?? (string) $tsr_e['event_base'];
-		$tsr_by_year[ $tsr_s ][] = array( (int) $tsr_rid, (float) $tsr_e['km'], (string) $tsr_e['gender'] );
-	}
-	// Finishes over all editions: one JSON_LENGTH query, not every blob.
-	$tsr_ids = array();
-	foreach ( $tsr_by_year as $tsr_list ) {
-		$tsr_ids = array_merge( $tsr_ids, array_column( $tsr_list, 0 ) );
-	}
-	if ( $tsr_ids ) {
-		global $wpdb;
-		$tsr_finishes = (int) $wpdb->get_var( "SELECT SUM( JSON_LENGTH( meta_value, '$.rows' ) ) FROM {$wpdb->postmeta} WHERE meta_key = '_tsr_result_set' AND post_id IN (" . implode( ',', array_map( 'intval', $tsr_ids ) ) . ')' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL -- integer IDs.
 	}
 	krsort( $tsr_seasons );
 	$tsr_last = 0;
@@ -95,53 +82,20 @@ while ( have_posts() ) :
 		}
 	}
 	$tsr_last_url = $tsr_last ? tsr_event_results_url( $tsr_seasons[ $tsr_last ], $tsr_last ) : '';
+	$tsr_records  = tsr_track_records();
 
-	$tsr_records = tsr_track_records();
-	$tsr_bad_ids = array();
-	foreach ( $tsr_records['dropped'] as $tsr_d ) {
-		if ( 'table' === $tsr_d['why'] ) {
-			$tsr_bad_ids[ $tsr_d['id'] ] = true;
-		}
-	}
-
-	// Last edition's winners per current track and gender.
-	$tsr_winners = array(); // slug => gender => [name, time|'', finishers, url]
-	foreach ( $tsr_by_year[ $tsr_last ] ?? array() as [ $tsr_rid, $tsr_km, $tsr_g ] ) {
-		if ( 'M' !== $tsr_g && 'F' !== $tsr_g ) {
-			continue;
-		}
-		$tsr_pick = null;
-		foreach ( $tsr_tracks as $tsr_tr ) {
-			$tsr_diff = abs( tsr_track_nominal_km( $tsr_tr ) - $tsr_km );
-			if ( $tsr_diff <= 1.0 && ( null === $tsr_pick || $tsr_diff < $tsr_pick[1] ) ) {
-				$tsr_pick = array( $tsr_tr['slug'], $tsr_diff );
-			}
-		}
-		if ( null === $tsr_pick ) {
-			continue;
-		}
-		$tsr_set  = json_decode( (string) get_post_meta( $tsr_rid, '_tsr_result_set', true ), true );
-		$tsr_best = null;
-		$tsr_n    = 0;
-		foreach ( (array) ( $tsr_set['rows'] ?? array() ) as $tsr_row ) {
-			$tsr_sec = tsr_runner_seconds( (string) ( $tsr_row['finish_time'] ?? '' ) );
-			if ( null === $tsr_sec || $tsr_sec < 300 ) {
-				continue;
-			}
-			++$tsr_n;
-			if ( null === $tsr_best || $tsr_sec < $tsr_best[0] ) {
-				$tsr_best = array( $tsr_sec, trim( ( $tsr_row['first_name'] ?? '' ) . ' ' . ( $tsr_row['last_name'] ?? '' ) ) );
-			}
-		}
-		if ( null !== $tsr_best ) {
-			$tsr_winners[ $tsr_pick[0] ][ $tsr_g ] = array(
-				tsr_runner_canonical( $tsr_best[1] ),
-				isset( $tsr_bad_ids[ $tsr_rid ] ) ? '' : tsr_runner_hms( $tsr_best[0] ),
-				$tsr_n,
-				(string) get_permalink( $tsr_rid ),
-			);
-		}
-	}
+	// Owner-edited content (admin box "Страница на събитието").
+	$tsr_hl       = tsr_event_lines( $tsr_id, '_tsr_highlights' );
+	$tsr_fees     = tsr_event_lines( $tsr_id, '_tsr_fees' );
+	$tsr_go       = tsr_event_lines( $tsr_id, '_tsr_getting_there' );
+	$tsr_reg      = (string) get_post_meta( $tsr_id, '_tsr_reg_url', true );
+	$tsr_kids     = (string) get_post_meta( $tsr_id, '_tsr_kids', true );
+	$tsr_surface  = (string) get_post_meta( $tsr_id, '_tsr_surface', true );
+	$tsr_support  = (string) get_post_meta( $tsr_id, '_tsr_support', true );
+	$tsr_sphoto   = (string) get_post_meta( $tsr_id, '_tsr_start_photo', true );
+	$tsr_partners = tsr_event_partners( $tsr_id );
+	$tsr_cause    = tsr_cause();
+	$tsr_cause_on = $tsr_cause['on'] && '' !== $tsr_cause['title'] && '1' !== get_post_meta( $tsr_id, '_tsr_hide_cause', true );
 
 	$tsr_runner_url = static fn( string $name ): string => add_query_arg( 'runner', rawurlencode( $name ), home_url( '/runner/' ) );
 	$tsr_has_rec    = false;
@@ -172,17 +126,23 @@ while ( have_posts() ) :
 	}
 
 	$tsr_tabs = array();
+	if ( '' !== $tsr_desc || $tsr_hl || '' !== $tsr_support ) {
+		$tsr_tabs['ev-about'] = 'За състезанието';
+	}
 	if ( $tsr_tracks ) {
 		$tsr_tabs['ev-dist'] = 'Дистанции';
 	}
 	if ( $tsr_prog ) {
 		$tsr_tabs['ev-prog'] = 'Програма';
 	}
-	if ( $tsr_winners ) {
-		$tsr_tabs['ev-res'] = 'Резултати';
+	if ( $tsr_fees || '' !== $tsr_reg ) {
+		$tsr_tabs['ev-fee'] = 'Такса и регистрация';
 	}
-	if ( $tsr_seasons || $tsr_has_rec ) {
-		$tsr_tabs['ev-hist'] = 'История и рекорди';
+	if ( $tsr_go || '' !== $tsr_sphoto ) {
+		$tsr_tabs['ev-go'] = 'Как да стигна';
+	}
+	if ( $tsr_has_rec ) {
+		$tsr_tabs['ev-rec'] = 'Рекорди';
 	}
 	?>
 
@@ -210,8 +170,11 @@ while ( have_posts() ) :
 				</p>
 			<?php endif; ?>
 			<div class="tsr-ev__cta">
+				<?php if ( '' !== $tsr_reg && $tsr_days >= 0 ) : ?>
+					<a class="tsr-ev__btn tsr-ev__btn--main" href="<?php echo esc_url( $tsr_reg ); ?>" target="_blank" rel="noopener">Регистрация<span class="screen-reader-text"> (нов прозорец)</span></a>
+				<?php endif; ?>
 				<?php if ( $tsr_start > 0 && $tsr_days >= 0 ) : ?>
-					<a class="tsr-ev__btn tsr-ev__btn--main" href="<?php echo esc_url( add_query_arg( 'ics', '1', get_permalink() ) ); ?>" rel="nofollow">
+					<a class="tsr-ev__btn<?php echo '' === $tsr_reg ? ' tsr-ev__btn--main' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'ics', '1', get_permalink() ) ); ?>" rel="nofollow">
 						<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 2v3M17 2v3M3.5 9h17M5 4.5h14A1.5 1.5 0 0 1 20.5 6v13A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5Zm7 8v5m-2.5-2.5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
 						Добави в календара
 					</a>
@@ -269,168 +232,233 @@ while ( have_posts() ) :
 		<div class="tsr-container">
 			<?php tsr_page_breadcrumbs( $tsr_title, array( array( 'label' => 'Календар', 'url' => home_url( '/calendar/' ) ) ) ); ?>
 
-			<?php if ( '' !== $tsr_desc ) : ?>
-				<div class="tsr-ev__desc tsr-single-content">
-					<?php echo wp_kses_post( do_blocks( (string) get_post_field( 'post_content', $tsr_id ) ) ); ?>
-				</div>
-			<?php endif; ?>
+			<div class="tsr-ev__layout">
+				<div class="tsr-ev__body">
 
-			<?php if ( $tsr_tracks ) : ?>
-				<section class="tsr-ev__sec" id="ev-dist" aria-labelledby="ev-dist-h">
-					<h2 class="tsr-ev__h2" id="ev-dist-h">Дистанции</h2>
-					<p class="tsr-ev__sub">Измерени по GPX трасетата.</p>
-					<div class="tsr-ev__grid">
-						<?php foreach ( $tsr_tracks as $tsr_tr ) : ?>
-							<?php
-							$tsr_c    = $tsr_colour( $tsr_tr );
-							$tsr_laps = tsr_track_laps( $tsr_tr );
-							$tsr_prof = $tsr_profiles[ (string) ( $tsr_tr['points_file'] ?? '' ) ] ?? array();
-							$tsr_catn = array( 'short' => 'къса', 'medium' => 'средна', 'long' => 'дълга', 'xl' => 'дълга' )[ $tsr_c ] ?? '';
-							?>
-							<article class="tsr-ev__d tsr-ev--<?php echo esc_attr( $tsr_c ); ?>">
-								<div class="tsr-ev__d-head">
-									<h3 class="tsr-ev__d-km"><?php echo esc_html( $tsr_km_label( $tsr_tr ) ); ?></h3>
-									<?php if ( '' !== $tsr_catn ) : ?><span class="tsr-ev__cat"><?php echo esc_html( $tsr_catn ); ?></span><?php endif; ?>
+					<?php if ( '' !== $tsr_desc || $tsr_hl || '' !== $tsr_support ) : ?>
+						<section class="tsr-ev__sec" id="ev-about" aria-labelledby="ev-about-h">
+							<h2 class="tsr-ev__h2" id="ev-about-h">За състезанието</h2>
+							<?php if ( '' !== $tsr_desc ) : ?>
+								<div class="tsr-ev__desc tsr-single-content">
+									<?php echo wp_kses_post( do_blocks( (string) get_post_field( 'post_content', $tsr_id ) ) ); ?>
 								</div>
-								<dl class="tsr-ev__d-stats">
-									<div><dt>По GPX</dt><dd><?php echo esc_html( number_format_i18n( (float) $tsr_tr['distance_km'], 1 ) ); ?> км</dd></div>
-									<?php if ( isset( $tsr_tr['ascent_m'] ) ) : ?><div><dt>Изкачване</dt><dd><?php echo esc_html( number_format_i18n( (int) $tsr_tr['ascent_m'] ) ); ?> м</dd></div><?php endif; ?>
-									<?php if ( isset( $tsr_tr['highest_m'] ) ) : ?><div><dt>Най-висока</dt><dd><?php echo esc_html( number_format_i18n( (int) $tsr_tr['highest_m'] ) ); ?> м</dd></div><?php endif; ?>
-								</dl>
-								<?php echo tsr_track_spark( $tsr_prof ); // phpcs:ignore WordPress.Security.EscapeOutput -- numeric SVG. ?>
-								<p class="tsr-ev__d-foot">
-									<?php if ( $tsr_laps > 1 ) : ?><span class="tsr-ev__laps"><?php echo esc_html( $tsr_laps . ' обиколки' ); ?></span><?php endif; ?>
-									<a class="tsr-ev__link" href="<?php echo esc_url( home_url( '/traseta/#t-' . $tsr_tr['slug'] ) ); ?>">Карта и профил<span class="screen-reader-text"> — <?php echo esc_html( $tsr_km_label( $tsr_tr ) ); ?></span> ›</a>
-								</p>
-							</article>
-						<?php endforeach; ?>
+							<?php endif; ?>
+							<?php if ( '' !== $tsr_support ) : ?>
+								<p class="tsr-ev__with">Със съдействието на <b><?php echo esc_html( $tsr_support ); ?></b></p>
+							<?php endif; ?>
+							<?php if ( $tsr_hl ) : ?>
+								<div class="tsr-ev__hl">
+									<?php foreach ( $tsr_hl as $tsr_h ) : ?>
+										<?php [ $tsr_ic, $tsr_ht, $tsr_hx ] = array_pad( count( $tsr_h ) >= 3 ? $tsr_h : array_merge( array( '' ), $tsr_h ), 3, '' ); ?>
+										<article>
+											<?php if ( '' !== $tsr_ic ) : ?><span class="tsr-ev__hl-ic" aria-hidden="true"><?php echo esc_html( $tsr_ic ); ?></span><?php endif; ?>
+											<h3><?php echo esc_html( $tsr_ht ); ?></h3>
+											<?php if ( '' !== $tsr_hx ) : ?><p><?php echo esc_html( $tsr_hx ); ?></p><?php endif; ?>
+										</article>
+									<?php endforeach; ?>
+								</div>
+							<?php endif; ?>
+						</section>
+					<?php endif; ?>
+
+					<?php if ( $tsr_tracks ) : ?>
+						<section class="tsr-ev__sec" id="ev-dist" aria-labelledby="ev-dist-h">
+							<h2 class="tsr-ev__h2" id="ev-dist-h">Дистанции</h2>
+							<p class="tsr-ev__sub">Измерени по GPX трасетата.</p>
+							<div class="tsr-ev__grid">
+								<?php foreach ( $tsr_tracks as $tsr_tr ) : ?>
+									<?php
+									$tsr_c    = $tsr_colour( $tsr_tr );
+									$tsr_laps = tsr_track_laps( $tsr_tr );
+									$tsr_prof = $tsr_profiles[ (string) ( $tsr_tr['points_file'] ?? '' ) ] ?? array();
+									$tsr_catn = array( 'short' => 'къса', 'medium' => 'средна', 'long' => 'дълга', 'xl' => 'дълга' )[ $tsr_c ] ?? '';
+									?>
+									<article class="tsr-ev__d tsr-ev--<?php echo esc_attr( $tsr_c ); ?>">
+										<div class="tsr-ev__d-head">
+											<h3 class="tsr-ev__d-km"><?php echo esc_html( $tsr_km_label( $tsr_tr ) ); ?></h3>
+											<?php if ( '' !== $tsr_catn ) : ?><span class="tsr-ev__cat"><?php echo esc_html( $tsr_catn ); ?></span><?php endif; ?>
+										</div>
+										<dl class="tsr-ev__d-stats">
+											<div><dt>По GPX</dt><dd><?php echo esc_html( number_format_i18n( (float) $tsr_tr['distance_km'], 1 ) ); ?> км</dd></div>
+											<?php if ( isset( $tsr_tr['ascent_m'] ) ) : ?><div><dt>Изкачване</dt><dd><?php echo esc_html( number_format_i18n( (int) $tsr_tr['ascent_m'] ) ); ?> м</dd></div><?php endif; ?>
+											<?php if ( isset( $tsr_tr['highest_m'] ) ) : ?><div><dt>Връх</dt><dd><?php echo esc_html( number_format_i18n( (int) $tsr_tr['highest_m'] ) ); ?> м</dd></div><?php endif; ?>
+										</dl>
+										<?php echo tsr_track_spark( $tsr_prof ); // phpcs:ignore WordPress.Security.EscapeOutput -- numeric SVG. ?>
+										<p class="tsr-ev__d-foot">
+											<?php if ( $tsr_laps > 1 ) : ?><span class="tsr-ev__laps"><?php echo esc_html( $tsr_laps . ' обиколки' ); ?></span><?php endif; ?>
+											<a class="tsr-ev__link" href="<?php echo esc_url( home_url( '/traseta/#t-' . $tsr_tr['slug'] ) ); ?>">Карта и профил<span class="screen-reader-text"> — <?php echo esc_html( $tsr_km_label( $tsr_tr ) ); ?></span> ›</a>
+										</p>
+									</article>
+								<?php endforeach; ?>
+							</div>
+						</section>
+					<?php endif; ?>
+
+					<?php if ( $tsr_prog ) : ?>
+						<section class="tsr-ev__sec" id="ev-prog" aria-labelledby="ev-prog-h">
+							<h2 class="tsr-ev__h2" id="ev-prog-h">Програма</h2>
+							<ol class="tsr-ev__prog">
+								<?php foreach ( $tsr_prog as [ $tsr_t, $tsr_txt ] ) : ?>
+									<li><span class="tsr-ev__prog-t"><?php echo esc_html( $tsr_t ); ?></span><span><?php echo esc_html( $tsr_txt ); ?></span></li>
+								<?php endforeach; ?>
+							</ol>
+						</section>
+					<?php endif; ?>
+
+					<?php if ( $tsr_fees || '' !== $tsr_reg ) : ?>
+						<section class="tsr-ev__sec" id="ev-fee" aria-labelledby="ev-fee-h">
+							<h2 class="tsr-ev__h2" id="ev-fee-h">Такса и регистрация</h2>
+							<?php if ( $tsr_fees ) : ?>
+								<div class="tsr-ev__fees">
+									<?php foreach ( $tsr_fees as $tsr_i => $tsr_f ) : ?>
+										<?php [ $tsr_amt, $tsr_ft, $tsr_fn ] = array_pad( $tsr_f, 3, '' ); ?>
+										<article class="<?php echo 0 === $tsr_i ? 'is-main' : ''; ?>">
+											<div class="tsr-ev__fee-amt"><?php echo esc_html( $tsr_amt ); ?></div>
+											<?php if ( '' !== $tsr_ft ) : ?><h3><?php echo esc_html( $tsr_ft ); ?></h3><?php endif; ?>
+											<?php if ( '' !== $tsr_fn ) : ?><p><?php echo esc_html( $tsr_fn ); ?></p><?php endif; ?>
+										</article>
+									<?php endforeach; ?>
+								</div>
+							<?php endif; ?>
+							<?php if ( '' !== $tsr_reg ) : ?>
+								<a class="tsr-ev__reg" href="<?php echo esc_url( $tsr_reg ); ?>" target="_blank" rel="noopener">Регистрация<span class="screen-reader-text"> (нов прозорец)</span> ›</a>
+							<?php endif; ?>
+						</section>
+					<?php endif; ?>
+
+					<?php if ( $tsr_go || '' !== $tsr_sphoto ) : ?>
+						<section class="tsr-ev__sec" id="ev-go" aria-labelledby="ev-go-h">
+							<h2 class="tsr-ev__h2" id="ev-go-h">Как да стигна</h2>
+							<div class="tsr-ev__go<?php echo '' !== $tsr_sphoto ? ' tsr-ev__go--photo' : ''; ?>">
+								<div>
+									<?php if ( $tsr_go ) : ?>
+										<ul>
+											<?php foreach ( $tsr_go as $tsr_g ) : ?>
+												<?php [ $tsr_ic, $tsr_gt, $tsr_gx ] = array_pad( count( $tsr_g ) >= 3 ? $tsr_g : array_merge( array( '' ), $tsr_g ), 3, '' ); ?>
+												<li><span class="tsr-ev__go-ic" aria-hidden="true"><?php echo esc_html( $tsr_ic ); ?></span><div><b><?php echo esc_html( $tsr_gt ); ?></b><?php if ( '' !== $tsr_gx ) : ?><span><?php echo esc_html( $tsr_gx ); ?></span><?php endif; ?></div></li>
+											<?php endforeach; ?>
+										</ul>
+									<?php endif; ?>
+									<?php if ( '' !== $tsr_dirs ) : ?>
+										<a class="tsr-ev__btn2" href="<?php echo esc_url( $tsr_dirs ); ?>" target="_blank" rel="noopener">Отвори в Google Maps<span class="screen-reader-text"> (нов прозорец)</span> ›</a>
+									<?php endif; ?>
+								</div>
+								<?php if ( '' !== $tsr_sphoto ) : ?>
+									<figure><img src="<?php echo esc_url( $tsr_sphoto ); ?>" alt="Мястото на старта" loading="lazy" decoding="async"><figcaption>Мястото на старта</figcaption></figure>
+								<?php endif; ?>
+							</div>
+						</section>
+					<?php endif; ?>
+				</div>
+
+				<aside class="tsr-ev__side" aria-label="Накратко">
+					<div class="tsr-ev__card">
+						<h2 class="tsr-ev__side-h">Накратко</h2>
+						<dl class="tsr-ev__facts">
+							<?php if ( $tsr_start > 0 ) : ?>
+								<div><dt>Дата</dt><dd><?php echo esc_html( gmdate( 'j', $tsr_start ) . ' ' . tsr_bg_month_short( (int) gmdate( 'n', $tsr_start ) ) . ', ' . array( 'неделя', 'понеделник', 'вторник', 'сряда', 'четвъртък', 'петък', 'събота' )[ (int) gmdate( 'w', $tsr_start ) ] ); ?></dd></div>
+								<div><dt>Старт</dt><dd><?php echo esc_html( gmdate( 'H:i', $tsr_start ) ); ?></dd></div>
+							<?php endif; ?>
+							<?php if ( '' !== $tsr_place ) : ?><div><dt>Място</dt><dd><?php echo esc_html( $tsr_place ); ?></dd></div><?php endif; ?>
+							<?php if ( $tsr_tracks ) : ?><div><dt>Дистанции</dt><dd><?php echo esc_html( implode( ' · ', array_map( $tsr_km_label, $tsr_tracks ) ) ); ?></dd></div><?php endif; ?>
+							<?php if ( '' !== $tsr_surface ) : ?><div><dt>Настилка</dt><dd><?php echo esc_html( $tsr_surface ); ?></dd></div><?php endif; ?>
+							<?php if ( '' !== $tsr_kids ) : ?><div><dt>Детско бягане</dt><dd><?php echo esc_html( $tsr_kids ); ?></dd></div><?php endif; ?>
+						</dl>
+						<?php if ( '' !== $tsr_reg && $tsr_days >= 0 ) : ?>
+							<a class="tsr-ev__reg tsr-ev__reg--block" href="<?php echo esc_url( $tsr_reg ); ?>" target="_blank" rel="noopener">Регистрация<span class="screen-reader-text"> (нов прозорец)</span></a>
+						<?php endif; ?>
+						<?php if ( $tsr_start > 0 && $tsr_days >= 0 ) : ?>
+							<a class="tsr-ev__side-link" href="<?php echo esc_url( add_query_arg( 'ics', '1', get_permalink() ) ); ?>" rel="nofollow">Добави в календара</a>
+						<?php endif; ?>
 					</div>
-				</section>
-			<?php endif; ?>
+					<?php if ( $tsr_cause_on ) : ?>
+						<div class="tsr-ev__card tsr-ev__cause">
+							<?php if ( '' !== $tsr_cause['image'] ) : ?><img src="<?php echo esc_url( $tsr_cause['image'] ); ?>" alt="" loading="lazy" decoding="async"><?php endif; ?>
+							<div class="tsr-ev__cause-in">
+								<?php if ( '' !== $tsr_cause['kicker'] ) : ?><span class="tsr-ev__cause-k"><?php echo esc_html( $tsr_cause['kicker'] ); ?></span><?php endif; ?>
+								<h2 class="tsr-ev__side-h"><?php echo esc_html( $tsr_cause['title'] ); ?></h2>
+								<?php if ( '' !== $tsr_cause['text'] ) : ?><p><?php echo esc_html( $tsr_cause['text'] ); ?></p><?php endif; ?>
+								<?php foreach ( $tsr_cause['links'] as [ $tsr_lt, $tsr_lu ] ) : ?>
+									<a href="<?php echo esc_url( $tsr_lu ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $tsr_lt ); ?> ›</a>
+								<?php endforeach; ?>
+							</div>
+						</div>
+					<?php endif; ?>
+				</aside>
+			</div>
 
-			<?php if ( $tsr_prog ) : ?>
-				<section class="tsr-ev__sec" id="ev-prog" aria-labelledby="ev-prog-h">
-					<h2 class="tsr-ev__h2" id="ev-prog-h">Програма</h2>
-					<ol class="tsr-ev__prog">
-						<?php foreach ( $tsr_prog as [ $tsr_t, $tsr_txt ] ) : ?>
-							<li><span class="tsr-ev__prog-t"><?php echo esc_html( $tsr_t ); ?></span><span><?php echo esc_html( $tsr_txt ); ?></span></li>
-						<?php endforeach; ?>
-					</ol>
-				</section>
-			<?php endif; ?>
-
-			<?php if ( $tsr_winners ) : ?>
-				<section class="tsr-ev__sec" id="ev-res" aria-labelledby="ev-res-h">
-					<h2 class="tsr-ev__h2" id="ev-res-h"><?php echo $tsr_last === $tsr_year ? 'Резултати' : 'Резултати от миналото издание'; ?></h2>
-					<p class="tsr-ev__sub"><?php echo esc_html( $tsr_race . ' ' . $tsr_last ); ?> — победители по дистанции</p>
+			<?php if ( $tsr_has_rec ) : ?>
+				<section class="tsr-ev__sec" id="ev-rec" aria-labelledby="ev-rec-h">
+					<h2 class="tsr-ev__h2" id="ev-rec-h">Рекорди на трасетата</h2>
+					<p class="tsr-ev__sub">Най-бързите времена на сегашните трасета на <?php echo esc_html( $tsr_race ); ?></p>
 					<div class="tsr-ev__grid">
 						<?php foreach ( $tsr_tracks as $tsr_tr ) : ?>
 							<?php
-							$tsr_w = $tsr_winners[ $tsr_tr['slug'] ] ?? null;
-							if ( null === $tsr_w ) {
+							$tsr_rec = $tsr_records['tracks'][ $tsr_tr['slug'] ] ?? array();
+							if ( ! $tsr_rec ) {
 								continue;
 							}
-							$tsr_total = 0;
-							$tsr_link  = '';
+							$tsr_from = tsr_track_records_from( $tsr_tr );
+							$tsr_laps = tsr_track_laps( $tsr_tr );
+							$tsr_eff  = (float) $tsr_tr['distance_km'];
 							?>
-							<article class="tsr-ev__r tsr-ev--<?php echo esc_attr( $tsr_colour( $tsr_tr ) ); ?>">
-								<h3 class="tsr-ev__r-h"><?php echo esc_html( $tsr_km_label( $tsr_tr ) ); ?></h3>
-								<ul>
-									<?php foreach ( array( 'M' => 'Мъже', 'F' => 'Жени' ) as $tsr_g => $tsr_gl ) : ?>
-										<?php
-										if ( empty( $tsr_w[ $tsr_g ] ) ) {
-											continue;
-										}
-										[ $tsr_name, $tsr_time, $tsr_n, $tsr_url ] = $tsr_w[ $tsr_g ];
-										$tsr_total += $tsr_n;
-										$tsr_link   = '' !== $tsr_link ? $tsr_link : $tsr_url;
-										?>
-										<li>
-											<span class="tsr-ev__r-g"><?php echo esc_html( $tsr_gl ); ?></span>
-											<a href="<?php echo esc_url( $tsr_runner_url( $tsr_name ) ); ?>"><?php echo esc_html( $tsr_name ); ?></a>
-											<span class="tsr-ev__r-t"><?php echo esc_html( '' !== $tsr_time ? $tsr_time : '—' ); ?></span>
-										</li>
-									<?php endforeach; ?>
-								</ul>
-								<p class="tsr-ev__r-foot"><span><?php echo esc_html( $tsr_total . ' финиширали' ); ?></span> <a class="tsr-ev__link" href="<?php echo esc_url( $tsr_link ); ?>">Пълни резултати ›</a></p>
+							<article class="tsr-ev__rec tsr-ev--<?php echo esc_attr( $tsr_colour( $tsr_tr ) ); ?>">
+								<div class="tsr-ev__rec-head">
+									<div>
+										<h3 class="tsr-ev__d-km"><?php echo esc_html( $tsr_km_label( $tsr_tr ) ); ?></h3>
+										<?php if ( $tsr_from > 0 ) : ?><span class="tsr-ev__since"><?php echo esc_html( 'трасе от ' . $tsr_from ); ?></span><?php endif; ?>
+									</div>
+									<p class="tsr-ev__rec-meta">
+										<?php echo esc_html( $tsr_laps . ' ' . ( 1 === $tsr_laps ? 'обиколка' : 'обиколки' ) ); ?><br>
+										+<?php echo esc_html( number_format_i18n( (int) ( $tsr_tr['ascent_m'] ?? 0 ) ) ); ?> м
+									</p>
+								</div>
+								<?php foreach ( array( 'M' => 'KOM', 'F' => 'QOM' ) as $tsr_g => $tsr_badge ) : ?>
+									<?php
+									if ( empty( $tsr_rec[ $tsr_g ] ) ) {
+										continue;
+									}
+									$tsr_r    = $tsr_rec[ $tsr_g ];
+									$tsr_pace = (int) round( $tsr_r['s'] / $tsr_eff );
+									?>
+									<div class="tsr-ev__rec-row">
+										<span class="tsr-ev__kom" title="<?php echo esc_attr( 'M' === $tsr_g ? 'King of the Mountain — рекорд при мъжете' : 'Queen of the Mountain — рекорд при жените' ); ?>">
+											<svg viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M2 5l5 4 5-8 5 8 5-4-2 11H4z" fill="currentColor"/><circle cx="2" cy="4" r="1.8" fill="currentColor"/><circle cx="12" cy="1.8" r="1.8" fill="currentColor"/><circle cx="22" cy="4" r="1.8" fill="currentColor"/></svg>
+											<b><?php echo esc_html( $tsr_badge ); ?></b>
+										</span>
+										<a class="tsr-ev__rec-name" href="<?php echo esc_url( $tsr_runner_url( $tsr_r['name'] ) ); ?>"><?php echo esc_html( $tsr_r['name'] ); ?></a>
+										<span class="tsr-ev__rec-time"><?php echo esc_html( tsr_runner_hms( $tsr_r['s'] ) ); ?></span>
+										<span class="tsr-ev__rec-sm"><?php echo esc_html( (string) $tsr_r['year'] ); ?></span>
+										<span class="tsr-ev__rec-sm tsr-ev__rec-sm--r"><?php echo esc_html( sprintf( '%d:%02d мин/км', intdiv( $tsr_pace, 60 ), $tsr_pace % 60 ) ); ?></span>
+									</div>
+								<?php endforeach; ?>
 							</article>
 						<?php endforeach; ?>
 					</div>
+					<p class="tsr-ev__note">Рекордите се смятат автоматично от резултатите — само за сегашните трасета. Невъзможни времена (грешка в класирането) не се показват. <a class="tsr-ev__link" href="<?php echo esc_url( add_query_arg( 'sabitie', sanitize_title( $tsr_race ), home_url( '/event/' ) ) ); ?>">Цялата история на състезанието ›</a></p>
 				</section>
 			<?php endif; ?>
 
-			<?php if ( $tsr_seasons || $tsr_has_rec ) : ?>
-				<section class="tsr-ev__sec" id="ev-hist" aria-labelledby="ev-hist-h">
-					<h2 class="tsr-ev__h2" id="ev-hist-h">История и рекорди</h2>
-
-					<?php if ( $tsr_has_rec ) : ?>
-						<h3 class="tsr-ev__h3">Рекорди на трасетата</h3>
-						<p class="tsr-ev__sub">Най-бързите времена на сегашните трасета на <?php echo esc_html( $tsr_race ); ?></p>
-						<div class="tsr-ev__grid">
-							<?php foreach ( $tsr_tracks as $tsr_tr ) : ?>
-								<?php
-								$tsr_rec = $tsr_records['tracks'][ $tsr_tr['slug'] ] ?? array();
-								if ( ! $tsr_rec ) {
-									continue;
-								}
-								$tsr_from = tsr_track_records_from( $tsr_tr );
-								$tsr_laps = tsr_track_laps( $tsr_tr );
-								$tsr_eff  = (float) $tsr_tr['distance_km'];
-								?>
-								<article class="tsr-ev__rec tsr-ev--<?php echo esc_attr( $tsr_colour( $tsr_tr ) ); ?>">
-									<div class="tsr-ev__rec-head">
-										<div>
-											<h4 class="tsr-ev__d-km"><?php echo esc_html( $tsr_km_label( $tsr_tr ) ); ?></h4>
-											<?php if ( $tsr_from > 0 ) : ?><span class="tsr-ev__since"><?php echo esc_html( 'трасе от ' . $tsr_from ); ?></span><?php endif; ?>
-										</div>
-										<p class="tsr-ev__rec-meta">
-											<?php echo esc_html( $tsr_laps . ' ' . ( 1 === $tsr_laps ? 'обиколка' : 'обиколки' ) ); ?><br>
-											+<?php echo esc_html( number_format_i18n( (int) ( $tsr_tr['ascent_m'] ?? 0 ) ) ); ?> м
-										</p>
-									</div>
-									<?php foreach ( array( 'M' => 'KOM', 'F' => 'QOM' ) as $tsr_g => $tsr_badge ) : ?>
-										<?php
-										if ( empty( $tsr_rec[ $tsr_g ] ) ) {
-											continue;
-										}
-										$tsr_r    = $tsr_rec[ $tsr_g ];
-										$tsr_pace = (int) round( $tsr_r['s'] / $tsr_eff );
-										?>
-										<div class="tsr-ev__rec-row">
-											<span class="tsr-ev__kom" title="<?php echo esc_attr( 'M' === $tsr_g ? 'King of the Mountain — рекорд при мъжете' : 'Queen of the Mountain — рекорд при жените' ); ?>">
-												<svg viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M2 5l5 4 5-8 5 8 5-4-2 11H4z" fill="currentColor"/><circle cx="2" cy="4" r="1.8" fill="currentColor"/><circle cx="12" cy="1.8" r="1.8" fill="currentColor"/><circle cx="22" cy="4" r="1.8" fill="currentColor"/></svg>
-												<b><?php echo esc_html( $tsr_badge ); ?></b>
-											</span>
-											<a class="tsr-ev__rec-name" href="<?php echo esc_url( $tsr_runner_url( $tsr_r['name'] ) ); ?>"><?php echo esc_html( $tsr_r['name'] ); ?></a>
-											<span class="tsr-ev__rec-time"><?php echo esc_html( tsr_runner_hms( $tsr_r['s'] ) ); ?></span>
-											<span class="tsr-ev__rec-sm"><?php echo esc_html( (string) $tsr_r['year'] ); ?></span>
-											<span class="tsr-ev__rec-sm tsr-ev__rec-sm--r"><?php echo esc_html( sprintf( '%d:%02d мин/км', intdiv( $tsr_pace, 60 ), $tsr_pace % 60 ) ); ?></span>
-										</div>
-									<?php endforeach; ?>
-								</article>
-							<?php endforeach; ?>
-						</div>
-						<p class="tsr-ev__note">Рекордите се смятат автоматично от резултатите — само за сегашните трасета. Невъзможни времена (грешка в класирането) не се показват.</p>
-					<?php endif; ?>
-
-					<?php if ( $tsr_seasons ) : ?>
-						<div class="tsr-ev__hist">
-							<div>
-								<h3 class="tsr-ev__h3">Издания</h3>
-								<ul class="tsr-ev__years">
-									<?php foreach ( $tsr_seasons as $tsr_s => $tsr_base ) : ?>
-										<?php $tsr_u = tsr_event_results_url( $tsr_base, $tsr_s ); ?>
-										<li><?php if ( '' !== $tsr_u ) : ?><a href="<?php echo esc_url( $tsr_u ); ?>"><?php echo esc_html( (string) $tsr_s ); ?></a><?php else : ?><span><?php echo esc_html( (string) $tsr_s ); ?></span><?php endif; ?></li>
-									<?php endforeach; ?>
-								</ul>
-							</div>
-							<div class="tsr-ev__totals">
-								<div><b><?php echo esc_html( (string) count( $tsr_seasons ) ); ?></b><span>издания от <?php echo esc_html( (string) min( array_keys( $tsr_seasons ) ) ); ?> г.</span></div>
-								<div><b><?php echo esc_html( number_format_i18n( $tsr_finishes ) ); ?></b><span>финиша общо</span></div>
-								<a class="tsr-ev__link" href="<?php echo esc_url( add_query_arg( 'sabitie', sanitize_title( $tsr_race ), home_url( '/event/' ) ) ); ?>">Цялата история на състезанието ›</a>
-							</div>
-						</div>
-					<?php endif; ?>
+			<?php if ( $tsr_partners ) : ?>
+				<section class="tsr-ev__partners" aria-labelledby="ev-partners-h">
+					<h2 class="tsr-ev__h2" id="ev-partners-h">Партньори</h2>
+					<ul class="tsr-ev__logos">
+						<?php foreach ( $tsr_partners as $tsr_p ) : ?>
+							<?php
+							$tsr_pu   = (string) get_post_meta( $tsr_p->ID, '_tsr_partner_url', true );
+							$tsr_pimg = get_the_post_thumbnail( $tsr_p, 'medium', array( 'alt' => get_the_title( $tsr_p ), 'loading' => 'lazy', 'decoding' => 'async' ) );
+							$tsr_pname = get_the_title( $tsr_p );
+							$tsr_inner = '' !== $tsr_pimg ? $tsr_pimg : '<span>' . esc_html( $tsr_pname ) . '</span>';
+							?>
+							<li>
+								<?php if ( '' !== $tsr_pu ) : ?>
+									<a href="<?php echo esc_url( $tsr_pu ); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr( $tsr_pname ); ?>"><?php echo $tsr_inner; // phpcs:ignore WordPress.Security.EscapeOutput -- core image markup / escaped name. ?></a>
+								<?php else : ?>
+									<span class="tsr-ev__logo"><?php echo $tsr_inner; // phpcs:ignore WordPress.Security.EscapeOutput -- core image markup / escaped name. ?></span>
+								<?php endif; ?>
+							</li>
+						<?php endforeach; ?>
+					</ul>
 				</section>
 			<?php endif; ?>
 		</div>
