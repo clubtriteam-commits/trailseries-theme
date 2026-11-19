@@ -935,6 +935,30 @@ function tsr_track_laps( array $track ): int {
 	return ( $n >= 1 && $n <= 3 ) ? $n : 1;
 }
 
+/**
+ * Garmin Connect course link for a track, admin-set via Tools → Трасета —
+ * етикети ('tsr_track_garmin' option, slug => URL). '' when none.
+ *
+ * @param array<string, mixed> $track Track entry from tracks.json.
+ */
+function tsr_track_garmin( array $track ): string {
+	static $urls = null;
+	if ( null === $urls ) {
+		$urls = (array) get_option( 'tsr_track_garmin', array() );
+	}
+	return (string) ( $urls[ $track['slug'] ] ?? '' );
+}
+
+/**
+ * A pasted Garmin link, or '' when it is not an https link to Garmin Connect
+ * (connect.garmin.com, or the gar.mn short links its share button makes).
+ */
+function tsr_garmin_url_clean( string $raw ): string {
+	$url  = esc_url_raw( $raw, array( 'https' ) );
+	$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+	return in_array( $host, array( 'connect.garmin.com', 'gar.mn' ), true ) ? $url : '';
+}
+
 add_action( 'admin_menu', static function (): void {
 	add_management_page(
 		'Трасета — етикети',
@@ -959,8 +983,11 @@ function tsr_track_labels_page(): void {
 	if ( isset( $_POST['tsr_track_status'] ) && check_admin_referer( 'tsr_track_labels' ) ) {
 		$posted_status = (array) wp_unslash( $_POST['tsr_track_status'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- values whitelisted below.
 		$posted_laps   = (array) wp_unslash( $_POST['tsr_track_laps'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- values whitelisted below.
+		$posted_garmin = (array) wp_unslash( $_POST['tsr_track_garmin'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated by tsr_garmin_url_clean().
 		$clean_status  = array();
 		$clean_laps    = array();
+		$clean_garmin  = array();
+		$bad_garmin    = array();
 		foreach ( $events as $event ) {
 			foreach ( $event['tracks'] as $track ) {
 				$slug = $track['slug'];
@@ -970,11 +997,26 @@ function tsr_track_labels_page(): void {
 
 				$laps = isset( $posted_laps[ $slug ] ) ? (int) $posted_laps[ $slug ] : 1;
 				$clean_laps[ $slug ] = ( $laps >= 1 && $laps <= 3 ) ? $laps : 1;
+
+				$raw = trim( (string) ( $posted_garmin[ $slug ] ?? '' ) );
+				if ( '' !== $raw ) {
+					$url = tsr_garmin_url_clean( $raw );
+					if ( '' !== $url ) {
+						$clean_garmin[ $slug ] = $url;
+					} else {
+						$bad_garmin[] = $track['title'];
+					}
+				}
 			}
 		}
+		update_option( 'tsr_track_garmin', $clean_garmin, false );
 		update_option( 'tsr_track_status', $clean_status, false );
 		update_option( 'tsr_track_laps', $clean_laps, false );
 		echo '<div class="notice notice-success is-dismissible"><p>Етикетите са запазени.</p></div>';
+		if ( $bad_garmin ) {
+			echo '<div class="notice notice-warning"><p>Тези Garmin линкове не са запазени — трябва да са от connect.garmin.com (https): '
+				. esc_html( implode( ', ', $bad_garmin ) ) . '</p></div>';
+		}
 	}
 
 	echo '<div class="wrap"><h1>Трасета — етикети (Актуално / Легаси)</h1>';
@@ -984,14 +1026,14 @@ function tsr_track_labels_page(): void {
 		return;
 	}
 
-	echo '<p>Етикетът определя подредбата на страницата „Трасета“: актуалните трасета са отгоре, легаси версиите — в свито поле отдолу. Броят обиколки се показва като значка до дистанцията, когато е повече от 1.</p>';
+	echo '<p>Етикетът определя подредбата на страницата „Трасета“: актуалните трасета са отгоре, легаси версиите — в свито поле отдолу. Броят обиколки се показва като значка до дистанцията, когато е повече от 1. Garmin линк: отвори трасето в Garmin Connect (Courses), натисни „Сподели“ и постави линка тук — в прозореца на трасето се появява бутон „Garmin“.</p>';
 	echo '<form method="post">';
 	wp_nonce_field( 'tsr_track_labels' );
 
 	foreach ( $events as $event ) {
 		echo '<h2 style="margin:1.5em 0 0.4em">' . esc_html( $event['name'] ) . '</h2>';
-		echo '<table class="widefat striped" style="max-width:760px">';
-		echo '<thead><tr><th>Трасе</th><th style="width:110px">Дистанция</th><th style="width:180px">Етикет</th><th style="width:150px">Брой обиколки</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" style="max-width:1100px">';
+		echo '<thead><tr><th>Трасе</th><th style="width:110px">Дистанция</th><th style="width:180px">Етикет</th><th style="width:150px">Брой обиколки</th><th>Garmin линк</th></tr></thead><tbody>';
 		foreach ( $event['tracks'] as $track ) {
 			$status = tsr_track_status( $track );
 			$laps   = tsr_track_laps( $track );
@@ -1005,7 +1047,8 @@ function tsr_track_labels_page(): void {
 			foreach ( array( 1, 2, 3 ) as $n ) {
 				echo '<option value="' . esc_attr( (string) $n ) . '"' . selected( $laps, $n, false ) . '>' . esc_html( (string) $n ) . ' обиколк' . ( 1 === $n ? 'а' : 'и' ) . '</option>';
 			}
-			echo '</select></td></tr>';
+			echo '</select></td>';
+			echo '<td><input type="url" class="regular-text" style="width:100%" placeholder="https://connect.garmin.com/modern/course/…" name="tsr_track_garmin[' . esc_attr( $track['slug'] ) . ']" value="' . esc_attr( tsr_track_garmin( $track ) ) . '"></td></tr>';
 		}
 		echo '</tbody></table>';
 	}

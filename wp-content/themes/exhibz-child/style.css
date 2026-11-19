@@ -6547,3 +6547,322 @@ h1, h2, h3, h4, h5, h6 {
 		padding:               0.65rem 0.9rem 0.65rem 1.1rem;
 	}
 }
+
+/* ── Трасета — track modal, design 2026-11-19 ─────────────────────────────────
+   Heading (race · month · place, "13 км" + category pill + stars), key-number
+   tiles, map + profile, typical finish times + finishers per year, and an
+   action bar that stays at the bottom of the dialog while it scrolls. */
+.tsr-modal__dialog {
+	width:          min(980px, 100%);
+	padding-bottom: 0;
+	--tc-short:  #15803d;
+	--tc-medium: #0077aa;
+	--tc-long:   #dc2626;
+	--tc-xl:     #7f1d1d;
+}
+.tsr-md__head {
+	margin:        -0.25rem 2.75rem 0 0;
+}
+.tsr-md__kicker {
+	margin:    0;
+	color:     var(--tsr-muted);
+	font:      600 0.85rem/1.35 Geist, system-ui, sans-serif;
+}
+.tsr-md__kicker:empty {
+	display: none;
+}
+.tsr-md__head .tsr-modal__title {
+	display:     flex;
+	flex-wrap:   wrap;
+	align-items: center;
+	gap:         0.35rem 0.65rem;
+	margin:      0.2rem 0 0;
+	font:        700 1.9rem/1.15 Ubuntu, sans-serif;
+}
+.tsr-md__pill {
+	padding:        0.28rem 0.65rem;
+	border-radius:  999px;
+	background:     var(--tsr-muted);
+	color:          #fff;
+	font:           700 0.72rem/1 Geist, sans-serif;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.tsr-md__pill--short  { background: var(--tc-short); }
+.tsr-md__pill--medium { background: var(--tc-medium); }
+.tsr-md__pill--long   { background: var(--tc-long); }
+.tsr-md__pill--xl     { background: var(--tc-xl); }
+.tsr-md__diff {
+	color: var(--tsr-muted);
+	font:  600 0.85rem Geist, sans-serif;
+}
+.tsr-md__diff b {
+	color:          var(--tsr-orange);
+	letter-spacing: 1px;
+}
+.tsr-md__diff i {
+	color:          var(--tsr-border);
+	font-style:     normal;
+	letter-spacing: 1px;
+}
+.tsr-md__laps {
+	padding:       0.25rem 0.6rem;
+	border-radius: 999px;
+	background:    var(--tsr-bg);
+	color:         var(--tsr-navy);
+	font:          600 0.75rem Geist, sans-serif;
+}
+.tsr-md__kpis {
+	display:               grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap:                   0.6rem;
+	margin:                1.1rem 0 1rem;
+}
+.tsr-md__kpi {
+	padding:       0.7rem 0.8rem;
+	border-radius: 14px;
+	background:    var(--tsr-bg);
+}
+.tsr-md__kpi span {
+	display:        block;
+	color:          var(--tsr-muted);
+	font:           600 0.68rem Geist, sans-serif;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.tsr-md__kpi b {
+	display:    block;
+	margin-top: 0.15rem;
+	color:      var(--tsr-navy);
+	font:       700 1.2rem/1.2 Ubuntu, sans-serif;
+}
+.tsr-md__kpi small {
+	color:     var(--tsr-muted);
+	font-size: 0.72rem;
+}
+.tsr-md__sec {
+	display:               grid;
+	grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+	gap:                   1.5rem;
+	margin-top:            1.25rem;
+	padding-top:           1.1rem;
+	border-top:            1px solid var(--tsr-border);
+}
+.tsr-md__sec[hidden] {
+	display: none;
+}
+.tsr-md__sec h3 {
+	margin: 0 0 0.2rem;
+	color:  var(--tsr-navy);
+	font:   700 1.1rem Ubuntu, sans-serif;
+}
+.tsr-md__note {
+	margin:    0 0 0.9rem;
+	color:     var(--tsr-muted);
+	font-size: 0.82rem;
+}
+.tsr-md__note--pace {
+	margin-top: 2.6rem;
+}
+.tsr-md__band {
+	position: relative;
+	height:   54px;
+	margin:   1.7rem 2.2rem 0.4rem;
+}
+.tsr-md__band-track,
+.tsr-md__band-fill {
+	position:      absolute;
+	top:           22px;
+	height:        10px;
+	border-radius: 99px;
+}
+.tsr-md__band-track {
+	left:       -2.2rem;
+	right:      -2.2rem;
+	background: #e6ebf0;
+}
+.tsr-md__band-fill {
+	background: linear-gradient(90deg, #7cc4e4, #0077aa, #7cc4e4);
+}
+.tsr-md__band-mid {
+	position:      absolute;
+	top:           14px;
+	width:         3px;
+	height:        26px;
+	margin-left:   -1.5px;
+	border-radius: 2px;
+	background:    var(--tsr-navy);
+}
+.tsr-md__band-lbl {
+	position:   absolute;
+	top:        38px;
+	transform:  translateX(-50%);
+	color:      var(--tsr-muted);
+	font-size:  0.72rem;
+	text-align: center;
+	white-space: nowrap;
+}
+.tsr-md__band-lbl--top {
+	top: -24px;
+}
+.tsr-md__band-lbl b {
+	display: block;
+	color:   var(--tsr-navy);
+	font:    700 0.95rem Ubuntu, sans-serif;
+}
+.tsr-md__yrs {
+	display:     flex;
+	align-items: flex-end;
+	gap:         5px;
+	height:      92px;
+}
+.tsr-md__yr {
+	flex:           1;
+	min-width:      0;
+	display:        flex;
+	flex-direction: column;
+	align-items:    center;
+	gap:            3px;
+}
+.tsr-md__stk {
+	display:        flex;
+	flex-direction: column;
+	width:          100%;
+	max-width:      26px;
+	border-radius:  5px 5px 0 0;
+	overflow:       hidden;
+}
+.tsr-md__stk i,
+.tsr-md__leg i {
+	display: block;
+}
+.tsr-md__yr span {
+	color:     var(--tsr-muted);
+	font-size: 0.66rem;
+}
+.tsr-md__yrs .m, .tsr-md__leg .m { background: var(--tsr-navy); }
+.tsr-md__yrs .f, .tsr-md__leg .f { background: var(--tsr-orange); }
+.tsr-md__yrs .o, .tsr-md__leg .o { background: #9aa5b1; }
+.tsr-md__leg {
+	display:   flex;
+	flex-wrap: wrap;
+	gap:       0.4rem 0.9rem;
+	margin-top: 0.5rem;
+	color:     var(--tsr-muted);
+	font-size: 0.75rem;
+}
+.tsr-md__leg i {
+	display:       inline-block;
+	width:         9px;
+	height:        9px;
+	margin-right:  0.3rem;
+	border-radius: 2px;
+}
+.tsr-md__acts {
+	position:   sticky;
+	bottom:     0;
+	z-index:    2;
+	display:    flex;
+	flex-wrap:  wrap;
+	gap:        0.5rem;
+	margin:     1.4rem -1.5rem 0;
+	padding:    0.9rem 1.5rem;
+	border-top: 1px solid var(--tsr-border);
+	background: rgba(255, 255, 255, 0.97);
+}
+.tsr-md__sp {
+	flex: 1;
+}
+.tsr-md__btn {
+	display:       inline-flex;
+	align-items:   center;
+	justify-content: center;
+	gap:           0.4rem;
+	min-height:    44px;
+	padding:       0 1rem;
+	border:        1.5px solid var(--tsr-border);
+	border-radius: 999px;
+	background:    #fff;
+	color:         var(--tsr-navy);
+	font:          700 0.85rem/1 Geist, system-ui, sans-serif;
+	text-decoration: none;
+	cursor:        pointer;
+}
+.tsr-md__btn[hidden] {
+	display: none;
+}
+.tsr-md__btn:hover {
+	border-color: var(--tsr-navy);
+	color:        var(--tsr-navy);
+}
+.tsr-md__btn--gpx {
+	background:   #0077aa;
+	border-color: #0077aa;
+	color:        #fff;
+}
+.tsr-md__btn--gpx:hover {
+	background:   #0a3d62;
+	border-color: #0a3d62;
+	color:        #fff;
+}
+.tsr-md__btn--strava {
+	background:   #fc4c02;
+	border-color: #fc4c02;
+	color:        #fff;
+}
+.tsr-md__btn--strava:hover {
+	background:   #d94102;
+	border-color: #d94102;
+	color:        #fff;
+}
+.tsr-md__btn--garmin {
+	background:   #000;
+	border-color: #000;
+	color:        #fff;
+}
+.tsr-md__btn--garmin:hover {
+	background:   #333;
+	border-color: #333;
+	color:        #fff;
+}
+.tsr-md__btn:focus-visible {
+	outline:        3px solid var(--tsr-blue-dk);
+	outline-offset: 2px;
+}
+@media (max-width: 700px) {
+	.tsr-modal {
+		padding: 0;
+	}
+	.tsr-modal__dialog {
+		width:         100%;
+		height:        100dvh;
+		max-height:    100dvh;
+		border-radius: 0;
+		padding:       1rem 1rem 0;
+	}
+	.tsr-md__head {
+		margin: 0 3rem 0 0;
+	}
+	.tsr-md__head .tsr-modal__title {
+		font-size: 1.55rem;
+	}
+	.tsr-md__kpis {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.tsr-md__kpi:last-child:nth-child(odd) {
+		grid-column: 1 / -1;
+	}
+	.tsr-md__sec {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.tsr-md__acts {
+		margin:  1.2rem -1rem 0;
+		padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+	}
+	.tsr-md__sp {
+		display: none;
+	}
+	.tsr-md__acts .tsr-md__btn {
+		flex: 1 1 auto;
+	}
+}

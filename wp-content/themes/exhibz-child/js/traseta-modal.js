@@ -27,6 +27,13 @@
 	var kmlBtn    = document.getElementById( 'tsr-modal-kml' );
 	var stravaBtn = document.getElementById( 'tsr-modal-strava' );
 	var statusEl  = document.getElementById( 'tsr-modal-status' );
+	var kickerEl  = document.getElementById( 'tsr-modal-kicker' );
+	var garminBtn = document.getElementById( 'tsr-modal-garmin' );
+	var copyBtn   = document.getElementById( 'tsr-modal-copy' );
+	var resLink   = document.getElementById( 'tsr-modal-results-link' );
+	var raceLink  = document.getElementById( 'tsr-modal-race' );
+	var resultsEl = document.getElementById( 'tsr-modal-results' );
+	var openSlug  = '';
 
 	/**
 	 * Fetch status line: 'loading' (spinner + text), 'error' (message), or
@@ -563,17 +570,87 @@
 		return Number( v ).toLocaleString( 'bg-BG' );
 	}
 
+	// Key numbers as tiles (design 2026-11-19). Steepness = metres climbed
+	// per kilometre, the one number that tells a flat 15 km from a hard one.
 	function fillStats( d ) {
 		var items = [];
-		if ( d.distance ) { items.push( [ 'distance', 'Дистанция', fmt( d.distance ) + ' км' ] ); }
-		if ( d.ascent )   { items.push( [ 'ascent', 'Изкачване', 'D+ ' + fmt( d.ascent ) + ' м' ] ); }
-		if ( d.descent )  { items.push( [ 'descent', 'Спускане', 'D- ' + fmt( d.descent ) + ' м' ] ); }
-		if ( d.lowest && d.highest ) { items.push( [ 'elevation', 'Височина', fmt( d.lowest ) + '–' + fmt( d.highest ) + ' м' ] ); }
+		if ( d.distance ) { items.push( [ 'Дължина по GPX', Number( d.distance ).toLocaleString( 'bg-BG', { maximumFractionDigits: 1 } ) + ' км', '' ] ); }
+		if ( d.ascent )   { items.push( [ 'Изкачване', fmt( d.ascent ) + ' м', '' ] ); }
+		if ( d.descent )  { items.push( [ 'Спускане', fmt( d.descent ) + ' м', '' ] ); }
+		if ( d.lowest && d.highest ) { items.push( [ 'Височина', fmt( d.lowest ) + '–' + fmt( d.highest ) + ' м', '' ] ); }
+		if ( d.ascent && d.distance ) { items.push( [ 'Стръмност', Math.round( d.ascent / d.distance ) + ' м/км', 'изкачване на км' ] ); }
 		statsEl.innerHTML = items.map( function ( it ) {
-			return '<span class="tsr-track__stat">' + statIcon( it[ 0 ] ) +
-				'<span class="tsr-track__stat-body"><span class="tsr-track__stat-label">' + it[ 1 ] +
-				'</span><span class="tsr-track__stat-value">' + it[ 2 ] + '</span></span></span>';
+			return '<div class="tsr-md__kpi"><span>' + it[ 0 ] + '</span><b>' + it[ 1 ] + '</b>' +
+				( it[ 2 ] ? '<small>' + it[ 2 ] + '</small>' : '' ) + '</div>';
 		} ).join( '' );
+	}
+
+	var STAR_WORDS = [ '', 'лесно', 'умерено', 'средно', 'трудно', 'много трудно' ];
+
+	// "13 км" + category pill + stars + laps.
+	function titleHtml( d ) {
+		var html = escapeHtml( d.label || d.variant || d.title );
+		if ( d.catname ) {
+			html += ' <span class="tsr-md__pill tsr-md__pill--' + escapeHtml( d.colour || 'none' ) + '">' + escapeHtml( d.catname ) + '</span>';
+		}
+		var s = parseInt( d.stars, 10 );
+		if ( s >= 1 && s <= 5 ) {
+			html += ' <span class="tsr-md__diff" role="img" aria-label="Трудност ' + s + ' от 5 (' + STAR_WORDS[ s ] + ')">' +
+				'<b aria-hidden="true">' + '★★★★★'.slice( 0, s ) + '</b><i aria-hidden="true">' + '★★★★★'.slice( s ) + '</i> ' +
+				'<span aria-hidden="true">' + STAR_WORDS[ s ] + '</span></span>';
+		}
+		var laps = parseInt( d.laps, 10 );
+		if ( laps > 1 ) {
+			html += ' <span class="tsr-md__laps">' + laps + ' обиколки</span>';
+		}
+		return html;
+	}
+
+	function hms( s ) {
+		var h = Math.floor( s / 3600 ), m = Math.floor( s % 3600 / 60 );
+		return h + ':' + ( m < 10 ? '0' : '' ) + m;
+	}
+
+	// "Колко време отнема" (10th / 50th / 90th percentile of all finishes —
+	// robust to a few wrong rows, unlike records) + finishers per year.
+	function fillResults( d ) {
+		var st = null;
+		try { st = d.stats ? JSON.parse( d.stats ) : null; } catch ( e ) { st = null; }
+		if ( ! st || ! st.p ) {
+			resultsEl.hidden = true;
+			resultsEl.innerHTML = '';
+			return;
+		}
+		var p = st.p, years = Object.keys( st.years ), lo = p[ 0 ] * 0.85, hi = p[ 2 ] * 1.08;
+		var pos = function ( v ) { return ( ( v - lo ) / ( hi - lo ) * 100 ).toFixed( 1 ) + '%'; };
+		var pace = d.distance ? p[ 1 ] / d.distance : 0;
+		var band = '<div class="tsr-md__band" role="img" aria-label="Най-бързите 10% под ' + hms( p[ 0 ] ) + ', половината до ' + hms( p[ 1 ] ) + ', 90% до ' + hms( p[ 2 ] ) + '">' +
+			'<div class="tsr-md__band-track"></div>' +
+			'<div class="tsr-md__band-fill" style="left:' + pos( p[ 0 ] ) + ';right:calc(100% - ' + pos( p[ 2 ] ) + ')"></div>' +
+			'<div class="tsr-md__band-mid" style="left:' + pos( p[ 1 ] ) + '"></div>' +
+			'<div class="tsr-md__band-lbl tsr-md__band-lbl--top" style="left:' + pos( p[ 1 ] ) + '"><b>' + hms( p[ 1 ] ) + '</b>половината финишират до</div>' +
+			'<div class="tsr-md__band-lbl" style="left:' + pos( p[ 0 ] ) + '"><b>' + hms( p[ 0 ] ) + '</b>най-бързите 10%</div>' +
+			'<div class="tsr-md__band-lbl" style="left:' + pos( p[ 2 ] ) + '"><b>' + hms( p[ 2 ] ) + '</b>90% до</div></div>';
+		var max = 1;
+		years.forEach( function ( y ) { var c = st.years[ y ]; max = Math.max( max, c[ 0 ] + c[ 1 ] + c[ 2 ] ); } );
+		var bars = years.map( function ( y ) {
+			var c = st.years[ y ], h = function ( n ) { return ( n / max * 72 ).toFixed( 1 ) + 'px'; };
+			return '<div class="tsr-md__yr" title="' + y + ': ' + ( c[ 0 ] + c[ 1 ] + c[ 2 ] ) + ' финиширали">' +
+				'<div class="tsr-md__stk"><i class="o" style="height:' + h( c[ 2 ] ) + '"></i><i class="m" style="height:' + h( c[ 0 ] ) + '"></i><i class="f" style="height:' + h( c[ 1 ] ) + '"></i></div>' +
+				'<span>' + String( y ).slice( 2 ) + '</span></div>';
+		} ).join( '' );
+		var hasOther = years.some( function ( y ) { return st.years[ y ][ 2 ] > 0; } );
+		resultsEl.innerHTML =
+			'<div><h3>Колко време отнема</h3><p class="tsr-md__note">От ' + fmt( st.n ) + ' финиша на тази дистанция, ' + years[ 0 ] + '–' + years[ years.length - 1 ] + '.</p>' + band +
+			( pace ? '<p class="tsr-md__note tsr-md__note--pace">Темпо: около ' + Math.floor( pace / 60 ) + ':' + ( '0' + Math.round( pace % 60 ) ).slice( -2 ) + ' мин/км при средно време.</p>' : '' ) + '</div>' +
+			'<div><h3>Финиширали по години</h3><p class="tsr-md__note">Всички издания на тази дистанция.</p><div class="tsr-md__yrs">' + bars + '</div>' +
+			'<div class="tsr-md__leg"><span><i class="m"></i>мъже</span><span><i class="f"></i>жени</span>' + ( hasOther ? '<span><i class="o"></i>без разделение</span>' : '' ) + '</div></div>';
+		resultsEl.hidden = false;
+	}
+
+	// Deep link: /traseta/#t-<slug> opens that track.
+	function trackUrl( slug ) {
+		return location.origin + location.pathname + location.search + '#t-' + slug;
 	}
 
 	/**
@@ -610,8 +687,33 @@
 		hideChartHover();
 		chartState = null;
 
-		titleEl.innerHTML = buildTitleHtml( openTitle, d.event || '', d.variant || '' );
+		if ( d.label ) {
+			kickerEl.textContent = d.kicker || d.event || '';
+			titleEl.innerHTML = titleHtml( d );
+		} else {
+			kickerEl.textContent = '';
+			titleEl.innerHTML = buildTitleHtml( openTitle, d.event || '', d.variant || '' );
+		}
 		fillStats( d );
+		fillResults( d );
+
+		if ( garminBtn ) {
+			garminBtn.hidden = ! d.garmin;
+			if ( d.garmin ) { garminBtn.href = d.garmin; }
+		}
+		resLink.hidden = ! d.results;
+		if ( d.results ) {
+			resLink.href = d.results;
+			resLink.textContent = 'Резултати ' + ( d.resultsYear || '' ) + ' ›';
+		}
+		raceLink.hidden = ! d.raceUrl;
+		if ( d.raceUrl ) { raceLink.href = d.raceUrl; }
+		openSlug = d.slug || '';
+		copyBtn.hidden = ! openSlug;
+		copyBtn.querySelector( 'span' ).textContent = 'Копирай линк';
+		if ( openSlug && history.replaceState ) {
+			history.replaceState( null, '', '#t-' + openSlug );
+		}
 
 		gpxBtn.hidden = ! d.gpx;
 		if ( d.gpx ) { gpxBtn.href = d.gpx; }
@@ -714,6 +816,10 @@
 	function closeModal() {
 		hideChartHover();
 		modal.hidden = true;
+		if ( openSlug && history.replaceState && location.hash === '#t-' + openSlug ) {
+			history.replaceState( null, '', location.pathname + location.search );
+		}
+		openSlug = '';
 		document.body.classList.remove( 'tsr-modal-open' );
 		if ( lastFocus ) {
 			lastFocus.focus();
@@ -734,6 +840,32 @@
 	document.addEventListener( 'pointerover', warmLeaflet );
 	document.addEventListener( 'focusin', warmLeaflet );
 
+
+	copyBtn.addEventListener( 'click', function () {
+		var url = trackUrl( openSlug ), label = copyBtn.querySelector( 'span' );
+		var done = function () { label.textContent = 'Копирано ✓'; };
+		if ( navigator.share && window.matchMedia( '(pointer: coarse)' ).matches ) {
+			// Phones: the native share sheet (Viber, Messenger, …).
+			navigator.share( { title: titleEl.textContent.replace( /\s+/g, ' ' ).trim(), url: url } ).catch( function () {} );
+		} else if ( navigator.clipboard ) {
+			navigator.clipboard.writeText( url ).then( done, function () { window.prompt( 'Линк към трасето:', url ); } );
+		} else {
+			window.prompt( 'Линк към трасето:', url );
+		}
+	} );
+
+	// Opened from a shared link (#t-<slug>).
+	function openFromHash() {
+		var m = /^#t-([a-z0-9-]+)$/.exec( location.hash );
+		var row = m && document.querySelector( '.tsr-trk[data-slug="' + m[ 1 ] + '"]' );
+		if ( row && modal.hidden ) {
+			var old = row.closest( 'details' );
+			if ( old ) { old.open = true; }
+			openModal( row );
+		}
+	}
+	openFromHash();
+	window.addEventListener( 'hashchange', openFromHash );
 
 	document.addEventListener( 'click', function ( ev ) {
 		var closer = ev.target.closest( '[data-close]' );

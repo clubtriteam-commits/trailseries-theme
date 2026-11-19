@@ -62,6 +62,9 @@ if ( ! function_exists( 'tsr_track_icon_defs' ) ) {
 			<symbol id="tsr-i-elevation" viewBox="0 0 24 24"><path d="M3 20 9 8l4 6 2-3 6 9H3z"/></symbol>
 			<symbol id="tsr-i-download" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></symbol>
 			<?php // Official Strava mark (Simple Icons, CC0) — brand guidelines ask for the real glyph when linking to Strava. ?>
+			<?php // Garmin delta (triangle) mark; link glyph for "Копирай линк". ?>
+			<symbol id="tsr-i-garmin" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3zm0 5.2 5.6 9.8H6.4L12 8.2z"/></symbol>
+			<symbol id="tsr-i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
 			<symbol id="tsr-i-strava" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></symbol>
 		</svg>
 		<?php
@@ -140,6 +143,90 @@ if ( ! function_exists( 'tsr_track_profiles' ) ) {
 	}
 }
 
+if ( ! function_exists( 'tsr_track_result_stats' ) ) {
+	/**
+	 * Results per current track, for the modal's "Колко време отнема" and
+	 * "Финишири по години": each published result table goes to the current
+	 * track of the same race whose nominal distance is nearest (within 1 km).
+	 * Percentiles, not records — a few wrong rows (a shortened course, a
+	 * mistyped time) barely move them. Cached per results generation.
+	 *
+	 * @return array<string, array{n: int, p10: int, p50: int, p90: int, years: array<string, array{0: int, 1: int, 2: int}>, results: string}>
+	 */
+	function tsr_track_result_stats( array $events ): array {
+		$key = 'tsr_track_stats_g' . tsr_cache_gen() . '_' . (int) @filemtime( get_stylesheet_directory() . '/data/tracks.json' );
+		$out = get_transient( $key );
+		if ( is_array( $out ) ) {
+			return $out;
+		}
+		$tracks = array(); // race => list of [slug, nominal km]
+		foreach ( $events as $event ) {
+			foreach ( (array) $event['tracks'] as $tr ) {
+				$km = tsr_track_nominal_km( $tr );
+				if ( null !== $km && 'legacy' !== tsr_track_status( $tr ) ) {
+					$tracks[ (string) $event['name'] ][] = array( (string) $tr['slug'], $km );
+				}
+			}
+		}
+		$assign = array(); // post id => [slug, year, gender, event base]
+		foreach ( tsr_results_index() as $id => $e ) {
+			$race = tsr_runner_event_name( $e['event_base'] );
+			$km   = (float) $e['km'];
+			if ( $km <= 0 || empty( $tracks[ $race ] ) ) {
+				continue;
+			}
+			$best = null;
+			foreach ( $tracks[ $race ] as [ $slug, $tkm ] ) {
+				$diff = abs( $tkm - $km );
+				if ( $diff <= 1.0 && ( null === $best || $diff < $best[1] ) ) {
+					$best = array( $slug, $diff );
+				}
+			}
+			if ( null !== $best ) {
+				$assign[ (int) $id ] = array( $best[0], (string) $e['season'], (string) $e['gender'], (string) $e['event_base'] );
+			}
+		}
+		update_meta_cache( 'post', array_keys( $assign ) );
+		$times  = array();
+		$latest = array(); // slug => [year, event base]
+		$out    = array();
+		foreach ( $assign as $id => [ $slug, $year, $gender, $base ] ) {
+			$set = json_decode( (string) get_post_meta( $id, '_tsr_result_set', true ), true );
+			foreach ( (array) ( $set['rows'] ?? array() ) as $r ) {
+				$s = tsr_runner_seconds( (string) ( $r['finish_time'] ?? '' ) );
+				if ( null === $s || $s < 300 ) {
+					continue;
+				}
+				$g = 'M' === $gender ? 0 : ( 'F' === $gender ? 1 : 2 );
+				$out[ $slug ]['years'][ $year ][ $g ] = ( $out[ $slug ]['years'][ $year ][ $g ] ?? 0 ) + 1;
+				$times[ $slug ][] = $s;
+			}
+			if ( (int) $year > ( $latest[ $slug ][0] ?? 0 ) ) {
+				$latest[ $slug ] = array( (int) $year, $base );
+			}
+		}
+		foreach ( $times as $slug => $list ) {
+			sort( $list );
+			$n = count( $list );
+			ksort( $out[ $slug ]['years'] );
+			foreach ( $out[ $slug ]['years'] as &$counts ) {
+				$counts = array( $counts[0] ?? 0, $counts[1] ?? 0, $counts[2] ?? 0 );
+			}
+			unset( $counts );
+			$out[ $slug ] += array(
+				'n'       => $n,
+				'p10'     => $list[ intdiv( $n, 10 ) ],
+				'p50'     => $list[ intdiv( $n, 2 ) ],
+				'p90'     => $list[ min( $n - 1, intdiv( $n * 9, 10 ) ) ],
+				'results' => isset( $latest[ $slug ] ) ? tsr_event_results_url( $latest[ $slug ][1], $latest[ $slug ][0] ) : '',
+				'year'    => $latest[ $slug ][0] ?? 0,
+			);
+		}
+		set_transient( $key, $out, 12 * HOUR_IN_SECONDS );
+		return $out;
+	}
+}
+
 if ( ! function_exists( 'tsr_track_spark' ) ) {
 	/** Small elevation profile (SVG, stroke and fill from currentColor). */
 	function tsr_track_spark( array $p ): string {
@@ -167,8 +254,10 @@ if ( ! function_exists( 'tsr_trk_row' ) ) {
 	 * @param array<string, mixed>     $tr       Track entry from tracks.json.
 	 * @param string                   $event    Race name.
 	 * @param array<string, list<int>> $profiles tsr_track_profiles() output.
+	 * @param array<string, mixed>     $ctx      Modal extras: 'kicker' (race · month · place),
+	 *                                           'race_url', 'stats' (tsr_track_result_stats()).
 	 */
-	function tsr_trk_row( array $tr, string $event, array $profiles ): void {
+	function tsr_trk_row( array $tr, string $event, array $profiles, array $ctx = array() ): void {
 		$gpx_base    = get_stylesheet_directory_uri() . '/gpx/';
 		$points_base = get_stylesheet_directory_uri() . '/data/tracks/';
 		$nominal     = tsr_track_nominal_km( $tr );
@@ -179,6 +268,15 @@ if ( ! function_exists( 'tsr_trk_row' ) ) {
 		$laps        = tsr_track_laps( $tr );
 		$legacy      = 'legacy' === tsr_track_status( $tr );
 		$prof        = $profiles[ (string) ( $tr['points_file'] ?? '' ) ] ?? array();
+		$stats       = $legacy ? null : ( $ctx['stats'][ $tr['slug'] ] ?? null );
+		$modal_stats = null;
+		if ( $stats && $stats['n'] >= 20 ) { // too few finishes say nothing about a typical time
+			$modal_stats = array(
+				'n'     => $stats['n'],
+				'p'     => array( $stats['p10'], $stats['p50'], $stats['p90'] ),
+				'years' => $stats['years'],
+			);
+		}
 		?>
 		<li class="tsr-trk tsr-trk--<?php echo esc_attr( '' !== $colour ? $colour : 'none' ); ?>"
 			data-cat="<?php echo esc_attr( $cat ); ?>"
@@ -193,7 +291,19 @@ if ( ! function_exists( 'tsr_trk_row' ) ) {
 			data-ascent="<?php echo esc_attr( (string) ( $tr['ascent_m'] ?? '' ) ); ?>"
 			data-descent="<?php echo esc_attr( (string) ( $tr['descent_m'] ?? '' ) ); ?>"
 			data-highest="<?php echo esc_attr( (string) ( $tr['highest_m'] ?? '' ) ); ?>"
-			data-lowest="<?php echo esc_attr( (string) ( $tr['lowest_m'] ?? '' ) ); ?>">
+			data-lowest="<?php echo esc_attr( (string) ( $tr['lowest_m'] ?? '' ) ); ?>"
+			data-slug="<?php echo esc_attr( (string) $tr['slug'] ); ?>"
+			data-label="<?php echo esc_attr( $label ); ?>"
+			data-catname="<?php echo esc_attr( $cat_label ); ?>"
+			data-colour="<?php echo esc_attr( $colour ); ?>"
+			data-stars="<?php echo esc_attr( (string) ( $tr['stars'] ?? '' ) ); ?>"
+			data-laps="<?php echo esc_attr( (string) $laps ); ?>"
+			data-kicker="<?php echo esc_attr( $legacy && ! empty( $tr['year'] ) ? $event . ' · стара версия ' . $tr['year'] : ( $ctx['kicker'] ?? $event ) ); ?>"
+			data-garmin="<?php echo esc_attr( tsr_track_garmin( $tr ) ); ?>"
+			data-race-url="<?php echo esc_attr( (string) ( $ctx['race_url'] ?? '' ) ); ?>"
+			data-results="<?php echo esc_attr( $stats['results'] ?? '' ); ?>"
+			data-results-year="<?php echo esc_attr( (string) ( $stats['year'] ?? '' ) ); ?>"
+			<?php if ( $modal_stats ) : ?>data-stats="<?php echo esc_attr( (string) wp_json_encode( $modal_stats ) ); ?>"<?php endif; ?>>
 			<div class="tsr-trk__km">
 				<?php // The button's name starts with the visible text; the full variant and race follow for screen readers. ?>
 				<button class="tsr-trk__open" type="button" aria-haspopup="dialog"><?php echo esc_html( $label ); ?><span class="screen-reader-text"> — <?php echo esc_html( $event . ', ' . ( $tr['variant'] ?? '' ) ); ?>, детайли за трасето</span></button>
@@ -235,8 +345,9 @@ if ( ! function_exists( 'tsr_trk_card' ) ) {
 	 * @param array<string, mixed>      $event    tracks.json event.
 	 * @param array<string, mixed>|null $cal      Calendar data (month, place, image) or null.
 	 * @param array<string, list<int>>  $profiles tsr_track_profiles() output.
+	 * @param array<string, mixed>      $stats    tsr_track_result_stats() output.
 	 */
-	function tsr_trk_card( array $event, ?array $cal, array $profiles ): void {
+	function tsr_trk_card( array $event, ?array $cal, array $profiles, array $stats = array() ): void {
 		$current = array();
 		$legacy  = array();
 		foreach ( (array) $event['tracks'] as $tr ) {
@@ -257,6 +368,11 @@ if ( ! function_exists( 'tsr_trk_card' ) ) {
 		}
 		$name  = (string) $event['name'];
 		$image = $cal['image'] ?? '';
+		$ctx   = array(
+			'kicker'   => implode( ' · ', array_filter( array( $name, $cal['month'] ?? '', $cal['place'] ?? '' ) ) ),
+			'race_url' => $cal['url'] ?? '',
+			'stats'    => $stats,
+		);
 		?>
 		<article class="tsr-tc__card<?php echo '' !== $image ? ' tsr-tc__card--photo' : ''; ?>">
 			<header class="tsr-tc__top">
@@ -275,7 +391,7 @@ if ( ! function_exists( 'tsr_trk_card' ) ) {
 				<ul class="tsr-tc__rows">
 					<?php
 					foreach ( $current as $tr ) {
-						tsr_trk_row( $tr, $name, $profiles );
+						tsr_trk_row( $tr, $name, $profiles, $ctx );
 					}
 					?>
 				</ul>
@@ -286,7 +402,7 @@ if ( ! function_exists( 'tsr_trk_card' ) ) {
 					<ul class="tsr-tc__rows">
 						<?php
 						foreach ( $legacy as $tr ) {
-							tsr_trk_row( $tr, $name, $profiles );
+							tsr_trk_row( $tr, $name, $profiles, $ctx );
 						}
 						?>
 					</ul>
@@ -301,6 +417,7 @@ if ( ! function_exists( 'tsr_trk_card' ) ) {
 
 $tsr_events   = tsr_tracks_events();
 $tsr_profiles = tsr_track_profiles( $tsr_events );
+$tsr_stats    = tsr_track_result_stats( $tsr_events );
 
 // Calendar: races with an event in the last 14 months or ahead (same window as
 // the "Серия" menu). Per race the next upcoming event wins, else the latest;
@@ -336,6 +453,8 @@ if ( post_type_exists( 'ajde_events' ) ) {
 			'place' => trim( (string) get_post_meta( $tsr_eid, 'evcal_location_raw', true ) ),
 			'image' => $tsr_img_id ? tsr_card_image( $tsr_img_id, 'tsr-tc__img', '(max-width: 900px) calc(100vw - 2.5rem), 560px' ) : '',
 			'order' => (int) gmdate( 'n', $tsr_ts ) * 100 + (int) gmdate( 'j', $tsr_ts ),
+			// Same race page link as the "Серия" menu (tsr_menu_races()).
+			'url'   => add_query_arg( 'sabitie', sanitize_title( tsr_event_base_name( html_entity_decode( get_the_title( $tsr_eid ), ENT_QUOTES, 'UTF-8' ) ) ), home_url( '/event/' ) ),
 		);
 	}
 }
@@ -400,7 +519,7 @@ tsr_track_icon_defs();
 					<div class="tsr-tc__grid">
 						<?php
 						foreach ( $tsr_on_cal as $tsr_event ) {
-							tsr_trk_card( $tsr_event, $tsr_cal[ $tsr_event['name'] ], $tsr_profiles );
+							tsr_trk_card( $tsr_event, $tsr_cal[ $tsr_event['name'] ], $tsr_profiles, $tsr_stats );
 						}
 						?>
 					</div>
@@ -413,7 +532,7 @@ tsr_track_icon_defs();
 						<div class="tsr-tc__grid tsr-tc__grid--plain">
 							<?php
 							foreach ( $tsr_other as $tsr_event ) {
-								tsr_trk_card( $tsr_event, null, $tsr_profiles );
+								tsr_trk_card( $tsr_event, null, $tsr_profiles, $tsr_stats );
 							}
 							?>
 						</div>
@@ -428,15 +547,20 @@ tsr_track_icon_defs();
 	</div>
 </main>
 
-<!-- Track detail modal — populated by js/traseta-modal.js on row click. -->
+<!-- Track detail modal — populated by js/traseta-modal.js on row click
+     (design approved 2026-11-19): heading, key numbers, map + profile,
+     typical finish times and finishers per year, sticky action bar. -->
 <div class="tsr-modal" id="tsr-track-modal" hidden>
 	<div class="tsr-modal__overlay" data-close></div>
 	<div class="tsr-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="tsr-modal-title">
 		<button class="tsr-modal__close" type="button" data-close aria-label="Затвори">&times;</button>
-		<h2 class="tsr-modal__title" id="tsr-modal-title"></h2>
+		<header class="tsr-md__head">
+			<p class="tsr-md__kicker" id="tsr-modal-kicker"></p>
+			<h2 class="tsr-modal__title" id="tsr-modal-title"></h2>
+		</header>
+		<div class="tsr-md__kpis" id="tsr-modal-stats"></div>
 		<!-- Fetch status: spinner while the GPX loads, an error line when it
-		     fails — populated/toggled by js/traseta-modal.js. aria-live so
-		     screen readers hear the state change without focus moving. -->
+		     fails. aria-live so screen readers hear the state change. -->
 		<div class="tsr-modal__status" id="tsr-modal-status" role="status" aria-live="polite" hidden></div>
 		<div class="tsr-modal__map" id="tsr-modal-map"></div>
 		<div class="tsr-modal__chart-wrap" id="tsr-modal-chart-wrap" hidden>
@@ -450,20 +574,31 @@ tsr_track_icon_defs();
 				<span class="tsr-chart-legend__item"><span class="tsr-chart-legend__swatch tsr-chart-legend__swatch--descent"></span>Спускане</span>
 			</div>
 		</div>
-		<div class="tsr-modal__stats tsr-track__meta" id="tsr-modal-stats"></div>
-		<div class="tsr-modal__actions">
-			<a class="tsr-track__gpx" id="tsr-modal-gpx" href="#" download hidden>
+		<div class="tsr-md__sec" id="tsr-modal-results" hidden></div>
+		<div class="tsr-md__acts">
+			<a class="tsr-md__btn tsr-md__btn--gpx" id="tsr-modal-gpx" href="#" download hidden>
 				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-download"/></svg>
 				GPX
 			</a>
-			<a class="tsr-track__gpx tsr-track__gpx--secondary" id="tsr-modal-kml" href="#" download hidden>
+			<a class="tsr-md__btn" id="tsr-modal-kml" href="#" download hidden>
 				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-download"/></svg>
 				KML
 			</a>
-			<a class="tsr-track__gpx tsr-track__gpx--strava" id="tsr-modal-strava" href="#" target="_blank" rel="noopener" hidden>
+			<a class="tsr-md__btn tsr-md__btn--strava" id="tsr-modal-strava" href="#" target="_blank" rel="noopener" hidden>
 				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-strava"/></svg>
-				Strava Course
+				Strava
 			</a>
+			<a class="tsr-md__btn tsr-md__btn--garmin" id="tsr-modal-garmin" href="#" target="_blank" rel="noopener" hidden>
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor"><use href="#tsr-i-garmin"/></svg>
+				Garmin
+			</a>
+			<span class="tsr-md__sp"></span>
+			<button class="tsr-md__btn" id="tsr-modal-copy" type="button">
+				<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><use href="#tsr-i-link"/></svg>
+				<span>Копирай линк</span>
+			</button>
+			<a class="tsr-md__btn" id="tsr-modal-results-link" href="#" hidden></a>
+			<a class="tsr-md__btn" id="tsr-modal-race" href="#" hidden>За състезанието ›</a>
 		</div>
 	</div>
 </div>
