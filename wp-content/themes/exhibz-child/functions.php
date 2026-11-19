@@ -182,6 +182,7 @@ function tsr_season_label( int $year ): string {
 		2024 => 'Сезон 12 (2024)',
 		2025 => 'Сезон 13 (2025)',
 		2026 => 'Сезон 14 (2026)',
+		2027 => 'Сезон 15 (2027)',
 	);
 	return $labels[ $year ] ?? "Сезон $year";
 }
@@ -822,8 +823,9 @@ add_action( 'init', static function (): void {
 add_action( 'wp_enqueue_scripts', static function (): void {
 
 	// True on the only pages that render EventON output.
+	// (Single events use the theme's single-ajde_events.php since 2026-11-19
+	// and need none of EventON's assets.)
 	$is_event_page = is_page( 'calendar' )
-		|| is_singular( 'ajde_events' )
 		|| is_post_type_archive( 'ajde_events' )
 		|| is_tax( 'event_type' )
 		|| is_tax( 'event_location' );
@@ -996,6 +998,127 @@ add_action( 'admin_menu', static function (): void {
 		'tsr-track-labels',
 		'tsr_track_labels_page'
 	);
+} );
+
+// ── Single calendar event: the theme's own page (owner-approved 2026-11-19) ──
+//
+// EventON swaps in its own single-event template at template_include
+// priority 99; this runs after it so single-ajde_events.php wins. (A stub
+// file named single-ajde_events.php alone is NOT enough — see 867a96d.)
+add_filter( 'template_include', static function ( string $template ): string {
+	if ( is_singular( 'ajde_events' ) ) {
+		$own = locate_template( 'single-ajde_events.php' );
+		if ( '' !== $own ) {
+			return $own;
+		}
+	}
+	return $template;
+}, 100 );
+
+/**
+ * Start and end of an event as wall-clock timestamps (EventON stores the
+ * typed local time as UTC — read with gmdate()). End falls back to +3 h.
+ *
+ * @return array{0: int, 1: int}
+ */
+function tsr_event_times( int $event_id ): array {
+	$start = (int) get_post_meta( $event_id, 'evcal_srow', true );
+	$end   = (int) get_post_meta( $event_id, 'evcal_erow', true );
+	if ( $end <= $start || gmdate( 'Y-m-d', $end ) !== gmdate( 'Y-m-d', $start ) ) {
+		$end = $start + 3 * HOUR_IN_SECONDS;
+	}
+	return array( $start, $end );
+}
+
+/** "Как да стигна" link: the admin value, else a Google Maps search of the place. */
+function tsr_event_directions_url( int $event_id ): string {
+	$url = (string) get_post_meta( $event_id, '_tsr_directions_url', true );
+	if ( '' !== $url ) {
+		return $url;
+	}
+	$place = trim( (string) get_post_meta( $event_id, 'evcal_location_raw', true ) );
+	return '' !== $place ? 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode( $place . ', България' ) : '';
+}
+
+/**
+ * Programme lines from the admin field: "09:30 – Регистрация" per line.
+ *
+ * @return list<array{0: string, 1: string}> [time, text]
+ */
+function tsr_event_programme( int $event_id ): array {
+	$out = array();
+	foreach ( preg_split( '/\R/', (string) get_post_meta( $event_id, '_tsr_programme', true ) ) as $line ) {
+		$line = trim( $line );
+		if ( '' === $line ) {
+			continue;
+		}
+		if ( preg_match( '/^(\d{1,2}[:.]\d{2}(?:\s*[–-]\s*\d{1,2}[:.]\d{2})?)\s*(?:[–—-]\s*|\s)(.+)$/u', $line, $m ) ) {
+			$out[] = array( str_replace( array( '.', ' ' ), array( ':', '' ), $m[1] ), trim( $m[2] ) );
+		} else {
+			$out[] = array( '', $line );
+		}
+	}
+	return $out;
+}
+
+// "Добави в календара": /events/<slug>/?ics=1 downloads an .ics file.
+add_action( 'template_redirect', static function (): void {
+	if ( ! is_singular( 'ajde_events' ) || ! isset( $_GET['ics'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		return;
+	}
+	$id               = get_queried_object_id();
+	[ $start, $end ]  = tsr_event_times( $id );
+	if ( $start <= 0 ) {
+		return;
+	}
+	$esc   = static fn( string $t ): string => str_replace( array( '\\', ';', ',', "\n" ), array( '\\\\', '\\;', '\\,', '\\n' ), $t );
+	$title = html_entity_decode( get_the_title( $id ), ENT_QUOTES, 'UTF-8' );
+	$place = trim( (string) get_post_meta( $id, 'evcal_location_raw', true ) );
+	$lines = array(
+		'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//TrailSeries.bg//BG', 'CALSCALE:GREGORIAN',
+		'BEGIN:VEVENT',
+		'UID:event-' . $id . '@trailseries.bg',
+		'DTSTAMP:' . gmdate( 'Ymd\THis\Z' ),
+		'DTSTART;TZID=Europe/Sofia:' . gmdate( 'Ymd\THis', $start ),
+		'DTEND;TZID=Europe/Sofia:' . gmdate( 'Ymd\THis', $end ),
+		'SUMMARY:' . $esc( $title ),
+		'LOCATION:' . $esc( $place ),
+		'URL:' . get_permalink( $id ),
+		'DESCRIPTION:' . $esc( 'Trail Series — ' . get_permalink( $id ) ),
+		'END:VEVENT', 'END:VCALENDAR',
+	);
+	nocache_headers();
+	header( 'Content-Type: text/calendar; charset=utf-8' );
+	header( 'Content-Disposition: attachment; filename="' . sanitize_title( $title ) . '.ics"' );
+	echo implode( "\r\n", $lines ) . "\r\n"; // phpcs:ignore WordPress.Security.EscapeOutput -- iCalendar text, escaped above.
+	exit;
+} );
+
+// Admin: "Страница на събитието" box on the EventON edit screen —
+// programme and the "Как да стигна" link (rarely needed, e.g. a moved start).
+add_action( 'add_meta_boxes_ajde_events', static function (): void {
+	add_meta_box( 'tsr-event-extra', 'Страница на събитието (TrailSeries)', static function ( WP_Post $post ): void {
+		wp_nonce_field( 'tsr_event_extra', 'tsr_event_extra_nonce' );
+		$prog = (string) get_post_meta( $post->ID, '_tsr_programme', true );
+		$dir  = (string) get_post_meta( $post->ID, '_tsr_directions_url', true );
+		echo '<p><label for="tsr-programme"><strong>Програма</strong> — по един ред: час, тире, текст. Празно = секцията не се показва.</label></p>';
+		echo '<textarea id="tsr-programme" name="tsr_programme" rows="6" style="width:100%" placeholder="09:30–10:45 – Регистрация и раздаване на номера&#10;11:00 – Старт на всички дистанции&#10;13:00 – Награждаване">' . esc_textarea( $prog ) . '</textarea>';
+		echo '<p><label for="tsr-directions"><strong>Как да стигна</strong> — линк (Google Maps и др.). Празно = търсене по мястото на събитието.</label></p>';
+		echo '<input id="tsr-directions" type="url" name="tsr_directions_url" style="width:100%" placeholder="https://maps.app.goo.gl/…" value="' . esc_attr( $dir ) . '">';
+	}, 'ajde_events', 'normal', 'high' );
+} );
+
+add_action( 'save_post_ajde_events', static function ( int $post_id ): void {
+	if ( ! isset( $_POST['tsr_event_extra_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['tsr_event_extra_nonce'] ) ), 'tsr_event_extra' ) ) {
+		return;
+	}
+	if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+	$prog = sanitize_textarea_field( wp_unslash( $_POST['tsr_programme'] ?? '' ) );
+	'' !== $prog ? update_post_meta( $post_id, '_tsr_programme', $prog ) : delete_post_meta( $post_id, '_tsr_programme' );
+	$url = esc_url_raw( trim( (string) wp_unslash( $_POST['tsr_directions_url'] ?? '' ) ), array( 'https' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- esc_url_raw, https only.
+	'' !== $url ? update_post_meta( $post_id, '_tsr_directions_url', $url ) : delete_post_meta( $post_id, '_tsr_directions_url' );
 } );
 
 // ── Track helpers shared by /traseta/ and the event page ─────────────────────
@@ -1206,6 +1329,128 @@ if ( ! function_exists( 'tsr_track_result_stats' ) ) {
 	}
 }
 
+/**
+ * First season whose results count towards a track's records: the admin value
+ * (Tools → Трасета — етикети, option 'tsr_track_records_from'), else the
+ * track's own "year" in tracks.json, else 0 (all seasons).
+ *
+ * @param array<string, mixed> $track Track entry from tracks.json.
+ */
+function tsr_track_records_from( array $track ): int {
+	static $years = null;
+	if ( null === $years ) {
+		$years = (array) get_option( 'tsr_track_records_from', array() );
+	}
+	$y = (int) ( $years[ $track['slug'] ?? '' ] ?? 0 );
+	return $y > 0 ? $y : (int) ( $track['year'] ?? 0 );
+}
+
+/**
+ * Course records (KOM / QOM) of every current track, computed from results.
+ *
+ * A results table counts for the current track of the same race whose
+ * nominal distance is within 1 km of the table's, from the track's
+ * records-from season on. Results data has broken tables (shortened
+ * courses, wrong columns), so three filters keep impossible times out —
+ * all on "effort pace": seconds per (km + D+ / 100), the same effort
+ * measure as the difficulty stars:
+ *   1. a whole table is dropped when its median effort pace is more than
+ *      20 % faster than the median of the track's other tables (same gender);
+ *   2. single times faster than 150 s per effort-km are dropped;
+ *   3. a leader more than 15 % faster than the next time is dropped.
+ * Dropped tables and times are kept in 'dropped' for the admin page.
+ *
+ * @return array{tracks: array<string, array<string, array{s: int, name: string, year: int}>>, dropped: list<array{id: int, year: int, slug: string, gender: string, s: int, name: string, why: string}>}
+ */
+function tsr_track_records(): array {
+	$from_opt = (array) get_option( 'tsr_track_records_from', array() );
+	$key      = 'tsr_track_rec_g' . tsr_cache_gen() . '_' . (int) @filemtime( get_stylesheet_directory() . '/data/tracks.json' ) . '_' . md5( (string) wp_json_encode( array( $from_opt, get_option( 'tsr_track_status', array() ) ) ) );
+	$out      = get_transient( $key );
+	if ( is_array( $out ) ) {
+		return $out;
+	}
+	$tracks = array(); // race => list of [track, nominal km]
+	foreach ( tsr_tracks_events() as $event ) {
+		foreach ( (array) $event['tracks'] as $tr ) {
+			$km = tsr_track_nominal_km( $tr );
+			if ( null !== $km && 'current' === tsr_track_status( $tr ) && ! empty( $tr['distance_km'] ) ) {
+				$tracks[ tsr_runner_event_name( (string) $event['name'] ) ][] = array( $tr, $km );
+			}
+		}
+	}
+	$tables = array(); // slug|gender => list of [id, year, rows [s, name], median effort pace]
+	foreach ( tsr_results_index() as $id => $e ) {
+		$gender = (string) $e['gender'];
+		$race   = tsr_runner_event_name( (string) $e['event_base'] );
+		$km     = (float) $e['km'];
+		if ( ( 'M' !== $gender && 'F' !== $gender ) || $km <= 0 || empty( $tracks[ $race ] ) ) {
+			continue;
+		}
+		$pick = null;
+		foreach ( $tracks[ $race ] as [ $tr, $tkm ] ) {
+			$diff = abs( $tkm - $km );
+			if ( $diff <= 1.0 && ( null === $pick || $diff < $pick[1] ) ) {
+				$pick = array( $tr, $diff );
+			}
+		}
+		if ( null === $pick || (int) $e['season'] < tsr_track_records_from( $pick[0] ) ) {
+			continue;
+		}
+		$tr     = $pick[0];
+		$effort = (float) $tr['distance_km'] + (int) ( $tr['ascent_m'] ?? 0 ) / 100;
+		$set    = json_decode( (string) get_post_meta( (int) $id, '_tsr_result_set', true ), true );
+		$rows   = array();
+		foreach ( (array) ( $set['rows'] ?? array() ) as $r ) {
+			$s = tsr_runner_seconds( (string) ( $r['finish_time'] ?? '' ) );
+			if ( null !== $s && $s >= 300 ) {
+				$rows[] = array( $s, trim( ( $r['first_name'] ?? '' ) . ' ' . ( $r['last_name'] ?? '' ) ) );
+			}
+		}
+		if ( ! $rows ) {
+			continue;
+		}
+		$secs = array_column( $rows, 0 );
+		sort( $secs );
+		$tables[ $tr['slug'] . '|' . $gender ][] = array( (int) $id, (int) $e['season'], $rows, $secs[ intdiv( count( $secs ), 2 ) ] / $effort, $effort );
+	}
+	$out = array( 'tracks' => array(), 'dropped' => array() );
+	foreach ( $tables as $k => $list ) {
+		[ $slug, $gender ] = explode( '|', $k );
+		$cands = array();
+		foreach ( $list as $i => [ $id, $year, $rows, $med, $effort ] ) {
+			$others = array();
+			foreach ( $list as $j => $t ) {
+				if ( $j !== $i ) {
+					$others[] = $t[3];
+				}
+			}
+			sort( $others );
+			if ( $others && $med < 0.8 * $others[ intdiv( count( $others ), 2 ) ] ) {
+				$best = min( array_column( $rows, 0 ) );
+				$out['dropped'][] = array( 'id' => $id, 'year' => $year, 'slug' => $slug, 'gender' => $gender, 's' => $best, 'name' => '', 'why' => 'table' );
+				continue;
+			}
+			foreach ( $rows as [ $s, $name ] ) {
+				if ( $s / $effort < 150 ) {
+					$out['dropped'][] = array( 'id' => $id, 'year' => $year, 'slug' => $slug, 'gender' => $gender, 's' => $s, 'name' => $name, 'why' => 'pace' );
+				} else {
+					$cands[] = array( $s, $name, $year, $id );
+				}
+			}
+		}
+		usort( $cands, static fn( array $a, array $b ): int => $a[0] <=> $b[0] );
+		while ( count( $cands ) > 1 && $cands[0][0] < 0.85 * $cands[1][0] ) {
+			$x = array_shift( $cands );
+			$out['dropped'][] = array( 'id' => $x[3], 'year' => $x[2], 'slug' => $slug, 'gender' => $gender, 's' => $x[0], 'name' => $x[1], 'why' => 'gap' );
+		}
+		if ( $cands ) {
+			$out['tracks'][ $slug ][ $gender ] = array( 's' => $cands[0][0], 'name' => tsr_runner_canonical( $cands[0][1] ), 'year' => $cands[0][2] );
+		}
+	}
+	set_transient( $key, $out, 12 * HOUR_IN_SECONDS );
+	return $out;
+}
+
 if ( ! function_exists( 'tsr_track_spark' ) ) {
 	/** Small elevation profile (SVG, stroke and fill from currentColor). */
 	function tsr_track_spark( array $p ): string {
@@ -1242,6 +1487,8 @@ function tsr_track_labels_page(): void {
 		$posted_laps   = (array) wp_unslash( $_POST['tsr_track_laps'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- values whitelisted below.
 		$posted_garmin = (array) wp_unslash( $_POST['tsr_track_garmin'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated by tsr_garmin_url_clean().
 		$posted_strava = (array) wp_unslash( $_POST['tsr_track_strava'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated by tsr_strava_url_clean().
+		$posted_from   = (array) wp_unslash( $_POST['tsr_track_records_from'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int and range-checked below.
+		$clean_from    = array();
 		$clean_strava  = array();
 		$bad_strava    = array();
 		$clean_status  = array();
@@ -1254,6 +1501,12 @@ function tsr_track_labels_page(): void {
 
 				$status = isset( $posted_status[ $slug ] ) && 'legacy' === $posted_status[ $slug ] ? 'legacy' : 'current';
 				$clean_status[ $slug ] = $status;
+
+				// Records from season: stored only when it differs from tracks.json's year.
+				$from = (int) ( $posted_from[ $slug ] ?? 0 );
+				if ( $from >= 2010 && $from <= 2100 && $from !== (int) ( $track['year'] ?? 0 ) ) {
+					$clean_from[ $slug ] = $from;
+				}
 
 				$laps = isset( $posted_laps[ $slug ] ) ? (int) $posted_laps[ $slug ] : 1;
 				$clean_laps[ $slug ] = ( $laps >= 1 && $laps <= 3 ) ? $laps : 1;
@@ -1290,6 +1543,7 @@ function tsr_track_labels_page(): void {
 		update_option( 'tsr_track_strava', $clean_strava, false );
 		update_option( 'tsr_track_status', $clean_status, false );
 		update_option( 'tsr_track_laps', $clean_laps, false );
+		update_option( 'tsr_track_records_from', $clean_from, false );
 		echo '<div class="notice notice-success is-dismissible"><p>Етикетите са запазени.</p></div>';
 		if ( $bad_strava ) {
 			echo '<div class="notice notice-warning"><p>Тези Strava линкове не са запазени — трябва да са от strava.com (https): '
@@ -1308,14 +1562,14 @@ function tsr_track_labels_page(): void {
 		return;
 	}
 
-	echo '<p>Етикетът определя подредбата на страницата „Трасета“: актуалните трасета са отгоре, легаси версиите — в свито поле отдолу. Броят обиколки се показва като значка до дистанцията, когато е повече от 1. Strava / Garmin линк: отвори трасето в Strava (Routes) или Garmin Connect (Courses), натисни „Сподели“ и постави линка тук — в прозореца на трасето се появява бутон „Strava“ / „Garmin“. Празно поле = без бутон.</p>';
+	echo '<p>Етикетът определя подредбата на страницата „Трасета“: актуалните трасета са отгоре, легаси версиите — в свито поле отдолу. Броят обиколки се показва като значка до дистанцията, когато е повече от 1. Strava / Garmin линк: отвори трасето в Strava (Routes) или Garmin Connect (Courses), натисни „Сподели“ и постави линка тук — в прозореца на трасето се появява бутон „Strava“ / „Garmin“. Празно поле = без бутон. „Рекорди от“: от коя година трасето е същото — рекордите (KOM / QOM) на страницата на събитието се смятат само от тази година нататък. Празно = всички години.</p>';
 	echo '<form method="post">';
 	wp_nonce_field( 'tsr_track_labels' );
 
 	foreach ( $events as $event ) {
 		echo '<h2 style="margin:1.5em 0 0.4em">' . esc_html( $event['name'] ) . '</h2>';
 		echo '<table class="widefat striped" style="max-width:1400px">';
-		echo '<thead><tr><th>Трасе</th><th style="width:110px">Дистанция</th><th style="width:180px">Етикет</th><th style="width:150px">Брой обиколки</th><th>Strava линк</th><th>Garmin линк</th></tr></thead><tbody>';
+		echo '<thead><tr><th>Трасе</th><th style="width:110px">Дистанция</th><th style="width:180px">Етикет</th><th style="width:150px">Брой обиколки</th><th style="width:110px">Рекорди от</th><th>Strava линк</th><th>Garmin линк</th></tr></thead><tbody>';
 		foreach ( $event['tracks'] as $track ) {
 			$status = tsr_track_status( $track );
 			$laps   = tsr_track_laps( $track );
@@ -1330,6 +1584,9 @@ function tsr_track_labels_page(): void {
 				echo '<option value="' . esc_attr( (string) $n ) . '"' . selected( $laps, $n, false ) . '>' . esc_html( (string) $n ) . ' обиколк' . ( 1 === $n ? 'а' : 'и' ) . '</option>';
 			}
 			echo '</select></td>';
+			$from = (int) ( ( (array) get_option( 'tsr_track_records_from', array() ) )[ $track['slug'] ] ?? 0 );
+			$from = $from > 0 ? $from : (int) ( $track['year'] ?? 0 );
+			echo '<td><input type="number" min="2010" max="2100" step="1" style="width:90px" placeholder="всички" name="tsr_track_records_from[' . esc_attr( $track['slug'] ) . ']" value="' . esc_attr( $from > 0 ? (string) $from : '' ) . '"></td>';
 			echo '<td><input type="url" class="regular-text" style="width:100%" placeholder="https://www.strava.com/routes/…" name="tsr_track_strava[' . esc_attr( $track['slug'] ) . ']" value="' . esc_attr( tsr_track_strava( $track ) ) . '"></td>';
 			echo '<td><input type="url" class="regular-text" style="width:100%" placeholder="https://connect.garmin.com/modern/course/…" name="tsr_track_garmin[' . esc_attr( $track['slug'] ) . ']" value="' . esc_attr( tsr_track_garmin( $track ) ) . '"></td></tr>';
 		}
@@ -1337,7 +1594,41 @@ function tsr_track_labels_page(): void {
 	}
 
 	submit_button( 'Запази етикетите' );
-	echo '</form></div>';
+	echo '</form>';
+
+	// Times the records filter left out (tsr_track_records()): broken tables
+	// to fix at the source, or a genuine record to check.
+	$rec = tsr_track_records();
+	if ( ! empty( $rec['dropped'] ) ) {
+		$names = array();
+		foreach ( $events as $event ) {
+			foreach ( $event['tracks'] as $track ) {
+				$names[ $track['slug'] ] = $event['name'] . ' ' . $track['variant'];
+			}
+		}
+		$why = array(
+			'table' => 'цялото класиране е много по-бързо от другите години',
+			'pace'  => 'физически невъзможно темпо',
+			'gap'   => 'много по-бързо от второто време — провери',
+		);
+		$seen = array();
+		echo '<h2 style="margin-top:2em">Времена, скрити от рекордите</h2>';
+		echo '<p>Рекордите се смятат автоматично. Тези класирания / времена изглеждат грешни и не се показват. Поправи класирането (линк) — рекордът се обновява сам.</p>';
+		echo '<table class="widefat striped" style="max-width:1100px"><thead><tr><th>Трасе</th><th>Година</th><th>Пол</th><th>Време</th><th>Бегач</th><th>Защо</th></tr></thead><tbody>';
+		foreach ( $rec['dropped'] as $d ) {
+			if ( 'table' === $d['why'] ) {
+				if ( isset( $seen[ $d['id'] ] ) ) {
+					continue;
+				}
+				$seen[ $d['id'] ] = true;
+			}
+			echo '<tr><td>' . esc_html( $names[ $d['slug'] ] ?? $d['slug'] ) . '</td><td><a href="' . esc_url( (string) get_permalink( $d['id'] ) ) . '">' . esc_html( (string) $d['year'] ) . '</a></td>';
+			echo '<td>' . ( 'M' === $d['gender'] ? 'Мъже' : 'Жени' ) . '</td><td>' . esc_html( tsr_runner_hms( $d['s'] ) ) . '</td>';
+			echo '<td>' . esc_html( '' !== $d['name'] ? $d['name'] : '—' ) . '</td><td>' . esc_html( $why[ $d['why'] ] ?? $d['why'] ) . '</td></tr>';
+		}
+		echo '</tbody></table>';
+	}
+	echo '</div>';
 }
 
 // ── Homepage stats helper ─────────────────────────────────────────────────────
