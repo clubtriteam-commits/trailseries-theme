@@ -6866,3 +6866,107 @@ h1, h2, h3, h4, h5, h6 {
 		flex: 1 1 auto;
 	}
 }
+
+/* ── Page hero with a photo (/istoriya/, design A 2026-11-19) ───────────────────
+   Square corners like every page hero; photo under a navy gradient so the
+   white text keeps its contrast; logo, title, subtitle and key numbers. */
+.tsr-page-hero--photo {
+	position:    relative;
+	isolation:   isolate;
+	display:     flex;
+	align-items: flex-end;
+	min-height:  440px;
+	padding:     3rem 0 2.25rem;
+	background:  var(--tsr-navy);
+}
+.tsr-page-hero--photo .tsr-container {
+	width: 100%;
+}
+.tsr-page-hero__img {
+	position:        absolute;
+	inset:           0;
+	z-index:         -2;
+	width:           100%;
+	height:          100%;
+	object-fit:      cover;
+	object-position: center 40%;
+}
+.tsr-page-hero--photo::after {
+	content:    '';
+	position:   absolute;
+	inset:      0;
+	z-index:    -1;
+	background: linear-gradient(to bottom, rgba(10, 22, 40, 0.25) 0%, rgba(10, 22, 40, 0.55) 45%, rgba(10, 22, 40, 0.92) 100%);
+}
+.tsr-page-hero__brand {
+	display:     flex;
+	align-items: center;
+	gap:         1.1rem;
+}
+.tsr-page-hero__logo {
+	flex:       none;
+	width:      92px;
+	height:     92px;
+	padding:    6px;
+	background: #fff;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.tsr-page-hero__logo img {
+	display:    block;
+	width:      100%;
+	height:     100%;
+	object-fit: contain;
+}
+.tsr-page-hero--photo .tsr-page-hero__kicker {
+	margin-bottom: 0.4rem;
+	color:         #7fd3f0;
+}
+.tsr-page-hero--photo .tsr-page-hero__title {
+	margin:    0;
+	font-size: clamp(2.2rem, 5vw, 3.6rem);
+	line-height: 1;
+}
+.tsr-page-hero--photo .tsr-page-hero__subtitle {
+	margin-top: 0.6rem;
+	color:      rgba(255, 255, 255, 0.88);
+	font-size:  1.05rem;
+}
+.tsr-page-hero__nums {
+	display:     flex;
+	flex-wrap:   wrap;
+	gap:         0.75rem 2.5rem;
+	margin:      1.75rem 0 0;
+	padding-top: 1.25rem;
+	border-top:  1px solid rgba(255, 255, 255, 0.22);
+}
+.tsr-page-hero__nums div {
+	display:        flex;
+	flex-direction: column-reverse;
+}
+.tsr-page-hero__nums dt {
+	color:          rgba(255, 255, 255, 0.8);
+	font-size:      0.8rem;
+	font-weight:    500;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+.tsr-page-hero__nums dd {
+	margin: 0;
+	color:  #fff;
+	font:   800 1.9rem/1.1 Ubuntu, sans-serif;
+}
+@media (max-width: 600px) {
+	.tsr-page-hero--photo {
+		min-height: 380px;
+	}
+	.tsr-page-hero__logo {
+		width:  68px;
+		height: 68px;
+	}
+	.tsr-page-hero__nums {
+		gap: 0.75rem 1.5rem;
+	}
+	.tsr-page-hero__nums dd {
+		font-size: 1.5rem;
+	}
+}

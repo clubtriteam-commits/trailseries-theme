@@ -219,13 +219,44 @@ $tsr_plain_years = array_filter(
 );
 ?>
 
-<div class="tsr-page-hero">
+<?php
+// Photo hero (design A, owner 2026-11-19): race photo, logo, key numbers.
+// Finishes and result tables come from the results archive; seasons and
+// races are the owner's numbers from the text below.
+$tsr_hist_numbers = array(
+	array( '15', 'сезона' ),
+	array( '150', 'състезания' ),
+	array( number_format_i18n( tsr_homepage_total_finishers() ), 'финиша' ),
+	array( number_format_i18n( tsr_homepage_total_races() ), 'класирания' ),
+);
+$tsr_hero_file = get_stylesheet_directory() . '/images/history/2022-yubiley.jpg';
+?>
+<div class="tsr-page-hero tsr-page-hero--photo">
+	<?php if ( is_readable( $tsr_hero_file ) ) : ?>
+		<?php $tsr_hero_size = getimagesize( $tsr_hero_file ); ?>
+		<img class="tsr-page-hero__img" src="<?php echo esc_url( get_stylesheet_directory_uri() . '/images/history/2022-yubiley.jpg' ); ?>"
+			width="<?php echo (int) $tsr_hero_size[0]; ?>" height="<?php echo (int) $tsr_hero_size[1]; ?>" alt="" fetchpriority="high" decoding="async">
+	<?php endif; ?>
 	<div class="tsr-container">
-		<p class="tsr-page-hero__kicker">TrailSeries.bg</p>
-		<h1 class="tsr-page-hero__title">История</h1>
+		<div class="tsr-page-hero__brand">
+			<?php if ( '' !== tsr_site_logo_url() ) : ?>
+				<span class="tsr-page-hero__logo"><img src="<?php echo esc_url( tsr_site_logo_url() ); ?>" alt="RunBG Trail Series" width="80" height="80"></span>
+			<?php endif; ?>
+			<div>
+				<p class="tsr-page-hero__kicker">TrailSeries.bg · от 2012</p>
+				<h1 class="tsr-page-hero__title">История</h1>
+			</div>
+		</div>
 		<p class="tsr-page-hero__subtitle">
-			15 сезона планинско бягане в България — от 2012 до 2027
+			15 сезона планинско бягане около София — от 2012 до 2027
 		</p>
+		<dl class="tsr-page-hero__nums">
+			<?php foreach ( $tsr_hist_numbers as [ $tsr_num, $tsr_what ] ) : ?>
+				<?php if ( '0' !== $tsr_num ) : ?>
+					<div><dt><?php echo esc_html( $tsr_what ); ?></dt><dd><?php echo esc_html( $tsr_num ); ?></dd></div>
+				<?php endif; ?>
+			<?php endforeach; ?>
+		</dl>
 	</div>
 </div>
 
