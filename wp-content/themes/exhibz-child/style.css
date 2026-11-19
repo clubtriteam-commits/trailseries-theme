@@ -6970,3 +6970,29 @@ h1, h2, h3, h4, h5, h6 {
 		font-size: 1.5rem;
 	}
 }
+
+/* Footer photo credit: "Снимки:" + KrisoK logo linking to the photographer. */
+.tsr-footer__credit {
+	display:     flex;
+	align-items: center;
+	gap:         0.55rem;
+}
+.tsr-footer__credit a {
+	display:       inline-flex;
+	padding:       2px;
+	border-radius: 4px;
+	opacity:       0.85;
+	transition:    opacity 0.15s;
+}
+.tsr-footer__credit a:hover,
+.tsr-footer__credit a:focus-visible {
+	opacity: 1;
+}
+.tsr-footer__credit a:focus-visible {
+	outline: 2px solid var(--tsr-blue);
+}
+.tsr-footer__credit img {
+	display: block;
+	width:   74px;
+	height:  auto;
+}
