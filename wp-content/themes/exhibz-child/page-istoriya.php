@@ -221,13 +221,14 @@ $tsr_plain_years = array_filter(
 
 <?php
 // Photo hero (design A, owner 2026-11-19): race photo, logo, key numbers.
-// Finishes and result tables come from the results archive; seasons and
+// Finishes come from the results archive; seasons and
 // races are the owner's numbers from the text below.
 $tsr_hist_numbers = array(
 	array( '15', 'сезона' ),
 	array( '150', 'състезания' ),
 	array( number_format_i18n( tsr_homepage_total_finishers() ), 'финиша' ),
-	array( number_format_i18n( tsr_homepage_total_races() ), 'класирания' ),
+	// No "класирания" count: the post count (956) includes tables outside the
+	// series and would contradict the 899 in the 2026 timeline text.
 );
 $tsr_hero_file = get_stylesheet_directory() . '/images/history/2022-yubiley.jpg';
 ?>
