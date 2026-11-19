@@ -604,7 +604,7 @@
 	function openModal( row ) {
 		var d = row.dataset;
 		// Focus returns to the row's button on close (audit L20).
-		lastFocus = row.querySelector( '.tsr-track__open' ) || row;
+		lastFocus = row.querySelector( '.tsr-track__open, .tsr-trk__open' ) || row;
 		openTitle = d.title || '';
 
 		hideChartHover();
@@ -725,7 +725,7 @@
 
 	// Head start: fetch Leaflet as soon as a track row is hovered or focused.
 	function warmLeaflet( ev ) {
-		if ( ev.target.closest && ev.target.closest( '.tsr-track[data-title]' ) ) {
+		if ( ev.target.closest && ev.target.closest( '.tsr-track[data-title], .tsr-trk[data-title]' ) ) {
 			document.removeEventListener( 'pointerover', warmLeaflet );
 			document.removeEventListener( 'focusin', warmLeaflet );
 			window.tsrLeaflet().catch( function () {} );
@@ -744,7 +744,7 @@
 		if ( ev.target.closest( '.tsr-track__gpx' ) ) {
 			return; // download links keep their default behaviour
 		}
-		var row = ev.target.closest( '.tsr-track[data-title]' );
+		var row = ev.target.closest( '.tsr-track[data-title], .tsr-trk[data-title]' );
 		if ( row ) {
 			openModal( row );
 		}
@@ -787,5 +787,51 @@
 				first.focus();
 			}
 		}
+	} );
+}());
+
+/**
+ * Трасета — distance filter chips (Всички / Къса / Средна / Дълга). Hides the
+ * rows of other categories, then the cards and "old versions" blocks left
+ * empty. Works without the modal, so it lives in its own closure.
+ */
+(function () {
+	'use strict';
+
+	var root = document.querySelector( '.tsr-tc' );
+	if ( ! root ) {
+		return;
+	}
+	var chips = root.querySelectorAll( '.tsr-tc__chip' );
+	var none  = root.querySelector( '.tsr-tc__none' );
+
+	function apply( f ) {
+		root.setAttribute( 'data-filter', f );
+		chips.forEach( function ( c ) {
+			c.setAttribute( 'aria-pressed', c.getAttribute( 'data-f' ) === f ? 'true' : 'false' );
+		} );
+		root.querySelectorAll( '.tsr-trk' ).forEach( function ( r ) {
+			r.hidden = f !== 'all' && r.getAttribute( 'data-cat' ) !== f;
+		} );
+		root.querySelectorAll( '.tsr-tc__old' ).forEach( function ( d ) {
+			d.hidden = ! d.querySelector( '.tsr-trk:not([hidden])' );
+		} );
+		var shown = 0;
+		root.querySelectorAll( '.tsr-tc__card' ).forEach( function ( c ) {
+			c.hidden = ! c.querySelector( '.tsr-tc__rows > .tsr-trk:not([hidden])' );
+			shown += c.hidden ? 0 : 1;
+		} );
+		root.querySelectorAll( '.tsr-tc__more' ).forEach( function ( s ) {
+			s.hidden = ! s.querySelector( '.tsr-tc__card:not([hidden])' );
+		} );
+		if ( none ) {
+			none.hidden = shown > 0;
+		}
+	}
+
+	chips.forEach( function ( c ) {
+		c.addEventListener( 'click', function () {
+			apply( c.getAttribute( 'data-f' ) );
+		} );
 	} );
 }());

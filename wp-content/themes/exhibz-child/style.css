@@ -6273,3 +6273,277 @@ h1, h2, h3, h4, h5, h6 {
 	background:   #0a3d62;
 	color:        var(--tsr-white);
 }
+
+/* ── Трасета — race cards (design A, 2026-11-19) ──────────────────────────────
+   One card per race: calendar photo, month and place, then one row per
+   distance. Category colours: short green, medium blue, long red, the
+   7 Hills Hard Core 26 km dark red (.tsr-trk--xl). Colours pass 4.5:1 on white. */
+.tsr-tc {
+	--tc-short:  #15803d;
+	--tc-medium: #0077aa;
+	--tc-long:   #dc2626;
+	--tc-xl:     #7f1d1d;
+}
+.tsr-tc__bar {
+	display:     flex;
+	flex-wrap:   wrap;
+	gap:         0.5rem;
+	margin:      0 0 1rem;
+}
+.tsr-tc__chip {
+	display:       inline-flex;
+	align-items:   center;
+	gap:           0.4rem;
+	min-height:    44px;
+	padding:       0 1rem;
+	border:        1.5px solid var(--tsr-border);
+	border-radius: 999px;
+	background:    var(--tsr-white);
+	color:         var(--tsr-navy);
+	font:          600 0.9rem/1 Geist, system-ui, sans-serif;
+	cursor:        pointer;
+}
+.tsr-tc__chip small {
+	font-weight: 500;
+	color:       var(--tsr-muted);
+}
+.tsr-tc__chip:hover {
+	border-color: var(--tsr-navy);
+}
+.tsr-tc__chip[aria-pressed="true"] {
+	background:   var(--tsr-navy);
+	border-color: var(--tsr-navy);
+	color:        #fff;
+}
+.tsr-tc__chip[aria-pressed="true"] small {
+	color: #cfd8e3;
+}
+.tsr-tc__chip:focus-visible,
+.tsr-trk__open:focus-visible,
+.tsr-tc__old summary:focus-visible {
+	outline:        3px solid var(--tsr-blue-dk);
+	outline-offset: 2px;
+}
+.tsr-tc__dot {
+	width:         10px;
+	height:        10px;
+	border-radius: 50%;
+	display:       inline-block;
+}
+.tsr-tc__dot--short  { background: var(--tc-short); }
+.tsr-tc__dot--medium { background: var(--tc-medium); }
+.tsr-tc__dot--long   { background: var(--tc-long); }
+.tsr-tc__sub {
+	margin:    0 0 1rem;
+	color:     var(--tsr-muted);
+	font-size: 0.9rem;
+}
+.tsr-tc__h2 {
+	margin: 2.5rem 0 0.3rem;
+	font:   700 1.4rem/1.2 Ubuntu, sans-serif;
+	color:  var(--tsr-navy);
+}
+.tsr-tc__grid {
+	display:               grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap:                   1.25rem;
+	align-items:           start;
+}
+.tsr-tc__card {
+	min-width:     0;
+	overflow:      hidden;
+	border:        1px solid var(--tsr-border);
+	border-radius: 20px;
+	background:    var(--tsr-white);
+}
+.tsr-tc__top {
+	position:    relative;
+	isolation:   isolate;
+	display:     flex;
+	align-items: flex-end;
+	min-height:  5.5rem;
+	padding:     1rem 1.1rem;
+	color:       #fff;
+	background:  linear-gradient(160deg, var(--tsr-navy), var(--tsr-navy-2));
+}
+.tsr-tc__card--photo .tsr-tc__top {
+	height: 170px;
+}
+.tsr-tc__img {
+	position:   absolute;
+	inset:      0;
+	z-index:    -2;
+	width:      100%;
+	height:     100%;
+	object-fit: cover;
+}
+.tsr-tc__card--photo .tsr-tc__top::after {
+	content:    '';
+	position:   absolute;
+	inset:      0;
+	z-index:    -1;
+	background: linear-gradient(to bottom, rgba(10, 22, 40, 0.1), rgba(10, 22, 40, 0.85));
+}
+.tsr-tc__name {
+	margin: 0;
+	font:   700 1.45rem/1.1 Ubuntu, sans-serif;
+	color:  #fff;
+}
+.tsr-tc__place {
+	margin:    0.2rem 0 0;
+	font-size: 0.85rem;
+	color:     #dbe5f1;
+}
+.tsr-tc__month {
+	position:       absolute;
+	top:            0.9rem;
+	left:           1rem;
+	padding:        0.3rem 0.65rem;
+	border-radius:  12px;
+	background:     #fff;
+	color:          var(--tsr-navy);
+	font:           700 0.72rem Ubuntu, sans-serif;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.tsr-tc__rows {
+	margin:     0;
+	padding:    0;
+	list-style: none;
+}
+.tsr-trk {
+	--c:                   var(--tsr-muted);
+	position:              relative;
+	display:               grid;
+	grid-template-columns: 4.8rem minmax(0, 1fr) auto;
+	gap:                   0.25rem 0.85rem;
+	align-items:           center;
+	padding:               0.7rem 1.1rem 0.7rem 1.25rem;
+	border-top:            1px solid var(--tsr-border);
+	cursor:                pointer;
+}
+.tsr-tc__rows > .tsr-trk:first-child {
+	border-top: 0;
+}
+.tsr-trk::before {
+	content:       '';
+	position:      absolute;
+	left:          0;
+	top:           0.6rem;
+	bottom:        0.6rem;
+	width:         4px;
+	border-radius: 0 4px 4px 0;
+	background:    var(--c);
+}
+.tsr-trk--short  { --c: var(--tc-short); }
+.tsr-trk--medium { --c: var(--tc-medium); }
+.tsr-trk--long   { --c: var(--tc-long); }
+.tsr-trk--xl     { --c: var(--tc-xl); }
+.tsr-trk[hidden] {
+	display: none;
+}
+.tsr-trk:hover {
+	background: var(--tsr-bg);
+}
+.tsr-trk__open {
+	padding:    0;
+	border:     0;
+	background: none;
+	color:      var(--tsr-navy);
+	font:       700 1.15rem/1.1 Ubuntu, sans-serif;
+	text-align: left;
+	cursor:     pointer;
+	white-space: nowrap;
+}
+.tsr-trk__open::after { /* the whole row is the click target */
+	content:  '';
+	position: absolute;
+	inset:    0;
+}
+.tsr-trk__km small {
+	display:        block;
+	margin-top:     0.15rem;
+	color:          var(--c);
+	font:           700 0.68rem Geist, sans-serif;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.tsr-trk__mid {
+	min-width: 0;
+}
+.tsr-trk__stats {
+	display:     flex;
+	flex-wrap:   wrap;
+	align-items: center;
+	gap:         0.15rem 0.75rem;
+	font-size:   0.82rem;
+	color:       var(--tsr-muted);
+}
+.tsr-trk__stats b {
+	color: var(--tsr-navy);
+}
+.tsr-trk__stats .tsr-star {
+	font-size: 0.8rem;
+}
+.tsr-trk__laps {
+	padding:       0.1rem 0.5rem;
+	border-radius: 999px;
+	background:    var(--tsr-bg);
+	font-size:     0.72rem;
+	font-weight:   600;
+}
+.tsr-trk__spark {
+	display:    block;
+	width:      100%;
+	height:     30px;
+	margin-top: 0.3rem;
+	color:      var(--c);
+}
+.tsr-trk__go {
+	color:       var(--tsr-blue-dk);
+	font-size:   1.4rem;
+	font-weight: 700;
+}
+.tsr-tc__old {
+	border-top: 1px solid var(--tsr-border);
+}
+.tsr-tc__old[hidden] {
+	display: none;
+}
+.tsr-tc__old summary {
+	padding:   0.65rem 1.25rem;
+	color:     var(--tsr-muted);
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor:    pointer;
+}
+.tsr-tc__old .tsr-trk {
+	opacity: 0.8;
+}
+.tsr-tc__old .tsr-tc__rows > .tsr-trk:first-child {
+	border-top: 1px solid var(--tsr-border);
+}
+.tsr-tc__none {
+	padding:       1.5rem;
+	border-radius: var(--tsr-radius);
+	background:    var(--tsr-white);
+	color:         var(--tsr-muted);
+	text-align:    center;
+}
+@media (max-width: 900px) {
+	.tsr-tc__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+@media (max-width: 600px) {
+	.tsr-tc__chip small {
+		display: none;
+	}
+	.tsr-tc__card--photo .tsr-tc__top {
+		height: 150px;
+	}
+	.tsr-trk {
+		grid-template-columns: 4rem minmax(0, 1fr) auto;
+		padding:               0.65rem 0.9rem 0.65rem 1.1rem;
+	}
+}
