@@ -950,6 +950,35 @@ function tsr_track_garmin( array $track ): string {
 }
 
 /**
+ * Strava route link for a track: the admin value from Tools → Трасета —
+ * етикети ('tsr_track_strava' option, slug => URL) wins over tracks.json.
+ * An admin value of '-' hides the JSON link.
+ *
+ * @param array<string, mixed> $track Track entry from tracks.json.
+ */
+function tsr_track_strava( array $track ): string {
+	static $urls = null;
+	if ( null === $urls ) {
+		$urls = (array) get_option( 'tsr_track_strava', array() );
+	}
+	$url = (string) ( $urls[ $track['slug'] ] ?? '' );
+	if ( '-' === $url ) {
+		return '';
+	}
+	return '' !== $url ? $url : (string) ( $track['strava_route_url'] ?? '' );
+}
+
+/**
+ * A pasted Strava link, or '' when it is not an https link to Strava
+ * (strava.com routes, or the strava.app.link short links of the app).
+ */
+function tsr_strava_url_clean( string $raw ): string {
+	$url  = esc_url_raw( $raw, array( 'https' ) );
+	$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+	return in_array( $host, array( 'www.strava.com', 'strava.com', 'strava.app.link' ), true ) ? $url : '';
+}
+
+/**
  * A pasted Garmin link, or '' when it is not an https link to Garmin Connect
  * (connect.garmin.com, or the gar.mn short links its share button makes).
  */
@@ -984,6 +1013,9 @@ function tsr_track_labels_page(): void {
 		$posted_status = (array) wp_unslash( $_POST['tsr_track_status'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- values whitelisted below.
 		$posted_laps   = (array) wp_unslash( $_POST['tsr_track_laps'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- values whitelisted below.
 		$posted_garmin = (array) wp_unslash( $_POST['tsr_track_garmin'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated by tsr_garmin_url_clean().
+		$posted_strava = (array) wp_unslash( $_POST['tsr_track_strava'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated by tsr_strava_url_clean().
+		$clean_strava  = array();
+		$bad_strava    = array();
 		$clean_status  = array();
 		$clean_laps    = array();
 		$clean_garmin  = array();
@@ -998,6 +1030,23 @@ function tsr_track_labels_page(): void {
 				$laps = isset( $posted_laps[ $slug ] ) ? (int) $posted_laps[ $slug ] : 1;
 				$clean_laps[ $slug ] = ( $laps >= 1 && $laps <= 3 ) ? $laps : 1;
 
+				// Strava: store only what differs from tracks.json; an emptied
+				// field over a JSON link means "hide it" ('-').
+				$raw  = trim( (string) ( $posted_strava[ $slug ] ?? '' ) );
+				$json = (string) ( $track['strava_route_url'] ?? '' );
+				if ( '' === $raw ) {
+					if ( '' !== $json ) {
+						$clean_strava[ $slug ] = '-';
+					}
+				} elseif ( $raw !== $json ) {
+					$url = tsr_strava_url_clean( $raw );
+					if ( '' !== $url ) {
+						$clean_strava[ $slug ] = $url;
+					} else {
+						$bad_strava[] = $track['title'];
+					}
+				}
+
 				$raw = trim( (string) ( $posted_garmin[ $slug ] ?? '' ) );
 				if ( '' !== $raw ) {
 					$url = tsr_garmin_url_clean( $raw );
@@ -1010,9 +1059,14 @@ function tsr_track_labels_page(): void {
 			}
 		}
 		update_option( 'tsr_track_garmin', $clean_garmin, false );
+		update_option( 'tsr_track_strava', $clean_strava, false );
 		update_option( 'tsr_track_status', $clean_status, false );
 		update_option( 'tsr_track_laps', $clean_laps, false );
 		echo '<div class="notice notice-success is-dismissible"><p>Етикетите са запазени.</p></div>';
+		if ( $bad_strava ) {
+			echo '<div class="notice notice-warning"><p>Тези Strava линкове не са запазени — трябва да са от strava.com (https): '
+				. esc_html( implode( ', ', $bad_strava ) ) . '</p></div>';
+		}
 		if ( $bad_garmin ) {
 			echo '<div class="notice notice-warning"><p>Тези Garmin линкове не са запазени — трябва да са от connect.garmin.com (https): '
 				. esc_html( implode( ', ', $bad_garmin ) ) . '</p></div>';
@@ -1026,14 +1080,14 @@ function tsr_track_labels_page(): void {
 		return;
 	}
 
-	echo '<p>Етикетът определя подредбата на страницата „Трасета“: актуалните трасета са отгоре, легаси версиите — в свито поле отдолу. Броят обиколки се показва като значка до дистанцията, когато е повече от 1. Garmin линк: отвори трасето в Garmin Connect (Courses), натисни „Сподели“ и постави линка тук — в прозореца на трасето се появява бутон „Garmin“.</p>';
+	echo '<p>Етикетът определя подредбата на страницата „Трасета“: актуалните трасета са отгоре, легаси версиите — в свито поле отдолу. Броят обиколки се показва като значка до дистанцията, когато е повече от 1. Strava / Garmin линк: отвори трасето в Strava (Routes) или Garmin Connect (Courses), натисни „Сподели“ и постави линка тук — в прозореца на трасето се появява бутон „Strava“ / „Garmin“. Празно поле = без бутон.</p>';
 	echo '<form method="post">';
 	wp_nonce_field( 'tsr_track_labels' );
 
 	foreach ( $events as $event ) {
 		echo '<h2 style="margin:1.5em 0 0.4em">' . esc_html( $event['name'] ) . '</h2>';
-		echo '<table class="widefat striped" style="max-width:1100px">';
-		echo '<thead><tr><th>Трасе</th><th style="width:110px">Дистанция</th><th style="width:180px">Етикет</th><th style="width:150px">Брой обиколки</th><th>Garmin линк</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" style="max-width:1400px">';
+		echo '<thead><tr><th>Трасе</th><th style="width:110px">Дистанция</th><th style="width:180px">Етикет</th><th style="width:150px">Брой обиколки</th><th>Strava линк</th><th>Garmin линк</th></tr></thead><tbody>';
 		foreach ( $event['tracks'] as $track ) {
 			$status = tsr_track_status( $track );
 			$laps   = tsr_track_laps( $track );
@@ -1048,6 +1102,7 @@ function tsr_track_labels_page(): void {
 				echo '<option value="' . esc_attr( (string) $n ) . '"' . selected( $laps, $n, false ) . '>' . esc_html( (string) $n ) . ' обиколк' . ( 1 === $n ? 'а' : 'и' ) . '</option>';
 			}
 			echo '</select></td>';
+			echo '<td><input type="url" class="regular-text" style="width:100%" placeholder="https://www.strava.com/routes/…" name="tsr_track_strava[' . esc_attr( $track['slug'] ) . ']" value="' . esc_attr( tsr_track_strava( $track ) ) . '"></td>';
 			echo '<td><input type="url" class="regular-text" style="width:100%" placeholder="https://connect.garmin.com/modern/course/…" name="tsr_track_garmin[' . esc_attr( $track['slug'] ) . ']" value="' . esc_attr( tsr_track_garmin( $track ) ) . '"></td></tr>';
 		}
 		echo '</tbody></table>';

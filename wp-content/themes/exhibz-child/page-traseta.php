@@ -286,7 +286,7 @@ if ( ! function_exists( 'tsr_trk_row' ) ) {
 			data-gpx="<?php echo esc_attr( ! empty( $tr['gpx_file'] ) ? $gpx_base . $tr['gpx_file'] : '' ); ?>"
 			data-kml="<?php echo esc_attr( ! empty( $tr['kml_file'] ) ? $gpx_base . $tr['kml_file'] : '' ); ?>"
 			data-points="<?php echo esc_attr( ! empty( $tr['points_file'] ) ? $points_base . $tr['points_file'] : '' ); ?>"
-			data-strava="<?php echo esc_attr( $tr['strava_route_url'] ?? '' ); ?>"
+			data-strava="<?php echo esc_attr( tsr_track_strava( $tr ) ); ?>"
 			data-distance="<?php echo esc_attr( (string) ( $tr['distance_km'] ?? '' ) ); ?>"
 			data-ascent="<?php echo esc_attr( (string) ( $tr['ascent_m'] ?? '' ) ); ?>"
 			data-descent="<?php echo esc_attr( (string) ( $tr['descent_m'] ?? '' ) ); ?>"
