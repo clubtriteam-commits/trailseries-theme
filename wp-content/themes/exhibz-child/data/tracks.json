@@ -1057,13 +1057,13 @@
           "descent_m": 866,
           "highest_m": 1090,
           "lowest_m": 608,
-          "gpx_file": null,
-          "kml_file": null,
-          "points_file": null,
+          "gpx_file": "the_cactus_run_21km_2025.gpx",
+          "kml_file": "the_cactus_run_21km_2025.kml",
+          "points_file": "cactus-run21km-2025.json",
           "stars": 3,
           "strava_route_url": null,
-          "start_lat": null,
-          "start_lng": null,
+          "start_lat": 42.58291,
+          "start_lng": 23.42594,
           "status": "current"
         },
         {
@@ -1183,7 +1183,7 @@
           "strava_route_url": null,
           "start_lat": 42.70155,
           "start_lng": 23.14528,
-          "status": "current"
+          "status": "legacy"
         },
         {
           "title": "The Christmas Run - 15.5km",
