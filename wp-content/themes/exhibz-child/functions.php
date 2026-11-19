@@ -1047,7 +1047,7 @@ function tsr_event_directions_url( int $event_id ): string {
  */
 function tsr_event_programme( int $event_id ): array {
 	$out = array();
-	foreach ( preg_split( '/\R/', (string) get_post_meta( $event_id, '_tsr_programme', true ) ) as $line ) {
+	foreach ( preg_split( '/\R/u', (string) get_post_meta( $event_id, '_tsr_programme', true ) ) as $line ) {
 		$line = trim( $line );
 		if ( '' === $line ) {
 			continue;
@@ -1117,7 +1117,7 @@ function tsr_event_text_fields(): array {
 /** "a | b | c" lines → list of trimmed parts per line. */
 function tsr_event_lines( int $event_id, string $key ): array {
 	$out = array();
-	foreach ( preg_split( '/\R/', (string) get_post_meta( $event_id, $key, true ) ) as $line ) {
+	foreach ( preg_split( '/\R/u', (string) get_post_meta( $event_id, $key, true ) ) as $line ) {
 		$line = trim( $line );
 		if ( '' !== $line ) {
 			$out[] = array_map( 'trim', explode( '|', $line ) );
@@ -1145,7 +1145,7 @@ function tsr_cause(): array {
 		array( 'on' => false, 'kicker' => '', 'title' => '', 'text' => '', 'image' => '', 'links' => '' )
 	);
 	$links = array();
-	foreach ( preg_split( '/\R/', (string) $c['links'] ) as $line ) {
+	foreach ( preg_split( '/\R/u', (string) $c['links'] ) as $line ) {
 		$p = array_map( 'trim', explode( '|', $line ) );
 		if ( 2 === count( $p ) && '' !== $p[0] && '' !== $p[1] ) {
 			$links[] = $p;
