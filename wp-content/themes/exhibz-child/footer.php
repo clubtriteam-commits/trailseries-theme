@@ -76,7 +76,7 @@
 			<?php // Photographer of the series since 2012 (owner, 2026-11-19): small logo + link. ?>
 			<p class="tsr-footer__copy tsr-footer__credit">
 				<span>Снимки:</span>
-				<a href="https://www.facebook.com/search/top/?q=krisok%20photography" target="_blank" rel="noopener">
+				<a href="https://www.facebook.com/KrisoKphotography" target="_blank" rel="noopener">
 					<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/images/krisok-white.png' ); ?>" width="74" height="32" alt="KrisoK Photography" loading="lazy" decoding="async">
 				</a>
 			</p>
