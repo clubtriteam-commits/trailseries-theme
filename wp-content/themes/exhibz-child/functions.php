@@ -1098,13 +1098,17 @@ add_action( 'template_redirect', static function (): void {
 // 2026-11-19). Description = the normal editor; everything else here.
 // Multi-line fields use one item per line, parts split with "|".
 
+/** Registration link for an upcoming race whose own drace.bg link is not set (owner 2026-11-20). */
+const TSR_REG_URL_DEFAULT = 'https://drace.bg/';
+
 /** Text fields of the event box: meta key => [label, help, rows (0 = one line)]. */
+
 function tsr_event_text_fields(): array {
 	return array(
 		'_tsr_programme'     => array( 'Програма', 'По един ред: час – текст. Напр. „09:00–10:30 – Получаване на стартови номера“.', 5 ),
 		'_tsr_highlights'    => array( 'Акценти (карти под описанието)', 'По един ред: емоджи | заглавие | текст. Напр. „🎅 | Бягаме дегизирани | Дядо Коледа, Снежанка…“.', 4 ),
 		'_tsr_fees'          => array( 'Такса участие', 'По един ред: сума | заглавие | бележка. Първият ред е основната такса (оранжева рамка). Напр. „15 € | Редовна такса | при регистрация в drace.bg“.', 4 ),
-		'_tsr_reg_url'       => array( 'Линк за регистрация', 'Напр. https://drace.bg/bg/event/… — оранжевият бутон „Регистрация“.', 0 ),
+		'_tsr_reg_url'       => array( 'Линк за регистрация', 'Празно = https://drace.bg/ (общият линк за предстоящите състезания). Попълни само ако състезанието има собствена страница в drace.bg.', 0 ),
 		'_tsr_kids'          => array( 'Детско бягане', 'Кратко, напр. „1000 м · безплатно“. Празно = няма.', 0 ),
 		'_tsr_surface'       => array( 'Настилка', 'Напр. „горски пътеки и алеи“.', 0 ),
 		'_tsr_support'       => array( 'Със съдействието на', 'Напр. „Столична община – район Банкя“. Празно = не се показва.', 0 ),

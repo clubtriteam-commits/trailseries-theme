@@ -89,6 +89,11 @@ while ( have_posts() ) :
 	$tsr_fees     = tsr_event_lines( $tsr_id, '_tsr_fees' );
 	$tsr_go       = tsr_event_lines( $tsr_id, '_tsr_getting_there' );
 	$tsr_reg      = (string) get_post_meta( $tsr_id, '_tsr_reg_url', true );
+	if ( '' === $tsr_reg && null !== $tsr_days && $tsr_days >= 0 ) {
+		$tsr_reg = TSR_REG_URL_DEFAULT; // upcoming race without its own link: the drace.bg front page lists them all
+	} elseif ( null !== $tsr_days && $tsr_days < 0 ) {
+		$tsr_reg = ''; // registration closed
+	}
 	$tsr_kids     = (string) get_post_meta( $tsr_id, '_tsr_kids', true );
 	$tsr_surface  = (string) get_post_meta( $tsr_id, '_tsr_surface', true );
 	$tsr_support  = (string) get_post_meta( $tsr_id, '_tsr_support', true );
