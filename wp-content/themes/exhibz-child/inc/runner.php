@@ -119,6 +119,222 @@ add_action( 'wp_enqueue_scripts', static function (): void {
 	}
 }, 25 );
 
+// ── Overview (page before a search) ──────────────────────────────────────────
+
+/**
+ * Series totals for the /runner/ start page (owner-approved mockup
+ * 2026-11-20): runners, starts, finishes, km, races, runners per season,
+ * runners by number of starts and the "Клуб 50+" list. One person = one
+ * canonical name, a table published twice counts once (same rules as the
+ * search index). Built once per results cache generation.
+ *
+ * @return array{runners:int, starts:int, fin:int, km:int, races:int, seasons:int, per_year:array<int,int>, buckets:array<string,int>, club:list<array{0:string,1:int}>}
+ */
+function tsr_runner_overview(): array {
+	$key    = 'tsr_runner_overview_g' . tsr_cache_gen();
+	$cached = get_transient( $key );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+	global $wpdb;
+	$index  = tsr_results_index();
+	$seen   = array();
+	$people = array(); // lower-case name => [ name, starts ]
+	$years  = array(); // season => [ name => true ]
+	$races  = array();
+	$starts = 0;
+	$fin    = 0;
+	$km     = 0.0;
+	foreach ( array_chunk( array_keys( $index ), 100 ) as $chunk ) {
+		$in = implode( ',', array_map( 'intval', $chunk ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$blobs = $wpdb->get_results( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = '_tsr_result_set' AND post_id IN ( {$in} ) ORDER BY post_id" );
+		foreach ( $blobs as $blob ) {
+			$entry = $index[ (int) $blob->post_id ];
+			if ( '' !== $entry['hash'] ) {
+				if ( isset( $seen[ $entry['hash'] ] ) ) {
+					continue;
+				}
+				$seen[ $entry['hash'] ] = true;
+			}
+			$data = json_decode( (string) $blob->meta_value, true );
+			if ( ! isset( $data['rows'] ) || ! is_array( $data['rows'] ) ) {
+				continue;
+			}
+			$year = (int) $entry['season'];
+			if ( $year > 0 ) {
+				$races[ tsr_runner_event_name( $entry['event_base'] ) . '|' . $year ] = true;
+			}
+			foreach ( $data['rows'] as $row ) {
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+				$raw = trim( (string) preg_replace( '/\s+/u', ' ', ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) ) );
+				if ( '' === $raw ) {
+					continue;
+				}
+				$name = tsr_runner_canonical( $raw );
+				$k    = mb_strtolower( $name );
+				if ( ! isset( $people[ $k ] ) ) {
+					$people[ $k ] = array( $name, 0 );
+				}
+				++$people[ $k ][1];
+				++$starts;
+				if ( 'FIN' === ( $row['status'] ?? '' ) ) {
+					++$fin;
+					$km += (float) $entry['km'];
+				}
+				if ( $year > 0 ) {
+					$years[ $year ][ $k ] = true;
+				}
+			}
+		}
+	}
+	ksort( $years );
+	$buckets = array( '1 старт' => 0, '2–4' => 0, '5–9' => 0, '10–24' => 0, '25–49' => 0, '50+' => 0 );
+	foreach ( $people as $p ) {
+		$s = $p[1];
+		$b = $s >= 50 ? '50+' : ( $s >= 25 ? '25–49' : ( $s >= 10 ? '10–24' : ( $s >= 5 ? '5–9' : ( $s >= 2 ? '2–4' : '1 старт' ) ) ) );
+		++$buckets[ $b ];
+	}
+	$club = array_values( array_filter( $people, static fn( array $p ): bool => $p[1] >= 50 ) );
+	usort( $club, static fn( array $a, array $b ): int => array( $b[1], $a[0] ) <=> array( $a[1], $b[0] ) );
+	$out = array(
+		'runners'  => count( $people ),
+		'starts'   => $starts,
+		'fin'      => $fin,
+		'km'       => (int) round( $km ),
+		'races'    => count( $races ),
+		'seasons'  => count( $years ),
+		'per_year' => array_map( 'count', $years ),
+		'buckets'  => $buckets,
+		'club'     => array_slice( $club, 0, 12 ),
+	);
+	set_transient( $key, $out, 12 * HOUR_IN_SECONDS );
+	return $out;
+}
+
+/** The /runner/ start page: hero with the search, what a profile shows, the series in numbers, Клуб 50+. */
+function tsr_runner_overview_print( string $index_url ): void {
+	$o     = tsr_runner_overview();
+	$page  = get_permalink();
+	$img   = get_stylesheet_directory_uri() . '/images/history/2024-cactus-run.jpg';
+	$n     = static fn( float $v ): string => tsr_runner_num( $v );
+	$max   = max( array( 1 ) + $o['per_year'] );
+	$now   = (int) wp_date( 'Y' );
+	$total = max( 1, array_sum( $o['buckets'] ) );
+	$first = (int) array_key_first( $o['per_year'] ?: array( 2012 => 0 ) );
+	?>
+	<section class="tsr-rs-hero">
+		<div class="tsr-container tsr-rs-hero__grid">
+			<div>
+				<p class="tsr-rs-hero__k">Бегаческа статистика</p>
+				<h1 class="tsr-rs-hero__title">Намери своите резултати</h1>
+				<p class="tsr-rs-hero__sub">Всеки старт, всяко време и всяко класиране в Trail Series от <?php echo esc_html( (string) $first ); ?> г. насам — на една страница.</p>
+				<form class="tsr-runner-search tsr-rs-box" method="get" action="<?php echo esc_url( $page ); ?>" role="search" data-tsr-runner-search data-index="<?php echo esc_url( $index_url ); ?>">
+					<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+					<label class="screen-reader-text" for="tsr-runner-name">Имена на бегача</label>
+					<input id="tsr-runner-name" type="search" name="runner" placeholder="Име и фамилия" autocomplete="off" autocorrect="off" autocapitalize="none" enterkeyhint="search" spellcheck="false">
+					<button type="submit">Търси</button>
+				</form>
+				<p class="tsr-rs-hero__hint">Името както е в протокола — на кирилица или латиница. Подсказките излизат още докато пишеш.</p>
+			</div>
+			<div class="tsr-rs-hero__ph">
+				<img src="<?php echo esc_url( $img ); ?>" alt="Бегач на The Cactus Run 2024 над Панчарево" width="1600" height="1066" fetchpriority="high">
+				<span class="tsr-rs-hero__credit">📷 KrisoK · The Cactus Run 2024</span>
+				<div class="tsr-rs-fl tsr-rs-fl--b"><i aria-hidden="true">🏃</i><div><b><?php echo esc_html( $n( $o['runners'] ) ); ?></b><small>бегачи от <?php echo esc_html( (string) $first ); ?> г.</small></div></div>
+				<div class="tsr-rs-fl tsr-rs-fl--a"><i aria-hidden="true">⛰️</i><div><b><?php echo esc_html( $n( $o['km'] ) ); ?> км</b><small>пробягани общо</small></div></div>
+			</div>
+		</div>
+	</section>
+
+	<main id="main">
+	<section class="tsr-rs-sec">
+		<div class="tsr-container tsr-rs-what">
+			<div>
+				<h2 class="tsr-rs-h2">Какво ще видиш</h2>
+				<ul class="tsr-rs-steps">
+					<li><i aria-hidden="true">📅</i><div><b>Всички стартове по сезони</b><span>Кога, къде, коя дистанция — с линк към пълното класиране.</span></div></li>
+					<li><i aria-hidden="true">⏱️</i><div><b>Лични рекорди по трасе</b><span>Най-доброто ти време на всяко трасе и колко си напреднал.</span></div></li>
+					<li><i aria-hidden="true">🏅</i><div><b>Километри и класирания</b><span>Общо пробягани километри, подиуми и най-добро място.</span></div></li>
+				</ul>
+			</div>
+			<div class="tsr-rs-card" aria-hidden="true">
+				<span class="tsr-rs-card__tag">Пример</span>
+				<div class="tsr-rs-me"><span class="tsr-rs-av">ТИ</span><div><b>Твоето име</b><span>в Trail Series от 2019 г.</span></div></div>
+				<div class="tsr-rs-kpi"><div><b>24</b><span>старта</span></div><div><b>312</b><span>км</span></div><div><b>6</b><span>сезона</span></div><div><b>3.</b><span>най-добро място</span></div></div>
+				<div class="tsr-rs-tl">
+					<?php foreach ( array( 2019 => 30, 2020 => 15, 2021 => 45, 2022 => 60, 2023 => 100, 2024 => 75, 2025 => 90 ) as $y => $h ) : ?>
+						<span data-y="<?php echo esc_attr( (string) $y ); ?>" style="height:<?php echo (int) $h; ?>%"></span>
+					<?php endforeach; ?>
+				</div>
+				<div class="tsr-rs-pb"><div><span>The Cactus Run · 15 км</span><b>1:21:40</b></div><div><span>Seven Hills Run · 13 км</span><b>1:05:12</b></div></div>
+			</div>
+		</div>
+	</section>
+
+	<section class="tsr-rs-sec tsr-rs-sec--alt">
+		<div class="tsr-container">
+			<h2 class="tsr-rs-h2">Trail Series в числа</h2>
+			<p class="tsr-rs-lead">Всички резултати от <?php echo esc_html( (string) $first ); ?> г. до днес</p>
+			<div class="tsr-rs-nums">
+				<div class="tsr-rs-num tsr-rs-num--hl"><b><?php echo esc_html( $n( $o['runners'] ) ); ?></b><span>бегачи</span><small>са тичали поне веднъж</small></div>
+				<div class="tsr-rs-num"><b><?php echo esc_html( $n( $o['starts'] ) ); ?></b><span>старта</span><small><?php echo esc_html( $n( $o['fin'] ) ); ?> финиширали</small></div>
+				<div class="tsr-rs-num"><b><?php echo esc_html( $n( $o['km'] ) ); ?></b><span>километра</span><small>≈ <?php echo esc_html( number_format( $o['km'] / 40075, 1, ',', '' ) ); ?> пъти около Земята 🌍</small></div>
+				<div class="tsr-rs-num"><b><?php echo esc_html( $n( $o['races'] ) ); ?></b><span>състезания</span><small>за <?php echo esc_html( (string) $o['seasons'] ); ?> сезона</small></div>
+			</div>
+			<div class="tsr-rs-charts">
+				<figure class="tsr-rs-ch">
+					<figcaption><h3>Бегачи по години</h3><p>Различни бегачи с поне един старт през сезона<?php echo isset( $o['per_year'][ $now ] ) ? ' · ' . esc_html( (string) $now ) . ' — до момента' : ''; ?></p></figcaption>
+					<div class="tsr-rs-cols" role="img" aria-label="<?php echo esc_attr( implode( ', ', array_map( static fn( $y, $v ) => $y . ': ' . $v, array_keys( $o['per_year'] ), $o['per_year'] ) ) ); ?>">
+						<?php foreach ( $o['per_year'] as $y => $v ) : ?>
+							<?php
+							$cls = $y >= $now ? ' is-now' : ( $v === $max ? ' is-peak' : '' );
+							$pct = round( $v / $max * 100, 1 );
+							?>
+							<div class="tsr-rs-col<?php echo esc_attr( $cls ); ?>" title="<?php echo esc_attr( $y . ': ' . $n( $v ) . ' бегачи' ); ?>">
+								<i style="height:<?php echo esc_attr( (string) $pct ); ?>%"></i>
+								<?php if ( '' !== $cls ) : ?><em style="bottom:calc(<?php echo esc_attr( (string) $pct ); ?>% + 4px)"><?php echo esc_html( $n( $v ) ); ?></em><?php endif; ?>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<div class="tsr-rs-yrs" aria-hidden="true">
+						<?php foreach ( array_keys( $o['per_year'] ) as $y ) : ?><span>'<?php echo esc_html( substr( (string) $y, 2 ) ); ?></span><?php endforeach; ?>
+					</div>
+				</figure>
+				<figure class="tsr-rs-ch">
+					<figcaption><h3>Колко пъти бягат</h3><p>Бегачи по брой стартове</p></figcaption>
+					<div class="tsr-rs-hb">
+						<?php foreach ( $o['buckets'] as $label => $v ) : ?>
+							<?php $pc = round( $v / $total * 100 ); ?>
+							<div><span><?php echo esc_html( $label ); ?></span><i style="width:<?php echo esc_attr( (string) round( $v / max( 1, max( $o['buckets'] ) ) * 100, 1 ) ); ?>%"></i><b><?php echo esc_html( $n( $v ) . ' · ' . ( $pc >= 1 ? $pc . '%' : '<1%' ) ); ?></b></div>
+						<?php endforeach; ?>
+					</div>
+					<?php if ( $o['buckets']['50+'] > 0 ) : ?>
+						<p class="tsr-rs-foot">Повечето идват веднъж — а <?php echo esc_html( (string) $o['buckets']['50+'] ); ?> души имат над 50 старта.</p>
+					<?php endif; ?>
+				</figure>
+			</div>
+		</div>
+	</section>
+
+	<?php if ( $o['club'] ) : ?>
+		<section class="tsr-rs-sec">
+			<div class="tsr-container">
+				<h2 class="tsr-rs-h2">Клуб 50+</h2>
+				<p class="tsr-rs-lead">Бегачите с най-много стартове в Trail Series — натисни за профила</p>
+				<ol class="tsr-rs-club">
+					<?php foreach ( $o['club'] as $p ) : ?>
+						<li><a href="<?php echo esc_url( add_query_arg( 'runner', rawurlencode( $p[0] ), $page ) ); ?>"><span><?php echo esc_html( $p[0] ); ?></span><b><?php echo esc_html( (string) $p[1] ); ?> старта</b></a></li>
+					<?php endforeach; ?>
+				</ol>
+			</div>
+		</section>
+	<?php endif; ?>
+	</main>
+	<?php
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** One name per race across its spellings over the years ("The Chrismas Run", "GOLYAM SECHKO RUN"). */

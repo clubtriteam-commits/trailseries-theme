@@ -319,6 +319,16 @@ if ( $tsr_do_search ) {
 get_header();
 ?>
 
+<?php
+$tsr_index_url = add_query_arg( 'g', tsr_cache_gen(), rest_url( 'tsr/v1/runners' ) );
+if ( ! $tsr_searching ) {
+	// Start page before a search (owner-approved mockup 2026-11-20).
+	tsr_runner_overview_print( $tsr_index_url );
+	get_footer();
+	return;
+}
+?>
+
 <div class="tsr-page-hero">
 	<div class="tsr-container">
 		<p class="tsr-page-hero__kicker">TrailSeries.bg</p>
@@ -332,7 +342,7 @@ get_header();
 
 		<?php tsr_page_breadcrumbs( 'Бегаческа статистика' ); ?>
 
-		<form class="tsr-runner-search" method="get" action="" data-tsr-runner-search data-index="<?php echo esc_url( add_query_arg( 'g', tsr_cache_gen(), rest_url( 'tsr/v1/runners' ) ) ); ?>">
+		<form class="tsr-runner-search" method="get" action="" data-tsr-runner-search data-index="<?php echo esc_url( $tsr_index_url ); ?>">
 			<label class="screen-reader-text" for="tsr-runner-name">Имена на бегача</label>
 			<input
 				id="tsr-runner-name"
